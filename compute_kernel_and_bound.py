@@ -61,7 +61,7 @@ def main(_):
 
             elif network == "fc":
                 from fc_kernel import kernel_matrix
-                K = kernel_matrix(flat_train_images,number_layers=number_layers,sigmaw=sigmaw,sigmab=sigmab)
+                K = kernel_matrix(flat_train_images,number_layers=number_layers,sigmaw=sigmaw,sigmab=sigmab,n_gpus=n_gpus)
 
         print(K)
 
