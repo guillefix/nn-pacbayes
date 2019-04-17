@@ -1,0 +1,15 @@
+#!/bin/bash
+
+m=10000 
+dataset=cifar
+net=vgg16 
+L=-1 
+prefix=test_
+sigmaw=1.0 
+sigmab=1.0 
+
+pool=avg
+
+#for c in 0.7 0.8 0.9 1 2 3 4 5; do
+./script2 --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training -sigmaw $sigmaw -sigmab $sigmab --confusion $c --ngpus 8 --compute_bound --pooling $pool --n_samples_repeats 2.0 --use_empirical_K
+#done
