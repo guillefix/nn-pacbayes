@@ -1,0 +1,70 @@
+#!/bin/bash
+
+#source ~/anaconda/bin/activate root 
+#~/anaconda3/bin/python compute_CSR.py 
+#~/anaconda3/bin/python compute_probs.py 
+#python sample_funs.py $@
+#python compute_CSR.py $@
+#python compute_probs.py $@
+py=/usr/bin/python3 
+#py=~/anaconda3/bin/python3
+#py=python3
+
+m=1000
+dataset=mnist
+net=fc
+L=1
+#net=resnet
+#L=32
+prefix=test
+sigmaw=10.0
+sigmab=10.0
+#num_samples=1000
+
+pool=none
+c=0.0
+$py generate_NN_arch.py --dataset $dataset --network $net --number_layers $L --pooling $pool -sigmaw $sigmaw -sigmab $sigmab
+#pool=max
+#$py generate_NN_arch.py --dataset $dataset --network $net --number_layers $L --pooling $pool
+$py generate_inputs_sample.py --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training -sigmaw $sigmaw -sigmab $sigmab --confusion $c
+mpiexec -n 1 $py compute_kernel_and_bound.py --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --ngpus 1 --compute_bound --pooling $pool --n_samples_repeats 2.0 -sigmaw $sigmaw -sigmab $sigmab --confusion $c #--use_empirical_K
+$py NN_train.py --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --pooling $pool -sigmaw $sigmaw -sigmab $sigmab --confusion $c
+
+for c in `seq 0.7 0.1 1`; do
+	$py generate_inputs_sample.py --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training -sigmaw $sigmaw -sigmab $sigmab --confusion $c
+	mpiexec -n 1 $py compute_kernel_and_bound.py --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --ngpus 8 --compute_bound --pooling $pool --n_samples_repeats 2.0 -sigmaw $sigmaw -sigmab $sigmab --confusion $c #--use_empirical_K
+	$py NN_train.py --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --pooling $pool -sigmaw $sigmaw -sigmab $sigmab --confusion $c
+done
+
+for c in `seq 2 5`; do
+	$py generate_inputs_sample.py --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training -sigmaw $sigmaw -sigmab $sigmab --confusion $c
+	mpiexec -n 1 $py compute_kernel_and_bound.py --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --ngpus 8 --compute_bound --pooling $pool --n_samples_repeats 2.0 -sigmaw $sigmaw -sigmab $sigmab --confusion $c #--use_empirical_K
+	$py NN_train.py --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --pooling $pool -sigmaw $sigmaw -sigmab $sigmab --confusion $c
+done
+
+#for dataset in cifar mnist mnist-fashion; do
+#    for net in cnn 'fc' resnet; do
+#        if [ $net == 'resnet' ]; then
+#            L=32
+#        else
+#            L=4
+#        fi
+#        #$py generate_NN_arch.py --dataset $dataset --network $net --number_layers $L
+#        #$py generate_inputs_sample.py --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --whitening --compute_kernel
+#        addqueue -n 250 -m 5 $py sample_funs.py --prefix $prefix --number_samples 1000 --m $m --dataset $dataset --network $net --number_layers $L --whitening -n_gpus 0
+#    done
+#done
+
+
+#$py generate_NN_arch.py --dataset $dataset --network $net --number_layers $L
+#$py generate_inputs_sample.py --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --whitening --compute_kernel
+#$py sample_funs.py --prefix $prefix --number_samples 2 --m $m --dataset $dataset --network $net --number_layers $L --whitening
+
+#mpiexec -n 8 $py sample_funs.py --prefix $prefix --number_samples $num_samples --m $m --dataset $dataset --network $net --number_layers $L --whitening --n_gpus 8
+#mpiexec -n 8 $py compute_CSR.py --prefix $prefix --number_samples $num_samples --m $m --dataset $dataset --network $net --number_layers $L --whitening --n_gpus 8
+
+#mpiexec -n $(($(nproc)<$num_samples?$(nproc):$num_samples)) $py sample_funs.py --prefix $prefix --number_samples $num_samples --m $m --dataset $dataset --network $net --number_layers $L --whitening --n_gpus 8
+
+#addqueue -n 250 -m 5 $py sample_funs.py --prefix $prefix --number_samples 1000 --m $m --dataset $dataset --network $net --number_layers $L --whitening
+#addqueue -n 10 -m 5 $py sample_funs.py --prefix $prefix --number_samples 10 --m $m --dataset $dataset --network $net --number_layers $L --whitening
+

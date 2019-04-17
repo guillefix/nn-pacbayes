@@ -1,0 +1,16 @@
+#!/bin/bash
+
+export PYTHONPATH="/home_directory/.local/lib/python3.5/site-packages/"
+
+#py=/usr/bin/python3 
+#py=~/anaconda3/bin/python3
+py=python3
+
+$py generate_NN_arch.py $@
+
+for c in `seq 3 5`; do
+	$py generate_inputs_sample.py $@
+	mpiexec -n 1 $py compute_kernel_and_bound.py $@
+	$py NN_train.py $@
+done
+

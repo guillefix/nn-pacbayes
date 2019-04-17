@@ -1,0 +1,17 @@
+kernels/
+sampled_nets/
+data/
+datasets/
+*.out
+**/*.swp
+**/*.pyc
+**/_pycache__/*.pyc
+./*.pyc
+*.swp
+/*.un~
+*.tar.gz
+others/
+data/*.np
+data/*.h5
+archs/
+core

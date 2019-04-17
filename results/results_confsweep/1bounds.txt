@@ -1,0 +1,360 @@
+binarized	compute_bound	confusion	dataset	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.0	cifar		0.0	5000	1	cnn	4	1.0	1.0	0.6979279075733283
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.1	cifar		0.0	5000	1	cnn	4	1.0	1.0	0.7543821573990838
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.2	cifar		0.0	5000	1	cnn	4	1.0	1.0	0.7906728445975567
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.3	cifar		0.0	5000	1	cnn	4	1.0	1.0	0.8509617704495901
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.4	cifar		0.0	5000	1	cnn	4	1.0	1.0	0.9357879892418668
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.5	cifar		0.0	5000	1	cnn	4	1.0	1.0	1.038077600136516
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.6	cifar		0.0	5000	1	cnn	4	1.0	1.0	1.171676739581552
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.7	cifar		0.0	5000	1	cnn	4	1.0	1.0	1.4125246801726181
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.8	cifar		0.0	5000	1	cnn	4	1.0	1.0	1.8924901092704565
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.9	cifar		0.0	5000	1	cnn	4	1.0	1.0	3.2354174720898787
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.0	mnist		0.0	5000	1	cnn	4	1.0	1.0	0.18817299252188752
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.1	mnist		0.0	5000	1	cnn	4	1.0	1.0	0.3252808860653303
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.2	mnist		0.0	5000	1	cnn	4	1.0	1.0	0.42575112945693727
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.3	mnist		0.0	5000	1	cnn	4	1.0	1.0	0.502352193886856
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.4	mnist		0.0	5000	1	cnn	4	1.0	1.0	0.6027402755751489
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.5	mnist		0.0	5000	1	cnn	4	1.0	1.0	0.6767723306811508
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.6	mnist		0.0	5000	1	cnn	4	1.0	1.0	0.798568644205652
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.7	mnist		0.0	5000	1	cnn	4	1.0	1.0	0.9895075908083301
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.8	mnist		0.0	5000	1	cnn	4	1.0	1.0	1.3682297777705896
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.9	mnist		0.0	5000	1	cnn	4	1.0	1.0	2.3654464776892357
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.0	cifar		0.0	5000	1	fc	4	1.0	1.0	0.6930930321592388
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.1	cifar		0.0	5000	1	fc	4	1.0	1.0	0.7148647888013986
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.2	cifar		0.0	5000	1	fc	4	1.0	1.0	0.7421159599096634
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.3	cifar		0.0	5000	1	fc	4	1.0	1.0	0.7768260677050974
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.4	cifar		0.0	5000	1	fc	4	1.0	1.0	0.8236528473982938
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.5	cifar		0.0	5000	1	fc	4	1.0	1.0	0.8893670481862115
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.6	cifar		0.0	5000	1	fc	4	1.0	1.0	0.9868439748374248
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.7	cifar		0.0	5000	1	fc	4	1.0	1.0	1.1452267288432179
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.8	cifar		0.0	5000	1	fc	4	1.0	1.0	1.4743515377646996
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.9	cifar		0.0	5000	1	fc	4	1.0	1.0	2.442309913538031
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.0	mnist		0.0	5000	1	fc	4	1.0	1.0	0.6418039273370567
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.1	mnist		0.0	5000	1	fc	4	1.0	1.0	0.6597728082005182
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.2	mnist		0.0	5000	1	fc	4	1.0	1.0	0.6878323608030765
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.3	mnist		0.0	5000	1	fc	4	1.0	1.0	0.7220579836357147
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.4	mnist		0.0	5000	1	fc	4	1.0	1.0	0.7702881066416859
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.5	mnist		0.0	5000	1	fc	4	1.0	1.0	0.8326214020158953
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.6	mnist		0.0	5000	1	fc	4	1.0	1.0	0.9153085988127505
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.7	mnist		0.0	5000	1	fc	4	1.0	1.0	1.0674457017162815
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.8	mnist		0.0	5000	1	fc	4	1.0	1.0	1.3482402282086634
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.9	mnist		0.0	5000	1	fc	4	1.0	1.0	2.231505936252419
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.0	cifar		0.0	5000	1	cnn	4	1.0	1.0	inf
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.1	cifar		0.0	5000	1	cnn	4	1.0	1.0	-2.3919549976882637
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.2	cifar		0.0	5000	1	cnn	4	1.0	1.0	-0.9097366072377813
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.3	cifar		0.0	5000	1	cnn	4	1.0	1.0	-0.46739011917407397
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.4	cifar		0.0	5000	1	cnn	4	1.0	1.0	-0.2246889722547391
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.5	cifar		0.0	5000	1	cnn	4	1.0	1.0	-0.07698019047389892
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.6	cifar		0.0	5000	1	cnn	4	1.0	1.0	0.008959631193076188
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.7	cifar		0.0	5000	1	cnn	4	1.0	1.0	0.08059413862670221
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.8	cifar		0.0	5000	1	cnn	4	1.0	1.0	0.13318248265249563
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.9	cifar		0.0	5000	1	cnn	4	1.0	1.0	0.1719611809313213
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.0	mnist		0.0	5000	1	cnn	4	1.0	1.0	inf
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.1	mnist		0.0	5000	1	cnn	4	1.0	1.0	-1.4658192268539292
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.2	mnist		0.0	5000	1	cnn	4	1.0	1.0	-0.5830200554527522
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.3	mnist		0.0	5000	1	cnn	4	1.0	1.0	-0.2913208863671109
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.4	mnist		0.0	5000	1	cnn	4	1.0	1.0	-0.09975756126003046
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.5	mnist		0.0	5000	1	cnn	4	1.0	1.0	0.019453179564497658
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.6	mnist		0.0	5000	1	cnn	4	1.0	1.0	0.06794668919885578
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.7	mnist		0.0	5000	1	cnn	4	1.0	1.0	0.12713497151061912
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.8	mnist		0.0	5000	1	cnn	4	1.0	1.0	0.1702093145309841
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.9	mnist		0.0	5000	1	cnn	4	1.0	1.0	0.20519051392317925
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.0	cifar		0.0	5000	1	fc	4	1.0	1.0	inf
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.1	cifar		0.0	5000	1	fc	4	1.0	1.0	-1.4410809224131025
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.2	cifar		0.0	5000	1	fc	4	1.0	1.0	-0.4679992212380397
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.3	cifar		0.0	5000	1	fc	4	1.0	1.0	-0.14907293161969332
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.4	cifar		0.0	5000	1	fc	4	1.0	1.0	0.013760949390668745
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.5	cifar		0.0	5000	1	fc	4	1.0	1.0	0.11227763247192546
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.6	cifar		0.0	5000	1	fc	4	1.0	1.0	0.17648197672719096
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.7	cifar		0.0	5000	1	fc	4	1.0	1.0	0.22231817480620755
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.8	cifar		0.0	5000	1	fc	4	1.0	1.0	0.25722657086878387
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.9	cifar		0.0	5000	1	fc	4	1.0	1.0	0.28408867123371256
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.0	mnist		0.0	5000	1	fc	4	1.0	1.0	inf
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.1	mnist		0.0	5000	1	fc	4	1.0	1.0	-1.248156568665938
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.2	mnist		0.0	5000	1	fc	4	1.0	1.0	-0.37494497536286703
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.3	mnist		0.0	5000	1	fc	4	1.0	1.0	-0.08669322997850021
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.4	mnist		0.0	5000	1	fc	4	1.0	1.0	0.0528751395832744
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.5	mnist		0.0	5000	1	fc	4	1.0	1.0	0.1419027337962595
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.6	mnist		0.0	5000	1	fc	4	1.0	1.0	0.1995656659086527
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.7	mnist		0.0	5000	1	fc	4	1.0	1.0	0.2406692980223267
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.8	mnist		0.0	5000	1	fc	4	1.0	1.0	0.2725372702260609
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.9	mnist		0.0	5000	1	fc	4	1.0	1.0	0.2967988269710066
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.0	cifar		0.0	5000	1	resnet	4	1.0	1.0	0.6874545550349747
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.1	cifar		0.0	5000	1	resnet	4	1.0	1.0	0.7139084754630398
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.2	cifar		0.0	5000	1	resnet	4	1.0	1.0	0.7394879280648176
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.3	cifar		0.0	5000	1	resnet	4	1.0	1.0	0.7744834384945801
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.4	cifar		0.0	5000	1	resnet	4	1.0	1.0	0.8207053952309968
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.5	cifar		0.0	5000	1	resnet	4	1.0	1.0	0.8825861283992189
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.6	cifar		0.0	5000	1	resnet	4	1.0	1.0	0.9778848741876137
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.7	cifar		0.0	5000	1	resnet	4	1.0	1.0	1.1451307932346784
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.8	cifar		0.0	5000	1	resnet	4	1.0	1.0	1.4623862719086154
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.9	cifar		0.0	5000	1	resnet	4	1.0	1.0	2.433242329344829
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.0	mnist		0.0	5000	1	resnet	4	1.0	1.0	0.5911445643502015
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.1	mnist		0.0	5000	1	resnet	4	1.0	1.0	0.6152770498381424
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.2	mnist		0.0	5000	1	resnet	4	1.0	1.0	0.6485766917706228
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.3	mnist		0.0	5000	1	resnet	4	1.0	1.0	0.6777081857623494
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.4	mnist		0.0	5000	1	resnet	4	1.0	1.0	0.737583456573127
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.5	mnist		0.0	5000	1	resnet	4	1.0	1.0	0.7862967074801952
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.6	mnist		0.0	5000	1	resnet	4	1.0	1.0	0.8523837845913269
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.7	mnist		0.0	5000	1	resnet	4	1.0	1.0	0.9965888413666526
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.8	mnist		0.0	5000	1	resnet	4	1.0	1.0	1.288506478674252
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.9	mnist		0.0	5000	1	resnet	4	1.0	1.0	2.084467185083799
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.0	mnist-fashion		0.0	5000	1	resnet	4	1.0	1.0	0.36414009353300103
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.1	mnist-fashion		0.0	5000	1	resnet	4	1.0	1.0	0.4363079605734915
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.2	mnist-fashion		0.0	5000	1	resnet	4	1.0	1.0	0.4699861906982565
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.3	mnist-fashion		0.0	5000	1	resnet	4	1.0	1.0	0.5226854911203148
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.4	mnist-fashion		0.0	5000	1	resnet	4	1.0	1.0	0.5481644711646342
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.5	mnist-fashion		0.0	5000	1	resnet	4	1.0	1.0	0.6064777875002778
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.6	mnist-fashion		0.0	5000	1	resnet	4	1.0	1.0	0.6785104524174908
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.7	mnist-fashion		0.0	5000	1	resnet	4	1.0	1.0	0.7980023960172465
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.8	mnist-fashion		0.0	5000	1	resnet	4	1.0	1.0	0.9781633331568687
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.9	mnist-fashion		0.0	5000	1	resnet	4	1.0	1.0	1.614380361706764
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.0	cifar		0.0	5000	1	resnet	4	1.0	1.0	inf
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.1	cifar		0.0	5000	1	resnet	4	1.0	1.0	-1.4259023828145043
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.2	cifar		0.0	5000	1	resnet	4	1.0	1.0	-0.4697319419674296
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.3	cifar		0.0	5000	1	resnet	4	1.0	1.0	-0.14715903574430308
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.4	cifar		0.0	5000	1	resnet	4	1.0	1.0	0.014730342596998295
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.5	cifar		0.0	5000	1	resnet	4	1.0	1.0	0.11362632131697259
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.6	cifar		0.0	5000	1	resnet	4	1.0	1.0	0.17546173227779346
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.7	cifar		0.0	5000	1	resnet	4	1.0	1.0	0.22347919031808391
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.0	cifar		0.0	500	1	resnet	4	1.0	1.0	0.7388265227943368
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.0	cifar		0.0	500	1	resnet	4	1.0	1.0	0.7315350632443456
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.0	cifar		0.0	5000	1	resnet	32	1.0	1.0	0.6765611270418282
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.1	cifar		0.0	5000	1	resnet	32	1.0	1.0	0.6965078197201522
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.2	cifar		0.0	5000	1	resnet	32	1.0	1.0	0.7267837345941134
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.3	cifar		0.0	5000	1	resnet	32	1.0	1.0	0.7573017914853619
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.4	cifar		0.0	5000	1	resnet	32	1.0	1.0	0.8050296463560489
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.5	cifar		0.0	5000	1	resnet	32	1.0	1.0	0.8713042844056464
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.6	cifar		0.0	5000	1	resnet	32	1.0	1.0	0.9674967388689901
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.7	cifar		0.0	5000	1	resnet	32	1.0	1.0	1.1225390658800944
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.8	cifar		0.0	5000	1	resnet	32	1.0	1.0	1.4361007569730664
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.9	cifar		0.0	5000	1	resnet	32	1.0	1.0	2.3811823354558346
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.0	mnist		0.0	5000	1	resnet	32	1.0	1.0	0.46070772147298394
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.1	mnist		0.0	5000	1	resnet	32	1.0	1.0	0.5002687136889363
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.2	mnist		0.0	5000	1	resnet	32	1.0	1.0	0.5375733224516773
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.3	mnist		0.0	5000	1	resnet	32	1.0	1.0	0.5830292849042847
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.4	mnist		0.0	5000	1	resnet	32	1.0	1.0	0.6235908392241625
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.5	mnist		0.0	5000	1	resnet	32	1.0	1.0	0.6685725746440796
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.6	mnist		0.0	5000	1	resnet	32	1.0	1.0	0.7448612963786123
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.7	mnist		0.0	5000	1	resnet	32	1.0	1.0	0.8672860749724549
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.8	mnist		0.0	5000	1	resnet	32	1.0	1.0	1.0979066614726838
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.9	mnist		0.0	5000	1	resnet	32	1.0	1.0	1.6882308643158948
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.0	mnist-fashion		0.0	5000	1	resnet	32	1.0	1.0	0.3024055204347141
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.1	mnist-fashion		0.0	5000	1	resnet	32	1.0	1.0	0.3545573097456294
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.2	mnist-fashion		0.0	5000	1	resnet	32	1.0	1.0	0.41925494011459685
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.3	mnist-fashion		0.0	5000	1	resnet	32	1.0	1.0	0.46231648753521565
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.4	mnist-fashion		0.0	5000	1	resnet	32	1.0	1.0	0.5212138460604642
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.5	mnist-fashion		0.0	5000	1	resnet	32	1.0	1.0	0.5755841231549947
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.6	mnist-fashion		0.0	5000	1	resnet	32	1.0	1.0	0.6591058611114418
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.7	mnist-fashion		0.0	5000	1	resnet	32	1.0	1.0	0.7658510263657713
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.8	mnist-fashion		0.0	5000	1	resnet	32	1.0	1.0	0.9504480843861381
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	0.9	mnist-fashion		0.0	5000	1	resnet	32	1.0	1.0	1.5686889450278227
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.0	cifar		0.0	5000	1	resnet	32	1.0	1.0	inf
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.1	cifar		0.0	5000	1	resnet	32	1.0	1.0	-1.3879817926567581
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.2	cifar		0.0	5000	1	resnet	32	1.0	1.0	-0.45542019978115866
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.3	cifar		0.0	5000	1	resnet	32	1.0	1.0	-0.14081084875274003
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.4	cifar		0.0	5000	1	resnet	32	1.0	1.0	0.018536988954347414
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.5	cifar		0.0	5000	1	resnet	32	1.0	1.0	0.11507525805329988
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.6	cifar		0.0	5000	1	resnet	32	1.0	1.0	0.1812933176212198
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.7	cifar		0.0	5000	1	resnet	32	1.0	1.0	0.22344475272029637
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.8	cifar		0.0	5000	1	resnet	32	1.0	1.0	0.26046459389746424
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.9	cifar		0.0	5000	1	resnet	32	1.0	1.0	0.2874304661141309
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.0	mnist		0.0	5000	1	resnet	32	1.0	1.0	inf
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.1	mnist		0.0	5000	1	resnet	32	1.0	1.0	-0.9143661000597106
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.2	mnist		0.0	5000	1	resnet	32	1.0	1.0	-0.20345446796907424
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.3	mnist		0.0	5000	1	resnet	32	1.0	1.0	0.012890214626462372
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.4	mnist		0.0	5000	1	resnet	32	1.0	1.0	0.12582299878381223
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.5	mnist		0.0	5000	1	resnet	32	1.0	1.0	0.19703981008458715
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.6	mnist		0.0	5000	1	resnet	32	1.0	1.0	0.2436583305855405
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.7	mnist		0.0	5000	1	resnet	32	1.0	1.0	0.27869937177905935
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.8	mnist		0.0	5000	1	resnet	32	1.0	1.0	0.30015443793768554
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.9	mnist		0.0	5000	1	resnet	32	1.0	1.0	0.3160788406645458
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.0	mnist-fashion		0.0	5000	1	resnet	32	1.0	1.0	inf
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.1	mnist-fashion		0.0	5000	1	resnet	32	1.0	1.0	-0.7014148323676088
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.2	mnist-fashion		0.0	5000	1	resnet	32	1.0	1.0	-0.13138923970014707
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.3	mnist-fashion		0.0	5000	1	resnet	32	1.0	1.0	0.061352845878280445
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.4	mnist-fashion		0.0	5000	1	resnet	32	1.0	1.0	0.15366602086237138
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.5	mnist-fashion		0.0	5000	1	resnet	32	1.0	1.0	0.22755130668125556
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.6	mnist-fashion		0.0	5000	1	resnet	32	1.0	1.0	0.25774499599076883
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.7	mnist-fashion		0.0	5000	1	resnet	32	1.0	1.0	0.2827859305995506
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.8	mnist-fashion		0.0	5000	1	resnet	32	1.0	1.0	0.31503783078490677
+#binarized	compute_bound	confusion	dataset	f	label_corruption	m	n_gpus	network	number_layers	sigmab	sigmaw	bound
+True	True	1.9	mnist-fashion		0.0	5000	1	resnet	32	1.0	1.0	0.32736006019735747

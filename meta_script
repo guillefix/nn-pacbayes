@@ -1,0 +1,17 @@
+#!/bin/bash
+
+m=10000 
+dataset=mnist 
+net=fc 
+L=1 
+#net=resnet 
+#L=32 
+prefix=new_sigmas_ 
+sigmaw=10.0 
+sigmab=10.0 
+pool=none
+
+
+for c in 0.7 0.8 0.9 1 2 3 4 5; do
+    ./script2 --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training -sigmaw $sigmaw -sigmab $sigmab --confusion $c --ngpus 8 --compute_bound --pooling $pool --n_samples_repeats 2.0 #--use_empirical_K
+done
