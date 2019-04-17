@@ -24,6 +24,11 @@ def main(_):
 
     from tensorflow import keras
     # import keras
+    import keras_applications
+    keras_applications._KERAS_BACKEND = keras.backend
+    keras_applications._KERAS_LAYERS = keras.layers
+    keras_applications._KERAS_MODELS = keras.models
+    keras_applications._KERAS_UTILS = keras.utils
     import warnings
     bias_initializer = keras.initializers.RandomNormal(stddev=1.0)
     # weight_initializer = keras.initializers.RandomNormal(stddev=1/np.sqrt(input_dim))
@@ -138,6 +143,58 @@ def main(_):
             final_pooling=pooling,
             activation=None)
             # activation='sigmoid')
+    else:
+        model = keras.models.Sequential()
+        if network == "vgg19":
+            model1 = keras.applications.vgg19.VGG19(include_top=False, weights=None, input_tensor=None, input_shape=(image_height,image_width,number_channels), pooling=pooling, classes=2)
+
+        elif network == "vgg16":
+            model1 = keras.applications.vgg16.VGG16(include_top=False, weights=None, input_tensor=None, input_shape=(image_height,image_width,number_channels), pooling=pooling, classes=2)
+
+        elif network == "resnet50":
+            model1 = keras.applications.ResNet50(include_top=False, weights=None, input_tensor=None, input_shape=(image_height,image_width,number_channels), pooling=pooling, classes=2)
+
+        elif network == "resnet101":
+            model1 = keras_applications.resnet.ResNet101(include_top=False, weights=None, input_tensor=None, input_shape=(image_height,image_width,number_channels), pooling=pooling, classes=2)
+
+        elif network == "resnet152":
+            model1 = keras_applications.resnet.ResNet152(include_top=False, weights=None, input_tensor=None, input_shape=(image_height,image_width,number_channels), pooling=pooling, classes=2)
+
+        elif network == "resnetv2_50":
+            model1 = keras_applications.resnet_v2.ResNet50V2(include_top=False, weights=None, input_tensor=None, input_shape=(image_height,image_width,number_channels), pooling=pooling, classes=2)
+
+        elif network == "resnetv2_101":
+            model1 = keras_applications.resnet_v2.ResNet101V2(include_top=False, weights=None, input_tensor=None, input_shape=(image_height,image_width,number_channels), pooling=pooling, classes=2)
+
+        elif network == "resnetv2_152":
+            model1 = keras_applications.resnet_v2.ResNet152V2(include_top=False, weights=None, input_tensor=None, input_shape=(image_height,image_width,number_channels), pooling=pooling, classes=2)
+
+        elif network == "resnext50":
+            model1 = keras_applications.resnext.ResNeXt50(include_top=False, weights=None, input_tensor=None, input_shape=(image_height,image_width,number_channels), pooling=pooling, classes=2)
+
+        elif network == "resnext101":
+            model1 = keras_applications.resnext.ResNeXt101(include_top=False, weights=None, input_tensor=None, input_shape=(image_height,image_width,number_channels), pooling=pooling, classes=2)
+
+        elif network == "densenet121":
+            model1 = keras_applications.densenet.DenseNet121(include_top=False, weights=None, input_tensor=None, input_shape=(image_height,image_width,number_channels), pooling=pooling, classes=2)
+
+        elif network == "densenet169":
+            model1 = keras_applications.densenet.DenseNet169(include_top=False, weights=None, input_tensor=None, input_shape=(image_height,image_width,number_channels), pooling=pooling, classes=2)
+
+        elif network == "densenet201":
+            model1 = keras_applications.densenet.DenseNet201(include_top=False, weights=None, input_tensor=None, input_shape=(image_height,image_width,number_channels), pooling=pooling, classes=2)
+
+        elif network == "mobilenetv2":
+            model1 = keras.applications.mobilenet_v2.MobileNetV2(input_shape=(image_height,image_width,number_channels), alpha=1.0, include_top=False, weights=None, input_tensor=None, pooling=pooling, classes=2)
+
+        elif network == "nasnet":
+            model1 = keras.applications.nasnet.NASNetLarge(input_shape=(image_height,image_width,number_channels), include_top=False, weights=None, input_tensor=None, pooling=pooling, classes=2)
+
+        elif network == "xception":
+            model1 = keras.applications.xception.Xception(include_top=False, weights=None, input_tensor=None, input_shape=(image_height,image_width,number_channels), pooling=pooling, classes=2)
+
+        model.add(model1)
+        model.add(keras.layers.Dense(1))
 
     json_string = model.to_json()
 
