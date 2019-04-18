@@ -133,7 +133,7 @@ def main(_):
 
     '''PROCESS COLLECTIVE DATA'''
     if rank == 0:
-        if network != "resnet":
+        if network == "cnn" or network == "fc":
             weightss = np.stack(weightss,axis=-1)
             if network == "cnn":
                 weightss_first_layer = np.stack(weightss_first_layer,axis=-1)
