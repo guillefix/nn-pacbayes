@@ -1,6 +1,6 @@
 #!/bin/bash
 
-m=1000 
+m=10000 
 dataset=cifar
 net=vgg16 
 L=1 

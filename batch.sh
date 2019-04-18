@@ -7,7 +7,7 @@
 #SBATCH --time=24:00:00
 
 # set name of job
-#SBATCH -J layer_sweep
+#SBATCH -J new_arch_test
 
 #small for 1 gpu, big for 4 or 8
 #SBATCH --partition=small
@@ -23,4 +23,4 @@
 
 #Launching the commands within script.sh
 
-/jmain01/apps/docker/tensorflow-batch -v 18.07-py3 -c './meta_script_layer_sweep'
+/jmain01/apps/docker/tensorflow-batch -v 18.07-py3 -c './meta_script_new_archs'
