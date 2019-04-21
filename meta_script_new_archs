@@ -13,7 +13,11 @@ c=0
 
 pool=avg
 
+py=/usr/bin/python3
+
 #for c in 0.7 0.8 0.9 1 2 3 4 5; do
 #./script2 --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training -sigmaw $sigmaw -sigmab $sigmab --confusion $c --ngpus $n_gpus --compute_bound --pooling $pool --n_samples_repeats 2.0 --use_empirical_K
-	./$py NN_train.py --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training -sigmaw $sigmaw -sigmab $sigmab --confusion $c --ngpus $n_gpus --compute_bound --pooling $pool --n_samples_repeats 2.0 --use_empirical_K
+	$py generate_NN_arch.py --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training -sigmaw $sigmaw -sigmab $sigmab --confusion $c --ngpus $n_gpus --compute_bound --pooling $pool --n_samples_repeats 2.0 --use_empirical_K
+	$py generate_inputs_sample.py --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training -sigmaw $sigmaw -sigmab $sigmab --confusion $c --ngpus $n_gpus --compute_bound --pooling $pool --n_samples_repeats 2.0 --use_empirical_K
+	$py NN_train.py --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training -sigmaw $sigmaw -sigmab $sigmab --confusion $c --ngpus $n_gpus --compute_bound --pooling $pool --n_samples_repeats 2.0 --use_empirical_K
 #done
