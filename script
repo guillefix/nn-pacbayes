@@ -6,9 +6,9 @@
 #python sample_funs.py $@
 #python compute_CSR.py $@
 #python compute_probs.py $@
-py=/usr/bin/python3 
+#py=/usr/bin/python3 
 #py=~/anaconda3/bin/python3
-#py=python3
+py=python3
 
 m=1000
 dataset=mnist
@@ -27,20 +27,20 @@ $py generate_NN_arch.py --dataset $dataset --network $net --number_layers $L --p
 #pool=max
 #$py generate_NN_arch.py --dataset $dataset --network $net --number_layers $L --pooling $pool
 $py generate_inputs_sample.py --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training -sigmaw $sigmaw -sigmab $sigmab --confusion $c
-mpiexec -n 1 $py compute_kernel_and_bound.py --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --ngpus 1 --compute_bound --pooling $pool --n_samples_repeats 2.0 -sigmaw $sigmaw -sigmab $sigmab --confusion $c #--use_empirical_K
-$py NN_train.py --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --pooling $pool -sigmaw $sigmaw -sigmab $sigmab --confusion $c
+#mpiexec -n 1 $py compute_kernel_and_bound.py --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --ngpus 1 --compute_bound --pooling $pool --n_samples_repeats 2.0 -sigmaw $sigmaw -sigmab $sigmab --confusion $c #--use_empirical_K
+#$py NN_train.py --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --pooling $pool -sigmaw $sigmaw -sigmab $sigmab --confusion $c
 
-for c in `seq 0.7 0.1 1`; do
-	$py generate_inputs_sample.py --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training -sigmaw $sigmaw -sigmab $sigmab --confusion $c
-	mpiexec -n 1 $py compute_kernel_and_bound.py --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --ngpus 8 --compute_bound --pooling $pool --n_samples_repeats 2.0 -sigmaw $sigmaw -sigmab $sigmab --confusion $c #--use_empirical_K
-	$py NN_train.py --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --pooling $pool -sigmaw $sigmaw -sigmab $sigmab --confusion $c
-done
-
-for c in `seq 2 5`; do
-	$py generate_inputs_sample.py --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training -sigmaw $sigmaw -sigmab $sigmab --confusion $c
-	mpiexec -n 1 $py compute_kernel_and_bound.py --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --ngpus 8 --compute_bound --pooling $pool --n_samples_repeats 2.0 -sigmaw $sigmaw -sigmab $sigmab --confusion $c #--use_empirical_K
-	$py NN_train.py --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --pooling $pool -sigmaw $sigmaw -sigmab $sigmab --confusion $c
-done
+#for c in `seq 0.7 0.1 1`; do
+#	$py generate_inputs_sample.py --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training -sigmaw $sigmaw -sigmab $sigmab --confusion $c
+#	mpiexec -n 1 $py compute_kernel_and_bound.py --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --ngpus 8 --compute_bound --pooling $pool --n_samples_repeats 2.0 -sigmaw $sigmaw -sigmab $sigmab --confusion $c #--use_empirical_K
+#	$py NN_train.py --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --pooling $pool -sigmaw $sigmaw -sigmab $sigmab --confusion $c
+#done
+#
+#for c in `seq 2 5`; do
+#	$py generate_inputs_sample.py --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training -sigmaw $sigmaw -sigmab $sigmab --confusion $c
+#	mpiexec -n 1 $py compute_kernel_and_bound.py --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --ngpus 8 --compute_bound --pooling $pool --n_samples_repeats 2.0 -sigmaw $sigmaw -sigmab $sigmab --confusion $c #--use_empirical_K
+#	$py NN_train.py --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --pooling $pool -sigmaw $sigmaw -sigmab $sigmab --confusion $c
+#done
 
 #for dataset in cifar mnist mnist-fashion; do
 #    for net in cnn 'fc' resnet; do

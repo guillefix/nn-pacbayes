@@ -146,24 +146,53 @@ from custom_kernel_gpflow import CustomMatrix
 #                       likelihood=gpflow.likelihoods.Bernoulli())
 
  # m = gpflow.models.SGPMC(X[:,None], Y[:,None],
- m = gpflow.models.GPMC(X, Y,
-                       kern=CustomMatrix(X.shape[1],X,K),
+
+# X[0]
+
+Y.dtype
+
+X.astype(np.float64)
+
+type(X)
+
+ m = gpflow.models.GPMC(X.astype(np.float64), Y,
+                       # kern=CustomMatrix(X.shape[1],X,K),
+                       kern=gpflow.kernels.RBF(28*28),
                        likelihood=gpflow.likelihoods.Bernoulli(),)
                        # Z=X[::5].copy())
 
+
+print(m)
+
+next(m.parameters)
+
+
 #%%
 
-m.compile()
+# m.compile()
 
-o = gpflow.train.AdamOptimizer(0.01)
-o.minimize(m, maxiter=15) # start near MAP
+# o = gpflow.train.AdamOptimizer(0.01)
+# o.minimize(m, maxiter=15) # start near MAP
 
 s = gpflow.train.HMC()
-samples = s.sample(m, 100, epsilon=0.12, lmax=20, lmin=5, thin=5, logprobs=True)#, verbose=True)
+samples = s.sample(m, 10, epsilon=0.12, lmax=1, lmin=1, thin=1, logprobs=False)#, verbose=True)
+
+samples["GPMC/V"][7]
+
+samples
+
+m.anchor(m.enquire_session())
+
+m.V.read_value()
 
 sess = gpflow.get_default_session()
 
+sess.run(m.objective, {m.V.constrained_tensor: v})
+for v in samples_of_V
+
 sess.run(m._build_likelihood())
 # sess.run(m.likelihood_tensor)
+
+m.compute_log_likelihood()
 
 m.predict_y(test_images[0])

@@ -9,6 +9,7 @@ prefix = "smalldatabigconfusion" # has wrong (opposite) label too.
 prefix = "randomlabelconfusion"
 prefix = "randomlabelbiggerdata"
 prefix = "new_sigmas_"
+prefix = "layer_sweep"
 
 training_results = pd.read_csv(results_folder+prefix+"nn_training_results.txt",comment="#", header='infer',sep="\t")
 bounds = pd.read_csv(results_folder+prefix+"bounds.txt",comment="#", header='infer',sep="\t")
@@ -17,18 +18,22 @@ training_results.columns
 bounds.columns
 # bounds
 
-# training_results["test_error"].unique()
+training_results["dataset"].unique()
+training_results["network"].unique()
+training_results["number_layers"].unique()
+training_results["m"].unique()
 # training_results["m"].unique()
 # bounds["bound"]
 
 #%%
+### CONFUSION
 
 import matplotlib.pyplot as plt
 %matplotlib
 
 network = "cnn"
 network = "fc"
-dataset = "mnist"
+# dataset = "mnist"
 training_samples = 10000
 # training_samples = 500
 number_layers = 1
@@ -38,13 +43,14 @@ number_layers = 1
 # for dataset in ["mnist"]:#,"mnist-fashion", "cifar"]:
 filtered_true_errors = training_results[(training_results["dataset"]==dataset) & (training_results["network"]==network) & (training_results["m"]==training_samples)  & (training_results["number_layers"]==number_layers)]
 filtered_bounds = bounds[(bounds["dataset"]==dataset) & (bounds["network"]==network) & (bounds["m"]==training_samples) & (bounds["number_layers"]==number_layers)]
+
 filtered_true_errors = filtered_true_errors.sort_values(by="confusion").groupby("confusion",as_index=False).mean()
 filtered_bounds = filtered_bounds.sort_values(by="confusion").groupby("confusion",as_index=False).mean()
 
 plt.plot(filtered_true_errors["confusion"],filtered_true_errors["test_error"], label=dataset+" "+network+" error")
 #%%
 
-plt.plot(filtered_bounds["confusion"],filtered_bounds["bound"], label=dataset+" "+network+" Looser PAC-Bayes bound")
+plt.plot(filtered_bounds["confusion"],filtered_bounds["bound"], label=dataset+" "+network+" PAC-Bayes bound")
 # plt.plot(filtered_bounds["confusion"],1-np.exp(-filtered_bounds["bound"]), label=dataset+" "+network+" PAC-Bayes bound")
 ### BOUND PROCESSING FOR OLDER SCRIPTS:
 #%%
@@ -85,6 +91,26 @@ plt.savefig("generror_confusion_"+prefix+network+"_"+dataset+".png")
 # filtered_bounds
 #
 # 1-np.exp(-filtered_bounds["bound"])
+
+#%%
+### LAYERS
+
+%matplotlib
+
+network = "cnn"
+dataset = "mnist"
+training_samples = 10000
+training_results["pooling"].unique()
+bounds["pooling"].unique()
+training_results["number_layers"].unique()
+filtered_true_errors = training_results[(training_results["dataset"]==dataset) & (training_results["network"]==network) & (training_results["m"]==training_samples)]
+filtered_bounds = bounds[(bounds["dataset"]==dataset) & (bounds["network"]==network) & (bounds["m"]==training_samples)]
+filtered_true_errors = filtered_true_errors.sort_values(by="number_layers").groupby("number_layers",as_index=False).mean()
+filtered_bounds = filtered_bounds.sort_values(by="number_layers").groupby("number_layers",as_index=False).mean()
+filtered_true_errors["train_acc"]
+plt.plot(filtered_true_errors["number_layers"],filtered_true_errors["test_error"], label=dataset+" "+network+" error")
+plt.plot(filtered_bounds["number_layers"],filtered_bounds["bound"], label=dataset+" "+network+" PAC-Bayes bound")
+
 
 ###############
 

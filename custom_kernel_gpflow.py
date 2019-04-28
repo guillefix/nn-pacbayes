@@ -143,7 +143,3 @@ class CustomMatrix(gpflow.kernels.Kernel):
             return tf.constant(np.diag(self.Kmatrix)[indices])
         else:
             return np.diag(kernel_matrix(X))
-    def update_gradients_full(self, dL_dK, X, X2):
-        pass
-    def update_gradients_diag(self, dL_dK, X, X2):
-        pass
