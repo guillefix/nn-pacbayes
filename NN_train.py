@@ -91,7 +91,7 @@ def main(_):
         #print(np.concatenate([w.flatten() for w in model.get_weights()]).shape)
 
         '''GET DATA: weights, and errors'''
-        if network != "resnet": #not tested this part for resnet yet..
+        if network == "cnn" or network == "fc":
             p=model.get_weights()
             if network == "cnn":
                 weigths=np.concatenate([w.flatten() for w in p[2::2]])
@@ -109,7 +109,7 @@ def main(_):
         print('Test accuracy:', test_acc)
         test_accs.append(test_acc)
         train_accs.append(train_acc)
-        if network != "resnet":
+        if network == "cnn" or network == "fc":
             weightss.append(weigths)
             if network == "cnn":
                 weightss_first_layer.append(weigths_first_layer)
@@ -123,7 +123,7 @@ def main(_):
     test_accs = comm.gather(test_accs, root=0)
     train_accs = comm.gather(train_accs, root=0)
 
-    if network != "resnet":
+    if network == "cnn" or network == "fc":
         weightss = comm.gather(weightss, root=0)
         weights_norms = comm.gather(weights_norms,root=0)
         if network == "cnn":
