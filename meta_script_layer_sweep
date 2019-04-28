@@ -11,11 +11,6 @@ sigmaw=1.0
 sigmab=1.0 
 c=0
 
-pool=none
-for L in `seq 1 10`; do
-    ./script2 --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training -sigmaw $sigmaw -sigmab $sigmab --confusion $c --ngpus 8 --compute_bound --pooling $pool --n_samples_repeats 2.0 #--use_empirical_K
-done
-
 pool=max
 for L in `seq 1 10`; do
     ./script2 --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training -sigmaw $sigmaw -sigmab $sigmab --confusion $c --ngpus 8 --compute_bound --pooling $pool --n_samples_repeats 2.0 --use_empirical_K
@@ -25,3 +20,9 @@ pool=avg
 for L in `seq 1 10`; do
     ./script2 --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training -sigmaw $sigmaw -sigmab $sigmab --confusion $c --ngpus 8 --compute_bound --pooling $pool --n_samples_repeats 2.0 --use_empirical_K
 done
+
+pool=none
+for L in `seq 1 10`; do
+    ./script2 --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training -sigmaw $sigmaw -sigmab $sigmab --confusion $c --ngpus 8 --compute_bound --pooling $pool --n_samples_repeats 2.0 #--use_empirical_K
+done
+
