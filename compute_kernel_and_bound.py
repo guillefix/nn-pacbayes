@@ -2,6 +2,7 @@ import numpy as np
 import tensorflow as tf
 import keras
 import pickle
+import os
 
 data_folder = "data/"
 kernel_folder = "kernels/"
@@ -22,6 +23,7 @@ def main(_):
     print(rank)
 
     config = tf.ConfigProto()
+    os.environ["CUDA_VISIBLE_DEVICES"]=str((rank+1)%n_gpus)
     # config.gpu_options.per_process_gpu_memory_fraction = 0.1
     config.gpu_options.allow_growth = True
 
