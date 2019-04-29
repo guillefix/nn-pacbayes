@@ -35,7 +35,8 @@ def main(_):
 
     from utils import load_data,load_model,load_kernel
     train_images,flat_train_images,ys,_,_ = load_data(FLAGS)
-    train_images = tf.constant(train_images)
+    #print(train_images)
+    #train_images = tf.constant(train_images)
     arch_json_string = load_model(FLAGS)
 
     image_size = train_images.shape[1]

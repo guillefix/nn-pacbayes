@@ -24,9 +24,9 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
     print(rank)
     num_tasks = number_samples
 
-    from tensorflow.python.client import device_lib
-    local_device_protos = device_lib.list_local_devices()
-    print(local_device_protos)
+    #from tensorflow.python.client import device_lib
+    #local_device_protos = device_lib.list_local_devices()
+    #print(local_device_protos)
     #def get_available_gpus():
     #    local_device_protos = device_lib.list_local_devices()
     #    return [x.name for x in local_device_protos if x.device_type == 'GPU']
@@ -88,8 +88,9 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
         # print(index)
         reset_weights(model)
         #model.save_weights("sampled_nets/"+str(index)+"_"+json_string_filename+".h5")
-        #outputs = model.predict(data,batch_size=data.shape[0],steps=1)
-        outputs = model.predict(data,steps=1)
+        #outputs = model.predict(data,batch_size=data.shape[0])
+        #outputs = model.predict(data,steps=1)
+        outputs = model.predict(data)
         keras.backend.clear_session()
         # print(outputs)
         fs.append(outputs)
