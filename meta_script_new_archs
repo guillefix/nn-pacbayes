@@ -4,6 +4,8 @@ m=10000
 dataset=cifar
 net=vgg16 
 L=1 
+net=cnn
+L=4 
 prefix=test_
 sigmaw=1.0 
 sigmab=1.0 
@@ -11,7 +13,7 @@ sigmab=1.0
 n_gpus=1
 c=0
 
-pool=avg
+pool=none
 
 py=/usr/bin/python3
 
