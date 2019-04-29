@@ -4,7 +4,7 @@ m=20000
 dataset=cifar
 #net=vgg16 
 L=1 
-prefix=test_
+prefix=arch_sweep
 sigmaw=1.0 
 sigmab=1.0 
 

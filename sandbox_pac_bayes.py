@@ -91,45 +91,10 @@ m = GPy.core.GP(X=X,
                 likelihood=lik)
 
 m.log_likelihood()
+print(m.log_likelihood())
 
 mean, A = m._raw_predict(test_images)
 
-#%%
-
-# lik.predictive_values(mean,var)
-# mean, var = m._raw_predict(Xfull[-2:-1])
-
-p = m.predict(test_images)[0].squeeze()
-
-pdiscrete = p>0.5
-
-mean_errors = (p**(1-test_ys))*((1-p)**(test_ys))
-mean_error = np.mean(mean_errors)
-mean_error
-
-mean_errors = (pdiscrete**(1-test_ys))*((1-pdiscrete)**(test_ys))
-mean_error = np.mean(mean_errors)
-mean_error
-
-from GP_prob_gpy import GP_prob
-logPU = GP_prob(K,X,Y)
-
-delta = 2**-10
-bound = (-logPU+2*np.log(total_samples)+1-np.log(delta))/total_samples
-# bound = (-logPU)/total_samples
-bound = 1-np.exp(-bound)
-bound
-
-#%%
-
-import matplotlib.pyplot as plt
-%matplotlib
-plt.matshow(test_images[1].reshape((28,28)))
-plt.matshow(Xfull[-500].reshape((28,28)))
-test_ys[1]
-
-
-#%%
 ### trying gpflow now
 
 import gpflow
@@ -202,3 +167,42 @@ sess.run(m._build_likelihood())
 m.compute_log_likelihood()
 
 m.predict_y(test_images[0])
+
+##################### generror bounds
+
+#%%
+
+# lik.predictive_values(mean,var)
+# mean, var = m._raw_predict(Xfull[-2:-1])
+
+p = m.predict(test_images)[0].squeeze()
+
+pdiscrete = p>0.5
+
+mean_errors = (p**(1-test_ys))*((1-p)**(test_ys))
+mean_error = np.mean(mean_errors)
+mean_error
+
+mean_errors = (pdiscrete**(1-test_ys))*((1-pdiscrete)**(test_ys))
+mean_error = np.mean(mean_errors)
+mean_error
+
+from GP_prob_gpy import GP_prob
+logPU = GP_prob(K,X,Y)
+
+delta = 2**-10
+bound = (-logPU+2*np.log(total_samples)+1-np.log(delta))/total_samples
+# bound = (-logPU)/total_samples
+bound = 1-np.exp(-bound)
+bound
+
+#%%
+
+import matplotlib.pyplot as plt
+%matplotlib
+plt.matshow(test_images[1].reshape((28,28)))
+plt.matshow(Xfull[-500].reshape((28,28)))
+test_ys[1]
+
+
+#%%
