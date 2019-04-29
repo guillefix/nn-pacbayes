@@ -96,8 +96,8 @@ class CustomMatrix(gpflow.kernels.Kernel):
     def __init__(self,input_dim,X,K,active_dims=None):
     # def __init__(self,input_dim,active_dims=None):
         super(CustomMatrix, self).__init__(input_dim, active_dims, 'custom_matrix')
-        self.Kmatrix = tf.constant(K) #Param('matrix', K)
-        self.X = tf.constant(X)
+        self.Kmatrix = tf.constant(K,dtype="float64") #Param('matrix', K)
+        self.X = tf.constant(X,dtype="float64")
         # self.link_parameters(self.K)
     # @Cache_this(limit=3, ignore_args=())
     def K(self,X1,X2=None):
