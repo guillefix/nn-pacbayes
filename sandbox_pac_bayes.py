@@ -84,18 +84,19 @@ inference_method = GPy.inference.latent_function_inference.expectation_propagati
 # GPy.inference.latent_function_inference.InferenceMethodList()
 # inference_method = inference_method=GPy.inference.latent_function_inference.PEP(alpha = 0.5)
 
-m = GPy.core.GP(X=X,
+m2 = GPy.core.GP(X=X,
                 Y=Y,
                 kernel=CustomMatrix(Xfull.shape[1],Xfull,Kfull),
                 inference_method=inference_method,
                 likelihood=lik)
 
-m.log_likelihood()
-print(m.log_likelihood())
+m2.log_likelihood()
+print(m2.log_likelihood()) #-417.66
 
-mean, A = m._raw_predict(test_images)
+mean, A = m2._raw_predict(test_images)
 
 ### trying gpflow now
+#%%
 
 import gpflow
 
@@ -109,19 +110,18 @@ from custom_kernel_gpflow import CustomMatrix
 # m = gpflow.models.VGP_opper_archambeau(X, Y,
 #                       kern=CustomMatrix(X.shape[1],X,K),
 #                       likelihood=gpflow.likelihoods.Bernoulli())
-
  # m = gpflow.models.SGPMC(X[:,None], Y[:,None],
 
-kk= gpflow.kernels.RBF(28**2)
+# kk= gpflow.kernels.RBF(28**2)
+#
+# kk
+# kk.compute_K(X[:10],X[:10])
 
-kk
-kk.compute_K(X[:10],X[:10])
+# import imp; import custom_kernel_gpflow; imp.reload(custom_kernel_gpflow); from custom_kernel_gpflow import CustomMatrix
+# kkk = CustomMatrix(X.shape[1],X,K)
 
-import imp; import custom_kernel_gpflow; imp.reload(custom_kernel_gpflow); from custom_kernel_gpflow import CustomMatrix
-kkk = CustomMatrix(X.shape[1],X,K)
-
-X[:10].shape
-kkk.compute_K(X[:10],X[:10])
+# X[:10].shape
+# kkk.compute_K(X[:10],X[:10])
 
 m = gpflow.models.GPMC(X.astype(np.float64), Y,
     kern=CustomMatrix(X.shape[1],X,K),
@@ -134,7 +134,7 @@ print(m)
 
 # next(m.parameters)
 
-
+#### MCMC
 #%%
 
 m.compile()
@@ -143,30 +143,38 @@ m.compile()
 # o.minimize(m, maxiter=15) # start near MAP
 
 s = gpflow.train.HMC()
-samples = s.sample(m, 100, epsilon=1e-2, lmax=5, lmin=1, thin=5, logprobs=False)#, verbose=True)
+# for i in range(2):
+samples = s.sample(m, 100, epsilon=1e-3, lmax=10, lmin=5, thin=5, logprobs=False)#, verbose=True)
 
-samples["GPMC/V"][7]
+samples["GPMC/V"][9]
 
-sess = gpflow.get_default_session()
 
 samples_of_V = samples["GPMC/V"]
 
+sess = gpflow.get_default_session()
 m.anchor(m.enquire_session())
 
 # m.V.read_value()
 
 loglik_samples = [sess.run(m._build_likelihood(), {m.V.constrained_tensor: v}) for v in samples_of_V]
 
+#alternative:
+loglik_samples = []
+for i, s in samples.iterrows():
+    m.assign(s)
+    loglik_samples.append(m.compute_log_likelihood())
+
 loglik_samples
 
-np.mean(loglik_samples)
+logPU = np.mean(loglik_samples)
+logPU
 
-sess.run(m._build_likelihood())
+# sess.run(m._build_likelihood())
 # sess.run(m.likelihood_tensor)
 
-m.compute_log_likelihood()
+# m.compute_log_likelihood()
 
-m.predict_y(test_images[0])
+# m.predict_y(test_images[0])
 
 ##################### generror bounds
 
@@ -175,17 +183,17 @@ m.predict_y(test_images[0])
 # lik.predictive_values(mean,var)
 # mean, var = m._raw_predict(Xfull[-2:-1])
 
-p = m.predict(test_images)[0].squeeze()
+p = m2.predict(test_images)[0].squeeze()
 
 pdiscrete = p>0.5
 
 mean_errors = (p**(1-test_ys))*((1-p)**(test_ys))
 mean_error = np.mean(mean_errors)
-mean_error
+mean_error #0.20
 
 mean_errors = (pdiscrete**(1-test_ys))*((1-pdiscrete)**(test_ys))
 mean_error = np.mean(mean_errors)
-mean_error
+mean_error #0.14
 
 from GP_prob_gpy import GP_prob
 logPU = GP_prob(K,X,Y)
