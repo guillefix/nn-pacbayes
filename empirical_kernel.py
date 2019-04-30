@@ -32,8 +32,8 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
     #    return [x.name for x in local_device_protos if x.device_type == 'GPU']
 
     #num_gpus = len(get_available_gpus())
-    num_gpus = n_gpus
-    print("num_gpus",num_gpus)
+    #num_gpus = n_gpus
+    #print("num_gpus",num_gpus)
 
     num_tasks_per_job = num_tasks//size
     tasks = list(range(rank*num_tasks_per_job,(rank+1)*num_tasks_per_job))
@@ -41,7 +41,7 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
     if rank < num_tasks%size:
         tasks.append(size*num_tasks_per_job+rank)
 
-    os.environ["CUDA_VISIBLE_DEVICES"]=str(rank%num_gpus)
+    #os.environ["CUDA_VISIBLE_DEVICES"]=str(rank%num_gpus)
 
     # config = tf.ConfigProto()
     # if num_gpus > 0:

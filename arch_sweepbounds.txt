@@ -1,0 +1,2 @@
+#dataset	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound
+cifar	vgg19	10000	0.0	0.0	1	1.0	1.0	True	avg	0	False	True	8	0.4546788522395362
