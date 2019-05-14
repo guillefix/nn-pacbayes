@@ -2,7 +2,6 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-%matplotlib
 import tensorflow as tf
 
 data_folder = "data/"
@@ -50,7 +49,6 @@ num_channels = train_images.shape[-1]
 test_images = test_images[:500]
 test_ys = test_ys[:500]
 
-#%%
 
 X = train_images
 Xfull =  np.concatenate([train_images,test_images])
