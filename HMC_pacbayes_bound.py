@@ -48,7 +48,6 @@ num_channels = train_images.shape[-1]
 test_images = test_images[:50]
 test_ys = test_ys[:50]
 
-#%%
 
 X = train_images
 Xfull =  np.concatenate([train_images,test_images])

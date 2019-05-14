@@ -14,3 +14,7 @@ cifar	densenet201	10000	0.0	0.0	1	1.0	1.0	True	avg	0	False	True	1	0.599112206544
 cifar	mobilenetv2	10000	0.0	0.0	1	1.0	1.0	True	avg	0	False	True	1	0.5015029673991143
 #dataset	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound
 cifar	nasnet	10000	0.0	0.0	1	1.0	1.0	True	avg	0	False	True	1	0.4725760975490635
+#dataset	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound
+#cifar	vgg19	10000	0.0	0.0	1	1.0	1.0	True	avg	0	False	True	8	0.4546788522395362
+#dataset	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound
+#cifar	vgg16	10000	0.0	0.0	1	1.0	1.0	True	avg	0	False	True	8	0.4532064565081857
