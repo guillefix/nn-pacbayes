@@ -15,9 +15,9 @@ kernel_folder = "kernels/"
 # whitening = False
 # number_layers = 4
 
-
+# python3 generate_inputs_sample.py --m 10 --dataset mnist --sigmaw 10.0 --sigmab 10.0 --network fc --prefix test --random_labels --training --number_layers 1
 FLAGS = {}
-FLAGS['m'] = 1000
+FLAGS['m'] = 10
 FLAGS['number_inits'] = 1
 FLAGS['label_corruption'] =  0.0
 FLAGS['confusion'] = 0.0
@@ -57,11 +57,104 @@ ys2 = [[y] for y in ys]
 ysfull = ys2 + [[y] for y in test_ys]
 Yfull = np.array(ysfull)
 Y = np.array(ys2)
+#
+# from fc_kernel import kernel_matrix
+# Kfull = kernel_matrix(Xfull,number_layers=number_layers,sigmaw=sigmaw,sigmab=sigmab)
 
-from fc_kernel import kernel_matrix
-Kfull = kernel_matrix(Xfull,number_layers=number_layers,sigmaw=sigmaw,sigmab=sigmab)
 
-K = Kfull[0:1000,0:1000]
+FLAGS["m"] = 1500
+Kfull = load_kernel(FLAGS)
+K = Kfull[0:m,0:m]
+
+# filename=kernel_folder
+# for flag in ["network","dataset","m","confusion","label_corruption","binarized","whitening","random_labels","number_layers","sigmaw","sigmab"]:
+#     filename+=str(FLAGS[flag])+"_"
+# filename += "kernel.npy"
+# np.save(open(filename,"wb"),Kfull)
+#
+
+### trying gpflow now
+#%%
+
+import gpflow
+
+import custom_kernel_gpflow
+import imp; imp.reload(custom_kernel_gpflow)
+from custom_kernel_gpflow import CustomMatrix
+
+# m = gpflow.models.VGP(X, Y,
+#                       kern=CustomMatrix(X.shape[1],X,K),
+#                       likelihood=gpflow.likelihoods.Bernoulli())
+#
+# # VGP_opper_archambeau
+# m = gpflow.models.VGP_opper_archambeau(X, Y,
+#                       kern=CustomMatrix(X.shape[1],X,K),
+#                       likelihood=gpflow.likelihoods.Bernoulli())
+ # m = gpflow.models.SGPMC(X[:,None], Y[:,None],
+
+# kk= gpflow.kernels.RBF(28**2)
+#
+# kk
+# kk.compute_K(X[:10],X[:10])
+
+# import imp; import custom_kernel_gpflow; imp.reload(custom_kernel_gpflow); from custom_kernel_gpflow import CustomMatrix
+# kkk = CustomMatrix(X.shape[1],X,K)
+
+# X[:10].shape
+# kkk.compute_K(X[:10],X[:10])
+
+# tf.reset_default_graph()
+m = gpflow.models.GPMC(X.astype(np.float64), Y,
+    kern=CustomMatrix(X.shape[1],X,K),
+    # kern=gpflow.kernels.RBF(28*28),
+    likelihood=gpflow.likelihoods.Bernoulli(),)
+    # Z=X[::5].copy())
+
+
+print(m)
+
+# next(m.parameters)
+
+#### MCMC
+#%%
+
+m.compile()
+o = gpflow.train.AdamOptimizer(0.01)
+o.minimize(m, maxiter=15) # start near MAP
+
+s = gpflow.train.HMC()
+# for i in range(2):
+samples = s.sample(m, 20, epsilon=1e-4, lmax=15, lmin=5, thin=5, logprobs=False)#, verbose=True)
+
+samples["GPMC/V"][18]
+# samples_of_V = samples["GPMC/V"]
+# sess = gpflow.get_default_session()
+# m.V.read_value()
+# loglik_samples = [sess.run(m._build_likelihood(), {m.V.constrained_tensor: v}) for v in samples_of_V]
+
+# m.anchor(m.enquire_session())
+loglik_samples = []
+ps = []
+for i, V in samples.iterrows():
+    m.assign(V)
+    loglik_samples.append(m.compute_log_likelihood())
+    p = m.predict_y(test_images)[0].squeeze()
+    ps.append(p)
+
+loglik_samples
+
+logPU = np.mean(loglik_samples)
+logPU
+ps = np.array(ps)
+ps.shape
+p = np.mean(ps,axis=0)
+
+# sess.run(m._build_likelihood())
+# sess.run(m.likelihood_tensor)
+
+# m.compute_log_likelihood()
+
+# m.predict_y(test_images[0])
 
 
 #%%
@@ -95,86 +188,6 @@ print(m2.log_likelihood()) #-417.66
 
 mean, A = m2._raw_predict(test_images)
 
-### trying gpflow now
-#%%
-
-import gpflow
-
-from custom_kernel_gpflow import CustomMatrix
-
-# m = gpflow.models.VGP(X, Y,
-#                       kern=CustomMatrix(X.shape[1],X,K),
-#                       likelihood=gpflow.likelihoods.Bernoulli())
-#
-# # VGP_opper_archambeau
-# m = gpflow.models.VGP_opper_archambeau(X, Y,
-#                       kern=CustomMatrix(X.shape[1],X,K),
-#                       likelihood=gpflow.likelihoods.Bernoulli())
- # m = gpflow.models.SGPMC(X[:,None], Y[:,None],
-
-# kk= gpflow.kernels.RBF(28**2)
-#
-# kk
-# kk.compute_K(X[:10],X[:10])
-
-# import imp; import custom_kernel_gpflow; imp.reload(custom_kernel_gpflow); from custom_kernel_gpflow import CustomMatrix
-# kkk = CustomMatrix(X.shape[1],X,K)
-
-# X[:10].shape
-# kkk.compute_K(X[:10],X[:10])
-
-m = gpflow.models.GPMC(X.astype(np.float64), Y,
-    kern=CustomMatrix(X.shape[1],X,K),
-    # kern=gpflow.kernels.RBF(28*28),
-    likelihood=gpflow.likelihoods.Bernoulli(),)
-    # Z=X[::5].copy())
-
-
-print(m)
-
-# next(m.parameters)
-
-#### MCMC
-#%%
-
-m.compile()
-
-# o = gpflow.train.AdamOptimizer(0.01)
-# o.minimize(m, maxiter=15) # start near MAP
-
-s = gpflow.train.HMC()
-# for i in range(2):
-samples = s.sample(m, 100, epsilon=1e-3, lmax=10, lmin=5, thin=5, logprobs=False)#, verbose=True)
-
-samples["GPMC/V"][9]
-
-
-samples_of_V = samples["GPMC/V"]
-
-sess = gpflow.get_default_session()
-m.anchor(m.enquire_session())
-
-# m.V.read_value()
-
-loglik_samples = [sess.run(m._build_likelihood(), {m.V.constrained_tensor: v}) for v in samples_of_V]
-
-#alternative:
-loglik_samples = []
-for i, s in samples.iterrows():
-    m.assign(s)
-    loglik_samples.append(m.compute_log_likelihood())
-
-loglik_samples
-
-logPU = np.mean(loglik_samples)
-logPU
-
-# sess.run(m._build_likelihood())
-# sess.run(m.likelihood_tensor)
-
-# m.compute_log_likelihood()
-
-# m.predict_y(test_images[0])
 
 ##################### generror bounds
 
@@ -184,6 +197,7 @@ logPU
 # mean, var = m._raw_predict(Xfull[-2:-1])
 
 p = m2.predict(test_images)[0].squeeze()
+p = m.predict_y(test_images)[0].squeeze()
 
 pdiscrete = p>0.5
 

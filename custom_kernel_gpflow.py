@@ -137,9 +137,8 @@ class CustomMatrix(gpflow.kernels.Kernel):
         #     return NotImplementedError
     # @Cache_this(limit=3, ignore_args=())
     def Kdiag(self,X):
-        # K = kernel_matrix(X,X2)
-        if np.all(np.isin(X2,self.X)):
-            indices = np.prod(np.isin(self.X,X),-1).nonzero()[0]
-            return tf.constant(np.diag(self.Kmatrix)[indices])
-        else:
-            return np.diag(kernel_matrix(X))
+        def index1d(t):
+            return tf.reduce_min(tf.where(tf.reduce_all(tf.equal(t,self.X),-1)))
+        indices = tf.map_fn(index1d, X, dtype=tf.int64)
+        indices = tf.reshape(indices,(-1,1))
+        return tf.gather_nd(tf.linalg.tensor_diag_part(self.Kmatrix),indices)
