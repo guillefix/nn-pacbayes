@@ -9,5 +9,5 @@ py=/usr/bin/python3
 $py generate_NN_arch.py $@
 $py generate_inputs_sample.py $@
 mpiexec -n 1 $py compute_kernel_and_bound.py $@
-$py NN_train.py $@
+#$py NN_train.py $@
 
