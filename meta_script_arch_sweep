@@ -7,8 +7,8 @@ dataset=cifar
 #net=vgg16 
 L=1 
 prefix=arch_sweep
-sigmaw=10.0 
-sigmab=10.0 
+sigmaw=5.0 
+sigmab=5.0 
 
 n_gpus=8
 c=0
@@ -16,7 +16,9 @@ c=0
 pool=avg
 
 #for c in 0.7 0.8 0.9 1 2 3 4 5; do
-for net in vgg19 vgg16 resnet50 resnet101 resnet152 resnetv2_50 resnetv2_101 resnetv2_152 resnext50 resnext101 densenet121 densenet169 densenet201 mobilenetv2 nasnet; do 
+#for net in vgg19 vgg16 resnet50 resnet101 resnet152 resnetv2_50 resnetv2_101 resnetv2_152 resnext50 resnext101 densenet121 densenet169 densenet201 mobilenetv2 nasnet; do 
+for net in vgg19 vgg16 resnet50 resnet101 resnet152 resnetv2_50 resnetv2_101 resnetv2_152; do 
+#for net in resnext50 resnext101 densenet121 densenet169 densenet201 mobilenetv2 nasnet; do 
     ./script2 --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training -sigmaw $sigmaw -sigmab $sigmab --confusion $c --ngpus $n_gpus --compute_bound --pooling $pool --n_samples_repeats 2.0 --use_empirical_K
 	# ./$py NN_train.py --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training -sigmaw $sigmaw -sigmab $sigmab --confusion $c --ngpus $n_gpus --compute_bound --pooling $pool --n_samples_repeats 2.0 --use_empirical_K
 done
