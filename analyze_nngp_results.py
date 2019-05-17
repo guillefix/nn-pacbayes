@@ -1,15 +1,17 @@
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 
 results_folder = "results/results_confsweep/"
 results_folder = "./"
 # prefix = "wronglabel1"
-prefix = "1"
-prefix = "smalldatabigconfusion" # has wrong (opposite) label too.
-prefix = "randomlabelconfusion"
-prefix = "randomlabelbiggerdata"
-prefix = "new_sigmas_"
-prefix = "layer_sweep"
+# prefix = "1"
+# prefix = "smalldatabigconfusion" # has wrong (opposite) label too.
+# prefix = "randomlabelconfusion"
+# prefix = "randomlabelbiggerdata"
+# prefix = "new_sigmas_"
+# prefix = "layer_sweep"
+prefix = "arch_sweep"
 
 training_results = pd.read_csv(results_folder+prefix+"nn_training_results.txt",comment="#", header='infer',sep="\t")
 bounds = pd.read_csv(results_folder+prefix+"bounds.txt",comment="#", header='infer',sep="\t")
@@ -28,7 +30,6 @@ training_results["m"].unique()
 #%%
 ### CONFUSION
 
-import matplotlib.pyplot as plt
 %matplotlib
 
 network = "cnn"
@@ -110,6 +111,27 @@ filtered_bounds = filtered_bounds.sort_values(by="number_layers").groupby("numbe
 filtered_true_errors["train_acc"]
 plt.plot(filtered_true_errors["number_layers"],filtered_true_errors["test_error"], label=dataset+" "+network+" error")
 plt.plot(filtered_bounds["number_layers"],filtered_bounds["bound"], label=dataset+" "+network+" PAC-Bayes bound")
+
+#%%
+
+### ARCHS
+%matplotlib
+
+training_results["network"].unique()
+bounds["network"].unique()
+bounds["sigmab"]
+bounds["sigmaw"]
+training_results["value"] = "True error"
+bounds["value"] = "Bound"
+bounds["test_error"] = bounds["bound"]
+combined_data = pd.concat([training_results,bounds])
+
+plt.bar(bounds["network"].unique(),bounds["bound"])
+import seaborn as sns
+g = sns.catplot(x="network", y="test_error", hue="value", data=combined_data,
+                height=6, kind="bar", palette="muted")
+g.despine(left=True)
+g.set_ylabels("Generalization error")
 
 
 ###############

@@ -122,9 +122,10 @@ o.minimize(m, maxiter=5) # start near MAP
 
 s = gpflow.train.HMC()
 # for i in range(2):
-samples = s.sample(m, 100, epsilon=1e-2, lmax=15, lmin=5, thin=5, logprobs=False)#, verbose=True)
+samples = s.sample(m, 500, epsilon=2e-3, lmax=20, lmin=5, thin=25, logprobs=False)#, verbose=True)
 
-samples["GPMC/V"][18]
+samples["GPMC/V"][9]
+samples["GPMC/V"][0]
 # samples_of_V = samples["GPMC/V"]
 # sess = gpflow.get_default_session()
 # m.V.read_value()
@@ -133,6 +134,8 @@ samples["GPMC/V"][18]
 # m.anchor(m.enquire_session())
 loglik_samples = []
 ps = []
+# for i, V in samples.iterrows():
+#     print(V)
 for i, V in samples.iterrows():
     m.assign(V)
     loglik_samples.append(m.compute_log_likelihood())
@@ -148,3 +151,33 @@ print(ps)
 ps.shape
 p = np.mean(ps,axis=0)
 print(p)
+
+pdiscrete = p>0.5
+
+mean_errors = (p**(1-test_ys))*((1-p)**(test_ys))
+mean_error = np.mean(mean_errors)
+mean_error #0.20
+
+mean_errors = (pdiscrete**(1-test_ys))*((1-pdiscrete)**(test_ys))
+mean_error = np.mean(mean_errors)
+mean_error #0.14
+
+from GP_prob_gpy import GP_prob
+# logPU = GP_prob(K,X,Y)
+
+delta = 2**-10
+bound = (-logPU+2*np.log(total_samples)+1-np.log(delta))/total_samples
+# bound = (-logPU)/total_samples
+bound = 1-np.exp(-bound)
+bound
+
+#%%
+
+import matplotlib.pyplot as plt
+%matplotlib
+plt.matshow(test_images[1].reshape((28,28)))
+plt.matshow(Xfull[-500].reshape((28,28)))
+test_ys[1]
+
+
+#%%
