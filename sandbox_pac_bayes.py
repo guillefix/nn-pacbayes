@@ -91,6 +91,7 @@ m = GPy.core.GP(X=X,
                 likelihood=lik)
 
 m.log_likelihood()
+print(m.log_likelihood())
 
 mean, A = m._raw_predict(test_images)
 
