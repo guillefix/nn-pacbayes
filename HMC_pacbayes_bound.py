@@ -14,7 +14,8 @@ kernel_folder = "kernels/"
 # whitening = False
 # number_layers = 4
 
-# python3 generate_inputs_sample.py --m 10 --dataset mnist --sigmaw 10.0 --sigmab 10.0 --network fc --prefix test --random_labels --training --number_layers 1
+#RUN this if no data file found
+# python3 generate_inputs_sample.py --m 100 --dataset mnist --sigmaw 10.0 --sigmab 10.0 --network fc --prefix test --random_labels --training --number_layers 1
 FLAGS = {}
 FLAGS['m'] = 100
 FLAGS['number_inits'] = 1
@@ -70,6 +71,34 @@ K = Kfull[0:m,0:m]
 # filename += "kernel.npy"
 # np.save(open(filename,"wb"),Kfull)
 #
+
+#%%
+
+### trying TF prob now
+import tensorflow_probability as tfp
+
+tfd = tfp.distributions
+
+init_f = tf.zeros((m,))
+P = tfd.MultivariateNormalFullCovariance(loc=tf.zeros_like(init_f),covariance_matrix=K)
+
+def unnormalized_posterior_log_prob(f):
+    return P.log_prob(f)
+
+sample_chain = tfp.mcmc.sample_chain
+_, kernel_results = sample_chain(
+        num_results=num_results,
+        num_burnin_steps=num_burnin_steps,
+        current_state=(
+            init_f,
+        ),
+        kernel=tfp.mcmc.HamiltonianMonteCarlo(
+            target_log_prob_fn=unnormalized_posterior_log_prob,
+            step_size=step_size,
+            num_leapfrog_steps=num_leapfrog_steps))
+
+
+##################################
 
 ### trying gpflow now
 #%%

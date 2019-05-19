@@ -15,19 +15,33 @@ def main(_):
     globals().update(FLAGS)
 
     if dataset == "cifar":
-            (train_images,train_labels),(test_images,test_labels) = pickle.load(open(datasets_folder+"cifar10_dataset.p","rb"))
-            train_labels = [label[0] for label in train_labels]
-            test_labels = [label[0] for label in test_labels]
+        (train_images,train_labels),(test_images,test_labels) = pickle.load(open(datasets_folder+"cifar10_dataset.p","rb"))
+        train_labels = [label[0] for label in train_labels]
+        test_labels = [label[0] for label in test_labels]
+        num_classes = 10
     elif dataset == "mnist":
-            (train_images,train_labels),(test_images,test_labels) = pickle.load(open(datasets_folder+"mnist_dataset.p","rb"))
-            train_images = np.expand_dims(train_images,-1)
-            test_images = np.expand_dims(test_images,-1)
+        (train_images,train_labels),(test_images,test_labels) = pickle.load(open(datasets_folder+"mnist_dataset.p","rb"))
+        num_classes = 10
     elif dataset == "mnist-fashion":
-            (train_images,train_labels),(test_images,test_labels) = pickle.load(open(datasets_folder+"mnist_fashion_dataset.p","rb"))
-            train_images = np.expand_dims(train_images,-1)
-            test_images = np.expand_dims(test_images,-1)
+        (train_images,train_labels),(test_images,test_labels) = pickle.load(open(datasets_folder+"mnist_fashion_dataset.p","rb"))
+        num_classes = 10
+    elif dataset == "KMNIST":
+        dataset = torchvision.datasets.KMNIST("./datasets",download=True)
+        m=ceil(dataset.data.shape[0]*5/6)
+        (train_images,train_labels),(test_images,test_labels) = (dataset.data[:m], dataset.targets),(dataset.data[m:],dataset.targets)
+        num_classes = 10
+    elif dataset == "EMNIST":
+        dataset = torchvision.datasets.EMNIST("./datasets",download=True)
+        m=ceil(dataset.data.shape[0]*5/6)
+        (train_images,train_labels),(test_images,test_labels) = (dataset.data[:m], dataset.targets),(dataset.data[m:],dataset.targets)
+        num_classes = 62
+
     else:
             raise NotImplementedError
+
+    if dataset in ["mnist","mnist-fashion","KMNIST","EMNIST"]:
+        train_images = np.expand_dims(train_images,-1)
+        test_images = np.expand_dims(test_images,-1)
 
     if network != "fc":
         image_size = train_images.shape[1]
@@ -111,15 +125,15 @@ def main(_):
                     if np.random.rand() < label_corruption:
                         return np.random.choice([0,1])
                     else:
-                        return float((label>=5))
+                        return float((label>=ceil(num_classes/2)))
                 else:
                     if np.random.rand() < label_corruption:
                         return np.random.choice([-1.0,1.0])
                     else:
-                        return float((label>=5))*2.0-1
+                        return float((label>=ceil(num_classes/2)))*2.0-1
             else:
                 if np.random.rand() < label_corruption:
-                    return np.random.choice(range(10))
+                    return np.random.choice(range(num_classes))
                 else:
                     return float(label)
 

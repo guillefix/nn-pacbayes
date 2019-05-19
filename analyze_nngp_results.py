@@ -10,8 +10,8 @@ results_folder = "./"
 # prefix = "randomlabelconfusion"
 # prefix = "randomlabelbiggerdata"
 # prefix = "new_sigmas_"
-# prefix = "layer_sweep"
-prefix = "arch_sweep"
+prefix = "layer_sweep"
+# prefix = "arch_sweep"
 
 training_results = pd.read_csv(results_folder+prefix+"nn_training_results.txt",comment="#", header='infer',sep="\t")
 bounds = pd.read_csv(results_folder+prefix+"bounds.txt",comment="#", header='infer',sep="\t")
@@ -33,11 +33,12 @@ training_results["m"].unique()
 %matplotlib
 
 network = "cnn"
-network = "fc"
-# dataset = "mnist"
+# network = "fc"
+dataset = "mnist"
 training_samples = 10000
 # training_samples = 500
-number_layers = 1
+# number_layers = 1
+number_layers = 4
 # number_layers = 32
 # training_results[(training_results["dataset"]==dataset) & (training_results["network"]==network)]
 # training_results
@@ -45,7 +46,7 @@ number_layers = 1
 filtered_true_errors = training_results[(training_results["dataset"]==dataset) & (training_results["network"]==network) & (training_results["m"]==training_samples)  & (training_results["number_layers"]==number_layers)]
 filtered_bounds = bounds[(bounds["dataset"]==dataset) & (bounds["network"]==network) & (bounds["m"]==training_samples) & (bounds["number_layers"]==number_layers)]
 
-filtered_true_errors = filtered_true_errors.sort_values(by="confusion").groupby("confusion",as_index=False).mean()
+filtered_true_errors = filtered_true_errors[filtered_true_errors["confusion"]<=3].sort_values(by="confusion").groupby("confusion",as_index=False).mean()
 filtered_bounds = filtered_bounds.sort_values(by="confusion").groupby("confusion",as_index=False).mean()
 
 plt.plot(filtered_true_errors["confusion"],filtered_true_errors["test_error"], label=dataset+" "+network+" error")
@@ -104,8 +105,9 @@ training_samples = 10000
 training_results["pooling"].unique()
 bounds["pooling"].unique()
 training_results["number_layers"].unique()
-filtered_true_errors = training_results[(training_results["dataset"]==dataset) & (training_results["network"]==network) & (training_results["m"]==training_samples)]
-filtered_bounds = bounds[(bounds["dataset"]==dataset) & (bounds["network"]==network) & (bounds["m"]==training_samples)]
+pooling = "max"
+filtered_true_errors = training_results[(training_results["dataset"]==dataset) & (training_results["network"]==network) & (training_results["m"]==training_samples) & (training_results["pooling"]==pooling)]
+filtered_bounds = bounds[(bounds["dataset"]==dataset) & (bounds["network"]==network) & (bounds["m"]==training_samples) & (bounds["pooling"]==pooling)]
 filtered_true_errors = filtered_true_errors.sort_values(by="number_layers").groupby("number_layers",as_index=False).mean()
 filtered_bounds = filtered_bounds.sort_values(by="number_layers").groupby("number_layers",as_index=False).mean()
 filtered_true_errors["train_acc"]

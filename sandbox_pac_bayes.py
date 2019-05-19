@@ -228,3 +228,23 @@ test_ys[1]
 
 
 #%%
+
+import torchvision
+import numpy as np
+from math import ceil
+
+dataset = torchvision.datasets.KMNIST("./datasets",download=True)
+dataset = torchvision.datasets.EMNIST("./datasets",download=True,split="byclass")
+m=ceil(dataset.data.shape[0]*5/6)
+(train_images,train_labels),(test_images,test_labels) = (dataset.data[:m], dataset.targets),(dataset.data[m:],dataset.targets)
+
+train_images.shape
+
+# dataset.test_data.shape
+# dataset.data.shape
+
+import matplotlib.pyplot as plt
+import random
+plt.matshow(train_images[random.randint(0,m-1)])
+
+ceil(len(np.unique(train_labels))/2)
