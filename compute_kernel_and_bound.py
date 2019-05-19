@@ -2,6 +2,7 @@ import numpy as np
 import tensorflow as tf
 import keras
 import pickle
+import os
 
 data_folder = "data/"
 kernel_folder = "kernels/"
@@ -22,6 +23,7 @@ def main(_):
     print(rank)
 
     config = tf.ConfigProto()
+    os.environ["CUDA_VISIBLE_DEVICES"]=str((rank)%n_gpus)
     # config.gpu_options.per_process_gpu_memory_fraction = 0.1
     config.gpu_options.allow_growth = True
 
@@ -33,7 +35,8 @@ def main(_):
 
     from utils import load_data,load_model,load_kernel
     train_images,flat_train_images,ys,_,_ = load_data(FLAGS)
-    train_images = tf.constant(train_images)
+    #print(train_images)
+    #train_images = tf.constant(train_images)
     arch_json_string = load_model(FLAGS)
 
     image_size = train_images.shape[1]
@@ -48,7 +51,7 @@ def main(_):
         from math import ceil
         print("n_samples_repeats",n_samples_repeats)
         print(ceil(int(train_images.shape[0])*n_samples_repeats))
-        K = empirical_K(arch_json_string,train_images,ceil(int(train_images.shape[0])*n_samples_repeats),sigmaw=sigmaw,sigmab=sigmab)
+        K = empirical_K(arch_json_string,train_images,ceil(int(train_images.shape[0])*n_samples_repeats),sigmaw=sigmaw,sigmab=sigmab,n_gpus=n_gpus)
     if rank == 0:
         if not use_empirical_K:
             if network=="cnn":

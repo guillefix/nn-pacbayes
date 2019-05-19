@@ -11,7 +11,9 @@ sigmaw=10.0
 sigmab=10.0 
 pool=none
 
+ngpus=1
+
 
 for c in 4 5; do
-    ./script2 --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training -sigmaw $sigmaw -sigmab $sigmab --confusion $c --ngpus 8 --compute_bound --pooling $pool --n_samples_repeats 2.0 --use_empirical_K
+    ./script2 --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training -sigmaw $sigmaw -sigmab $sigmab --confusion $c --n_gpus $ngpus --compute_bound --pooling $pool --n_samples_repeats 2.0 --use_empirical_K
 done

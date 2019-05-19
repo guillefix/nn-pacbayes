@@ -15,7 +15,7 @@ data_folder = "data/"
 kernel_folder = "kernels/"
 results_folder = "results/"
 
-def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0):
+def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_gpus=1):
 
     from mpi4py import MPI
     comm = MPI.COMM_WORLD
@@ -24,15 +24,16 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0):
     print(rank)
     num_tasks = number_samples
 
-    from tensorflow.python.client import device_lib
+    #from tensorflow.python.client import device_lib
+    #local_device_protos = device_lib.list_local_devices()
+    #print(local_device_protos)
+    #def get_available_gpus():
+    #    local_device_protos = device_lib.list_local_devices()
+    #    return [x.name for x in local_device_protos if x.device_type == 'GPU']
 
-    def get_available_gpus():
-        local_device_protos = device_lib.list_local_devices()
-        return [x.name for x in local_device_protos if x.device_type == 'GPU']
-
-    num_gpus = len(get_available_gpus())
-    # num_gpus = n_gpus
-    print("num_gpus",num_gpus)
+    #num_gpus = len(get_available_gpus())
+    #num_gpus = n_gpus
+    #print("num_gpus",num_gpus)
 
     num_tasks_per_job = num_tasks//size
     tasks = list(range(rank*num_tasks_per_job,(rank+1)*num_tasks_per_job))
@@ -40,7 +41,7 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0):
     if rank < num_tasks%size:
         tasks.append(size*num_tasks_per_job+rank)
 
-    os.environ["CUDA_VISIBLE_DEVICES"]=str(rank%num_gpus)
+    #os.environ["CUDA_VISIBLE_DEVICES"]=str(rank%num_gpus)
 
     # config = tf.ConfigProto()
     # if num_gpus > 0:
@@ -87,8 +88,9 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0):
         # print(index)
         reset_weights(model)
         #model.save_weights("sampled_nets/"+str(index)+"_"+json_string_filename+".h5")
-        #outputs = model.predict(data,batch_size=data.shape[0],steps=1)
-        outputs = model.predict(data,steps=1)
+        #outputs = model.predict(data,batch_size=data.shape[0])
+        #outputs = model.predict(data,steps=1)
+        outputs = model.predict(data)
         keras.backend.clear_session()
         # print(outputs)
         fs.append(outputs)

@@ -20,7 +20,7 @@ def main(_):
     size = comm.Get_size()
 
     import os
-    os.environ["CUDA_VISIBLE_DEVICES"]=str(rank)
+    os.environ["CUDA_VISIBLE_DEVICES"]=str(rank+1)
 
     from tensorflow import keras
     # import keras
