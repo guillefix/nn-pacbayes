@@ -3,6 +3,7 @@ import numpy as np
 import tensorflow as tf
 import keras
 import pickle
+import torchvision
 
 data_folder = "data/"
 datasets_folder = "datasets/"
@@ -13,6 +14,7 @@ def main(_):
     from utils import preprocess_flags
     FLAGS = preprocess_flags(FLAGS)
     globals().update(FLAGS)
+    from math import ceil
 
     if dataset == "cifar":
         (train_images,train_labels),(test_images,test_labels) = pickle.load(open(datasets_folder+"cifar10_dataset.p","rb"))
@@ -26,14 +28,15 @@ def main(_):
         (train_images,train_labels),(test_images,test_labels) = pickle.load(open(datasets_folder+"mnist_fashion_dataset.p","rb"))
         num_classes = 10
     elif dataset == "KMNIST":
-        dataset = torchvision.datasets.KMNIST("./datasets",download=True)
-        m=ceil(dataset.data.shape[0]*5/6)
-        (train_images,train_labels),(test_images,test_labels) = (dataset.data[:m], dataset.targets),(dataset.data[m:],dataset.targets)
+        d = torchvision.datasets.KMNIST("./datasets",download=True)
+        mm = ceil(d.data.shape[0]*5/6)
+        (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
         num_classes = 10
     elif dataset == "EMNIST":
-        dataset = torchvision.datasets.EMNIST("./datasets",download=True)
-        m=ceil(dataset.data.shape[0]*5/6)
-        (train_images,train_labels),(test_images,test_labels) = (dataset.data[:m], dataset.targets),(dataset.data[m:],dataset.targets)
+        d = torchvision.datasets.EMNIST("./datasets",download=True,split="byclass")
+        print(d)
+        mm = ceil(d.data.shape[0]*5/6)
+        (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
         num_classes = 62
 
     else:

@@ -45,6 +45,12 @@ def main(_):
     elif dataset == "mnist-fashion":
             image_size=28
             number_channels=1
+    elif dataset == "KMNIST":
+            image_size=28
+            number_channels=1
+    elif dataset == "EMNIST":
+            image_size=28
+            number_channels=1
     else:
             raise NotImplementedError
 
