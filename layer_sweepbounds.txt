@@ -80,3 +80,5 @@ mnist	cnn	10000	0.0	0.0	10	1.0	1.0	True	none	0000000000	False	True	1	0.119100738
 mnist	cnn	10000	0.0	0.0	10	1.0	1.0	True	none	0000000000	False	True	1	0.1190541605392037
 #dataset	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound
 mnist	cnn	10000	0.0	0.0	10	1.0	1.0	True	none	0000000000	False	True	1	0.11600486725695791
+#dataset	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound
+mnist	cnn	10000	0.0	0.0	1	1.0	1.0	True	max	0	False	True	8	0.27194900260806054
