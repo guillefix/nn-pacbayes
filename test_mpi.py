@@ -11,7 +11,7 @@ n_gpus=8
 config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
 config.log_device_placement = False  # to log device placement (on which device the operation ran)
-os.environ["CUDA_VISIBLE_DEVICES"]=str((rank)%n_gpus)
+os.environ["CUDA_VISIBLE_DEVICES"]=str((rank+1)%n_gpus)
 
 sess = tf.Session(config=config)
 

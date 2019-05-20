@@ -57,3 +57,7 @@ mnist	fc	10000	0.0	2.0	1	10.0	10.0	True	none	0	False	True	1	0.5808594037949322
 mnist	fc	10000	0.0	3.0	1	10.0	10.0	True	none	0	False	True	1	0.6339044951564481
 #dataset	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound
 mnist	fc	10000	0.0	3.0	1	10.0	10.0	True	none	0	False	True	1	0.6354213910954103
+#dataset	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound
+mnist	cnn	10000	0.0	1.0	4	1.0	1.0	True	none	0000	False	True	1	0.5010504986185929
+#dataset	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound
+mnist	cnn	10000	0.0	2.0	4	1.0	1.0	True	none	0000	False	True	1	0.6077192748269993

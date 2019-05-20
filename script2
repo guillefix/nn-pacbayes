@@ -6,8 +6,10 @@
 #py=~/anaconda3/bin/python3
 py=python3
 
-#$py generate_NN_arch.py $@
-#$py generate_inputs_sample.py $@
-mpiexec -n 8 $py compute_kernel_and_bound.py $@
-#$py NN_train.py $@
+#echo $n_gpus
+
+$py generate_NN_arch.py $@
+$py generate_inputs_sample.py $@
+mpiexec -n $n_gpus $py compute_kernel_and_bound.py $@
+$py NN_train.py $@
 

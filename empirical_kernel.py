@@ -15,7 +15,7 @@ data_folder = "data/"
 kernel_folder = "kernels/"
 results_folder = "results/"
 
-def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_gpus=1):
+def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_gpus=1,sess=None):
 
     from mpi4py import MPI
     comm = MPI.COMM_WORLD
@@ -41,21 +41,22 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
     if rank < num_tasks%size:
         tasks.append(size*num_tasks_per_job+rank)
 
-    #os.environ["CUDA_VISIBLE_DEVICES"]=str(rank%num_gpus)
+    #os.environ["CUDA_VISIBLE_DEVICES"]=str(rank%n_gpus)
+    #print(rank%n_gpus)
 
-    # config = tf.ConfigProto()
-    # if num_gpus > 0:
-    #     #config = tf.ConfigProto(device_count={'GPU': rank%num_gpus})
-    #     #config.device_count = {'GPU': rank%num_gpus}
-    #     # config.gpu_options.allow_growth = True
-    #     config.gpu_options.per_process_gpu_memory_fraction = 0.5
-    #     #config.gpu_options.visible_device_list = str(rank%num_gpus)
-    #
-    # #tf.enable_eager_execution(config=config)
-    # set_session = keras.backend.set_session
-    # config.log_device_placement = False  # to log device placement (on which device the operation ran)
-    # sess = tf.Session(config=config)
-    # set_session(sess)  # set this TensorFlow session as the default session for Keras
+#    config = tf.ConfigProto()
+#    if n_gpus > 0:
+#        #config = tf.ConfigProto(device_count={'GPU': rank%num_gpus})
+#        #config.device_count = {'GPU': rank%num_gpus}
+#        # config.gpu_options.allow_growth = True
+#        #config.gpu_options.per_process_gpu_memory_fraction = 0.5
+#        config.gpu_options.visible_device_list = str(rank%n_gpus)
+#    
+#    #tf.enable_eager_execution(config=config)
+    #set_session = keras.backend.set_session
+#    config.log_device_placement = False  # to log device placement (on which device the operation ran)
+#    sess = tf.Session(config=config)
+    #set_session(sess)  # set this TensorFlow session as the default session for Keras
 
     #data = tf.constant(data)
 

@@ -22,9 +22,9 @@ def main(_):
     size = comm.Get_size()
     print(rank)
 
+    os.environ["CUDA_VISIBLE_DEVICES"]=str((rank+1)%n_gpus)
     config = tf.ConfigProto()
-    os.environ["CUDA_VISIBLE_DEVICES"]=str((rank)%n_gpus)
-    # config.gpu_options.per_process_gpu_memory_fraction = 0.1
+    #config.gpu_options.per_process_gpu_memory_fraction = 0.1
     config.gpu_options.allow_growth = True
 
     #tf.enable_eager_execution(config=config)
@@ -51,7 +51,7 @@ def main(_):
         from math import ceil
         print("n_samples_repeats",n_samples_repeats)
         print(ceil(int(train_images.shape[0])*n_samples_repeats))
-        K = empirical_K(arch_json_string,train_images,ceil(int(train_images.shape[0])*n_samples_repeats),sigmaw=sigmaw,sigmab=sigmab,n_gpus=n_gpus)
+        K = empirical_K(arch_json_string,train_images,ceil(int(train_images.shape[0])*n_samples_repeats),sigmaw=sigmaw,sigmab=sigmab,n_gpus=n_gpus,sess=sess)
     if rank == 0:
         if not use_empirical_K:
             if network=="cnn":
