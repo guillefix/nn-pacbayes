@@ -3,14 +3,14 @@
 export PYTHONPATH="/home_directory/.local/lib/python3.5/site-packages/:/usr/local/lib/python3.5/dist-packages/"
 
 m=10000 
-dataset=EMNIST
+dataset=KMNIST
 #net=vgg16 
 net=cnn
 L=4 
 pool=none
 prefix=test_
-sigmaw=1.41421356237
-sigmab=0.1
+sigmaw=1.0
+sigmab=1.0
 
 n_gpus=1
 export n_gpus=$n_gpus

@@ -4,3 +4,7 @@ cifar	vgg16	1000	0.0	0.0	1	1.0	1.0	True	avg	0	False	True	1	0.5223142360131015
 EMNIST	cnn	10000	0.0	0.0	4	1.0	1.0	True	none	0000	False	True	1	0.33808146084007984
 #dataset	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound
 EMNIST	cnn	10000	0.0	0.0	4	1.0	1.0	True	none	0000	False	True	1	0.33203176705867854
+#dataset	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound
+EMNIST	cnn	10000	0.0	0.0	4	1.41421356237	0.1	True	none	0000	False	True	1	0.3399727358727025
+#dataset	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound
+KMNIST	cnn	10000	0.0	0.0	4	1.0	1.0	True	none	0000	False	True	1	0.23892171587178312

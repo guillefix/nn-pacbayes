@@ -9,9 +9,9 @@ prob_data = pickle.load(open("probs_0_03c_cnn_4_none_0000.p", "rb"))
 
 import pandas as pd
 
-d=pd.read_csv("/local/home/valleperez/36ve/ai/CSR/old/index_funs_probs_test_cnn_4_none_0000.txt", header=None, delim_whitespace=True,names=["index","fstring","logP"])
+d=pd.read_csv("results/index_funs_probs_new_run_cifar_cnn_4_none_0000.txt", header=None, delim_whitespace=True,names=["index","fstring","logP"])
 
-d
+d[d["index"]==d["index"].iloc[0]]
 
 csr_data
 
@@ -51,3 +51,18 @@ plt.savefig("CSRs__cnn_4_max_1111.png")
 fstrings=pickle.load(open("fstrings_0_03c_cnn_4_none_0000.p", "rb"))
 
 csr_data
+
+## ranko plotto
+
+logPs=list(d.groupby("index").mean()["logP"])
+freqs=list(d.groupby("index",as_index=False).count()["logP"])
+freqs
+
+logPs = sorted(logPs,reverse=True)
+freqs = sorted(freqs,reverse=True)
+freqs
+
+plt.plot(range(len(logPs)),logPs)
+plt.plot(range(len(freqs)),freqs)
+plt.xscale("log")
+plt.yscale("log")
