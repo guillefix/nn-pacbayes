@@ -7,7 +7,7 @@ dataset=cifar
 #net=vgg16 
 L=1 
 prefix=arch_sweep
-sigmaw=1.41421356237
+sigmaw=2.0
 sigmab=0.1
 
 n_gpus=8
