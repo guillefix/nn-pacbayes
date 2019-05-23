@@ -10,10 +10,10 @@
 #SBATCH -J arch_sweep
 
 #small for 1 gpu, big for 4 or 8
-#SBATCH --partition=small
+#SBATCH --partition=big
 
 # set number of GPUs
-#SBATCH --gres=gpu:1
+#SBATCH --gres=gpu:8
 
 # mail alert at start, end and abortion of execution
 #SBATCH --mail-type=ALL
@@ -21,7 +21,7 @@
 # send mail to this address
 #SBATCH --mail-user=guillefix@gmail.com
 
-#SBATCH --array=1-15
+#SBATCH --array=0-14
 
 #Launching the commands within script.sh
 

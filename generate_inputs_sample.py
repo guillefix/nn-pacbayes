@@ -1,9 +1,10 @@
-
 import numpy as np
 import tensorflow as tf
 import keras
 import pickle
 import torchvision
+from torchvision import transforms, utils
+
 
 data_folder = "data/"
 datasets_folder = "datasets/"
@@ -15,6 +16,15 @@ def main(_):
     FLAGS = preprocess_flags(FLAGS)
     globals().update(FLAGS)
     from math import ceil
+
+    if network in ["cnn","fc","inception_resnet_v2", "inception_v3","xception"]:
+        if network not in ["cnn","fc"]:
+            if network == "xception":
+                image_size=71
+            else:
+                image_size=75 
+    else:
+        image_size=32
 
     if dataset == "cifar":
         (train_images,train_labels),(test_images,test_labels) = pickle.load(open(datasets_folder+"cifar10_dataset.p","rb"))
@@ -28,12 +38,22 @@ def main(_):
         (train_images,train_labels),(test_images,test_labels) = pickle.load(open(datasets_folder+"mnist_fashion_dataset.p","rb"))
         num_classes = 10
     elif dataset == "KMNIST":
-        d = torchvision.datasets.KMNIST("./datasets",download=True)
+        d = torchvision.datasets.KMNIST("./datasets",download=True,
+                transform=transforms.Compose(
+                    [transforms.Resize(image_size)] if image_size is not None else []
+                ),
+            )
         mm = ceil(d.data.shape[0]*5/6)
         (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
         num_classes = 10
     elif dataset == "EMNIST":
-        d = torchvision.datasets.EMNIST("./datasets",download=True,split="byclass")
+        d = torchvision.datasets.EMNIST("./datasets",download=True,
+                transform=transforms.Compose(
+                    [transforms.ToPILImage()]+
+                    ([transforms.Resize(image_size)] if image_size is not None else [])+
+                    [transforms.ToTensor()]
+                ),
+                split="byclass")
         print(d)
         mm = ceil(d.data.shape[0]*5/6)
         (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
@@ -45,6 +65,13 @@ def main(_):
     if dataset in ["mnist","mnist-fashion","KMNIST","EMNIST"]:
         train_images = np.expand_dims(train_images,-1)
         test_images = np.expand_dims(test_images,-1)
+        if network not in ["cnn","fc"]:
+            train_images = np.tile(train_images,(1,1,1,3))
+            test_images = np.tile(test_images,(1,1,1,3))
+            train_images = np.stack([d.transform(image) for image in train_images])
+            train_images = np.transpose(train_images,(0,2,3,1))
+            test_images = np.stack([d.transform(image) for image in test_images])
+            test_images = np.transpose(test_images,(0,2,3,1))
 
     if network != "fc":
         image_size = train_images.shape[1]

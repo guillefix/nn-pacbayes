@@ -2,8 +2,9 @@
 
 export PYTHONPATH="/home_directory/.local/lib/python3.5/site-packages/:/usr/local/lib/python3.5/dist-packages/"
 
-m=10000 
-dataset=cifar
+m=10000
+#dataset=cifar
+dataset=EMNIST
 #net=vgg16 
 L=1 
 prefix=arch_sweep
@@ -11,6 +12,7 @@ sigmaw=2.0
 sigmab=0.1
 
 n_gpus=8
+#n_gpus=1
 export n_gpus=$n_gpus
 
 c=0
