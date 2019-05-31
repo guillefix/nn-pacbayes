@@ -70,17 +70,17 @@ for network in ['cnn','fc']:
     plt.close()
 
 
+%matplotlib
 colors = ['C0','C1','C2']
 for network in ['cnn','fc']:
-    fig, ax1 = plt.subplots()
+    # fig, ax1 = plt.subplots()
     for i,dataset in enumerate(["mnist","mnist-fashion","cifar"]):
         logPU = -m*bounds[network][dataset]["bound"]-np.log(1/delta)-2*np.log(m)-1
-        ax1.plot(bounds[network][dataset]["label_corruption"], logPU, c=colors[i])
-    ax1.set_xlabel("Label corruption", fontsize=16)
-    ax1.set_ylabel("logP", fontsize=16)
-    ax1.legend()
-    ax1.set_ylim([0.0, 1.0])
-    # plt.ylim([0.0, 0.8])
+        plt.plot(bounds[network][dataset]["label_corruption"], logPU, c=colors[i])
+    plt.xlabel("Label corruption", fontsize=16)
+    plt.ylabel("logP", fontsize=16)
+    plt.legend()
+    # plt.ylim([0.0, 1.0])
     if network == 'cnn':
         plt.savefig("inset_"+network+"_sigmaw_1_sigmab_1_MNIST_fashionMNIST_CIFAR_generror_vs_labelcorruption.png")
     if network == 'fc':

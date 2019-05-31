@@ -30,9 +30,6 @@ def main(_):
     keras_applications._KERAS_MODELS = keras.models
     keras_applications._KERAS_UTILS = keras.utils
     import warnings
-    bias_initializer = keras.initializers.RandomNormal(stddev=1.0)
-    # weight_initializer = keras.initializers.RandomNormal(stddev=1/np.sqrt(input_dim))
-    # keras.layers.Flatten(input_shape=(28, 28)),
 
     # %%
 
@@ -58,6 +55,11 @@ def main(_):
     image_width = image_size
     input_dim = image_height*image_width*number_channels
     set_session = keras.backend.set_session
+
+    # bias_initializer = keras.initializers.RandomNormal(stddev=1.0)
+    # weight_initializer = keras.initializers.RandomNormal(stddev=1.0/np.sqrt(input_dim))
+    bias_initializer = keras.initializers.Zeros()
+    weight_initializer = keras.initializers.glorot_uniform()
 
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True  # dynamically grow the memory used on the GPU
@@ -101,14 +103,14 @@ def main(_):
 
     elif network == "fc":
             model = keras.Sequential(
-                [ keras.layers.Dense(input_dim, activation=tf.nn.relu,input_shape=(input_dim,))
-                    # kernel_initializer=weight_initializer,
-                    # bias_initializer=bias_initializer,)
+                [ keras.layers.Dense(input_dim, activation=tf.nn.relu,input_shape=(input_dim,),#)
+                    kernel_initializer=weight_initializer,
+                    bias_initializer=bias_initializer,)
             ]
             + [
-                keras.layers.Dense(input_dim, activation=tf.nn.relu,)
-                    # kernel_initializer=weight_initializer,
-                    # bias_initializer=bias_initializer)
+                keras.layers.Dense(input_dim, activation=tf.nn.relu,#)
+                    kernel_initializer=weight_initializer,
+                    bias_initializer=bias_initializer)
                     # kernel_regularizer=keras.regularizers.l2(0.01*input_dim/(2*sigmaw**2)),
                     # bias_regularizer=keras.regularizers.l2(1/(2*sigmab**2)))
                     # kernel_regularizer=keras.regularizers.l2(0.05),
@@ -116,10 +118,9 @@ def main(_):
                     for i in range(number_layers-1)
                 ]
                 + [
-                    keras.layers.Dense(1)#activation=tf.nn.sigmoid,)
-                    # keras.layers.Dense(1,activation=tf.nn.sigmoid,)#activation=tf.nn.sigmoid,)
-                    # kernel_initializer=weight_initializer,
-                    # bias_initializer=bias_initializer,)
+                    keras.layers.Dense(1,#)#activation=tf.nn.sigmoid,)
+                    kernel_initializer=weight_initializer,
+                    bias_initializer=bias_initializer,)
                     # kernel_regularizer=keras.regularizers.l2(0.01*input_dim/(2*sigmaw**2)),
                     # bias_regularizer=keras.regularizers.l2(1/(2*sigmab**2)))
                     # kernel_regularizer=keras.regularizers.l2(0.05),

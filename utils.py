@@ -139,3 +139,40 @@ class EarlyStoppingByAccuracy(Callback):
 # FLAGS['sigmab'] =  1.0
 # FLAGS['network'] =  "cnn"
 # FLAGS['prefix'] =  "test"
+
+def get_weights(model):
+    all_parameters = model.get_weights()
+    weights = filter(lambda w: len(w.shape)>1, all_parameters)
+    return weights
+
+def get_biases(model):
+    all_parameters = model.get_weights()
+    biases = filter(lambda w: len(w.shape)==1, all_parameters)
+    return biases
+
+def measure_sigmas(model):
+    def getsigma(w):
+        shape = w.shape
+        w_flat = w.flatten()
+        return np.dot(w_flat,w_flat)*np.prod(shape[:-1]) #np.prod([])=1.0
+    def get_count(w):
+        return np.prod(w.shape)
+    weights, biases = list(get_weights(model)), list(get_biases(model))
+    w_count = np.sum([get_count(w) for w in weights])
+    b_count = np.sum([get_count(b) for b in biases])
+    varws = np.sum([getsigma(w) for w in weights])/w_count
+    varbs = np.sum([getsigma(b) for b in biases])/b_count
+    return np.sqrt(varws), np.sqrt(varbs)
+
+def get_rescaled_weights(model):
+    def get_rescaled_weight(w):
+        shape = w.shape
+        if len(shape) == 1:
+           #return tf.random.normal(shape).eval(session=sess)
+           return w
+        else:
+            return w*np.sqrt(np.prod(shape[:-1]))
+    weights, biases = get_weights(model), get_biases(model)
+    ws = [get_rescaled_weight(w) for w in weights]
+    bs = [get_rescaled_weight(w) for w in biases]
+    return ws, bs

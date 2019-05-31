@@ -232,11 +232,34 @@ test_ys[1]
 import torchvision
 import numpy as np
 from math import ceil
+from torchvision import transforms, utils
 
 dataset = torchvision.datasets.KMNIST("./datasets",download=True)
 dataset = torchvision.datasets.EMNIST("./datasets",download=True,split="byclass")
+image_size = 32
+dataset = torchvision.datasets.EMNIST("./datasets",download=True,
+                transform=transforms.Compose(
+                    [transforms.ToPILImage()]+
+                    ([transforms.Resize(image_size)] if image_size is not None else [])+
+                    [transforms.ToTensor()]
+                ),
+                split="byclass")
+
+
+data = dataset.data.unsqueeze(-1)
+a=dataset.transform(np.array(image))
+data = np.tile(data,(1,1,1,3))
+trans_images = np.stack([dataset.transform(np.array(image)) for image in data[:10]])
+trans_images.shape
+trans_images = np.transpose(trans_images,(0,2,3,1))
+trans_images[0].shape
+plt.imshow(trans_images[0])
+
+dataset.data.shape
 m=ceil(dataset.data.shape[0]*5/6)
 (train_images,train_labels),(test_images,test_labels) = (dataset.data[:m], dataset.targets),(dataset.data[m:],dataset.targets)
+
+np.tile(image,(3,1,1)).shape
 
 train_images.shape
 

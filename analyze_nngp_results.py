@@ -105,7 +105,7 @@ training_samples = 10000
 training_results["pooling"].unique()
 bounds["pooling"].unique()
 training_results["number_layers"].unique()
-pooling = "max"
+pooling = "none"
 filtered_true_errors = training_results[(training_results["dataset"]==dataset) & (training_results["network"]==network) & (training_results["m"]==training_samples) & (training_results["pooling"]==pooling)]
 filtered_bounds = bounds[(bounds["dataset"]==dataset) & (bounds["network"]==network) & (bounds["m"]==training_samples) & (bounds["pooling"]==pooling)]
 filtered_true_errors = filtered_true_errors.sort_values(by="number_layers").groupby("number_layers",as_index=False).mean()
@@ -113,6 +113,11 @@ filtered_bounds = filtered_bounds.sort_values(by="number_layers").groupby("numbe
 filtered_true_errors["train_acc"]
 plt.plot(filtered_true_errors["number_layers"],filtered_true_errors["test_error"], label=dataset+" "+network+" error")
 plt.plot(filtered_bounds["number_layers"],filtered_bounds["bound"], label=dataset+" "+network+" PAC-Bayes bound")
+plt.xlim([1,9])
+plt.xlabel("Number of layers")
+plt.ylabel("Generalization error")
+plt.legend()
+plt.savefig("generror_bound_vs_layers_cnn_max_mnist.png")
 
 #%%
 

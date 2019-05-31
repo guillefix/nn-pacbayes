@@ -8,7 +8,7 @@ import load_dataset
 #import missinglink
 #missinglink_callback = missinglink.KerasCallback()
 
-from utils import binary_crossentropy_from_logits,EarlyStoppingByAccuracy
+from utils import binary_crossentropy_from_logits,EarlyStoppingByAccuracy, get_biases, get_weights, measure_sigmas, get_rescaled_weights
 
 def main(_):
 
@@ -26,9 +26,6 @@ def main(_):
     os.environ["CUDA_VISIBLE_DEVICES"]=str(rank)
 
     from tensorflow import keras
-    # weight_initializer = keras.initializers.RandomNormal(stddev=1/np.sqrt(input_dim))
-    # bias_initializer = keras.initializers.RandomNormal(stddev=0.5)
-    # keras.layers.Flatten(input_shape=(28, 28)),
 
     callbacks = [
             EarlyStoppingByAccuracy(monitor='val_acc', value=1.0, verbose=1),
@@ -83,6 +80,13 @@ def main(_):
                       loss=binary_crossentropy_from_logits,
                       # loss_weights=[50000],
                       metrics=['accuracy'])
+        
+        if network == "fc":
+            num_filters = input_dim
+                      
+        weights, biases = get_weights(model), get_biases(model)
+        weights_norm, biases_norm = measure_sigmas(model)
+        print(weights_norm,biases_norm)
 
         # model.fit(train_images, ys, verbose=2, epochs=500)
         # print(ys)
@@ -91,17 +95,9 @@ def main(_):
         #print(np.concatenate([w.flatten() for w in model.get_weights()]).shape)
 
         '''GET DATA: weights, and errors'''
-        if network == "cnn" or network == "fc":
-            p=model.get_weights()
-            if network == "cnn":
-                weigths=np.concatenate([w.flatten() for w in p[2::2]])
-                weigths_first_layer=np.concatenate([w.flatten() for w in p[0:2:2]])
-            if network == "fc":
-                weigths=np.concatenate([w.flatten() for w in p[::2]])
-            biases=np.concatenate([b.flatten() for b in p[1::2]])
-            weights_norm = np.linalg.norm(weigths)*np.sqrt(num_filters)/(np.sqrt(len(weigths)))
-            biases_norm = np.linalg.norm(biases)/np.sqrt(len(biases))
-            print(weights_norm,biases_norm)
+        weights, biases = get_rescaled_weights(model)
+        weights_norm, biases_norm = measure_sigmas(model)
+        print(weights_norm,biases_norm)
 
         train_loss, train_acc = model.evaluate(train_images, ys)
         test_loss, test_acc = model.evaluate(test_images, test_ys)
@@ -111,8 +107,6 @@ def main(_):
         train_accs.append(train_acc)
         if network == "cnn" or network == "fc":
             weightss.append(weigths)
-            if network == "cnn":
-                weightss_first_layer.append(weigths_first_layer)
             biasess.append(biases)
             weights_norms.append(weights_norm)
             biases_norms.append(biases_norm)
@@ -123,37 +117,22 @@ def main(_):
     test_accs = comm.gather(test_accs, root=0)
     train_accs = comm.gather(train_accs, root=0)
 
-    if network == "cnn" or network == "fc":
-        weightss = comm.gather(weightss, root=0)
-        weights_norms = comm.gather(weights_norms,root=0)
-        if network == "cnn":
-            weightss_first_layer = comm.gather(weightss_first_layer, root=0)
-        biasess = comm.gather(biasess, root=0)
+    weightss = comm.gather(weightss, root=0)
+    biasess = comm.gather(biasess, root=0)
+    weights_norms = comm.gather(weights_norms,root=0)
     iterss = comm.gather(iterss, root=0)
 
     '''PROCESS COLLECTIVE DATA'''
     if rank == 0:
-        if network == "cnn" or network == "fc":
-            weightss = np.stack(weightss,axis=-1)
-            if network == "cnn":
-                weightss_first_layer = np.stack(weightss_first_layer,axis=-1)
-            biasess = np.stack(biasess,axis=-1)
-            weights_std = np.mean(np.std(weightss,axis=-1))*np.sqrt(num_filters)
-            if network == "cnn":
-                weights_first_layer_std = np.mean(np.std(weightss_first_layer,axis=-1))*np.sqrt(num_channels)
-                weights_std = np.mean([weights_first_layer_std,weights_std])
-            biases_std = np.mean(np.std(biasess,axis=-1))
-            weights_norm_mean = np.mean(weights_norms)
-            weights_norm_std = np.std(weights_norms)
-            biases_norm_mean = np.mean(biases_norm)
-            biases_norm_std = np.std(biases_norm)
-        else:
-            weights_std = -1
-            biases_std = -1
-            weights_norm_mean = -1
-            weights_norm_std = -1
-            biases_norm_mean = -1
-            biases_norm_std = -1
+        weightss = np.stack(weightss,axis=-1)
+        biasess = np.stack(biasess,axis=-1)
+        weights_std = np.mean(np.std(weightss,axis=-1))
+        biases_std = np.mean(np.std(biasess,axis=-1))
+        weights_norm_mean = np.mean(weights_norms)
+        weights_norm_std = np.std(weights_norms)
+        biases_norm_mean = np.mean(biases_norm)
+        biases_norm_std = np.std(biases_norm)
+
         test_acc = np.mean(np.array(test_accs))
         train_acc = np.mean(np.array(train_accs))
         test_acc = np.mean(np.array(test_accs))

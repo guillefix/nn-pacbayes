@@ -26,6 +26,31 @@
             ]
         },
         {
+            "name": "NN_train",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": [
+                "--number_samples",
+                "4",
+                "--m",
+                "1000",
+                "--dataset",
+                "mnist",
+                "--network",
+                "fc",
+                "--number_layers",
+                "2",
+                // "--whitening",
+                "--training",
+                "--sigmaw",
+                "1.0",
+                "--sigmab",
+                "1.0"
+            ]
+        },
+        {
             "name": "Python: Remote Attach",
             "type": "python",
             "request": "attach",
