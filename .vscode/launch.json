@@ -35,7 +35,7 @@
                 "--number_samples",
                 "4",
                 "--m",
-                "1000",
+                "100",
                 "--dataset",
                 "mnist",
                 "--network",
@@ -47,7 +47,9 @@
                 "--sigmaw",
                 "1.0",
                 "--sigmab",
-                "1.0"
+                "1.0",
+                "--number_inits",
+                "2"
             ]
         },
         {

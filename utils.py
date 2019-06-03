@@ -173,6 +173,6 @@ def get_rescaled_weights(model):
         else:
             return w*np.sqrt(np.prod(shape[:-1]))
     weights, biases = get_weights(model), get_biases(model)
-    ws = [get_rescaled_weight(w) for w in weights]
-    bs = [get_rescaled_weight(w) for w in biases]
+    ws = np.concatenate([get_rescaled_weight(w).flatten() for w in weights])
+    bs = np.concatenate([get_rescaled_weight(w).flatten() for w in biases])
     return ws, bs

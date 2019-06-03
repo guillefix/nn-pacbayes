@@ -63,8 +63,6 @@ def main(_):
     test_accs = []
     train_accs = []
     weightss = []
-    if network == "cnn":
-        weightss_first_layer = []
     biasess = []
     weights_norms = []
     biases_norms = []
@@ -105,11 +103,10 @@ def main(_):
         print('Test accuracy:', test_acc)
         test_accs.append(test_acc)
         train_accs.append(train_acc)
-        if network == "cnn" or network == "fc":
-            weightss.append(weigths)
-            biasess.append(biases)
-            weights_norms.append(weights_norm)
-            biases_norms.append(biases_norm)
+        weightss.append(weights)
+        biasess.append(biases)
+        weights_norms.append(weights_norm)
+        biases_norms.append(biases_norm)
         iterss.append(model.history.epoch[-1])
         keras.backend.clear_session()
 
@@ -124,10 +121,12 @@ def main(_):
 
     '''PROCESS COLLECTIVE DATA'''
     if rank == 0:
-        weightss = np.stack(weightss,axis=-1)
-        biasess = np.stack(biasess,axis=-1)
-        weights_std = np.mean(np.std(weightss,axis=-1))
-        biases_std = np.mean(np.std(biasess,axis=-1))
+        weightss = np.stack(sum(weightss,[]))
+        biasess = np.stack(sum(biasess,[]))
+        weights_std = np.mean(np.std(weightss,axis=0)).squeeze()
+        biases_std = np.mean(np.std(biasess,axis=0)).squeeze()
+        weights_mean = np.mean(weightss)
+        biases_mean = np.mean(biasess)
         weights_norm_mean = np.mean(weights_norms)
         weights_norm_std = np.std(weights_norms)
         biases_norm_mean = np.mean(biases_norm)
@@ -153,12 +152,12 @@ def main(_):
             file.write("#")
             for key, value in sorted(useful_flags.items()):
                 file.write("{}\t".format(key))
-            file.write("\t".join(["train_acc", "test_error","weights_std","biases_std","weights_norm_mean","weights_norm_std","biases_norm_mean","biases_norm_std","mean_iters","train_acc_std","test_acc_std"]))
+            file.write("\t".join(["train_acc", "test_error","weights_std","biases_std","weights_mean", "biases_mean", "weights_norm_mean","weights_norm_std","biases_norm_mean","biases_norm_std","mean_iters","train_acc_std","test_acc_std"]))
             file.write("\n")
             for key, value in sorted(useful_flags.items()):
                 file.write("{}\t".format(value))
-            file.write("{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:d}\t{:.4f}\t{:.4f}\n".format(train_acc, 1-test_acc,weights_std,biases_std,\
-                weights_norm_mean,weights_norm_std,biases_norm_mean,biases_norm_std,int(mean_iters),train_acc_std,test_acc_std)) #normalized to sqrt(input_dim)
+            file.write("{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:d}\t{:.4f}\t{:.4f}\n".format(train_acc, 1-test_acc,weights_std,biases_std,\
+                weights_mean,biases_mean,weights_norm_mean,weights_norm_std,biases_norm_mean,biases_norm_std,int(mean_iters),train_acc_std,test_acc_std)) #normalized to sqrt(input_dim)
     else:
         assert test_accs is None
         assert train_accs is None

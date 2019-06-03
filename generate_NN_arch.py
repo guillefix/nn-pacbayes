@@ -56,10 +56,10 @@ def main(_):
     input_dim = image_height*image_width*number_channels
     set_session = keras.backend.set_session
 
-    # bias_initializer = keras.initializers.RandomNormal(stddev=1.0)
-    # weight_initializer = keras.initializers.RandomNormal(stddev=1.0/np.sqrt(input_dim))
-    bias_initializer = keras.initializers.Zeros()
-    weight_initializer = keras.initializers.glorot_uniform()
+    bias_initializer = keras.initializers.RandomNormal(stddev=sigmab)
+    weight_initializer = keras.initializers.RandomNormal(stddev=sigmaw/np.sqrt(input_dim))
+    # bias_initializer = keras.initializers.Zeros()
+    # weight_initializer = keras.initializers.glorot_uniform()
 
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True  # dynamically grow the memory used on the GPU
