@@ -147,6 +147,9 @@ def main(_):
 
     #corrupting images, and adding confusion data
 
+    def binarize(label):
+        return label>=ceil(num_classes/2)
+
     # %%
     if training:
         def corrupted_label(label,label_corruption,zero_one=False,binarized=True):
@@ -155,12 +158,12 @@ def main(_):
                     if np.random.rand() < label_corruption:
                         return np.random.choice([0,1])
                     else:
-                        return float((label>=ceil(num_classes/2)))
+                        return float(binarize(label))
                 else:
                     if np.random.rand() < label_corruption:
                         return np.random.choice([-1.0,1.0])
                     else:
-                        return float((label>=ceil(num_classes/2)))*2.0-1
+                        return float(binarize(label))*2.0-1
             else:
                 if np.random.rand() < label_corruption:
                     return np.random.choice(range(num_classes))
@@ -170,7 +173,7 @@ def main(_):
         if random_labels:
     	    ys = [[corrupted_label(label,label_corruption,zero_one=True,binarized=binarized)] for label in train_labels[:m]] + [[corrupted_label(label,1.0,zero_one=True,binarized=binarized)] for label in train_labels[m:]]
         else:
-    	    ys = [[corrupted_label(label,label_corruption,zero_one=True,binarized=binarized)] for label in train_labels[:m]] + [[float((label<5))] for label in train_labels[m:]]
+    	    ys = [[corrupted_label(label,label_corruption,zero_one=True,binarized=binarized)] for label in train_labels[:m]] + [[float(not binarize(label))] for label in train_labels[m:]]
 
         test_ys = np.array([corrupted_label(label,label_corruption,zero_one=True,binarized=binarized) for label in test_labels])
 

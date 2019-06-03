@@ -7,7 +7,7 @@
 #SBATCH --time=24:00:00
 
 # set name of job
-#SBATCH -J arch_sweep
+#SBATCH -J poolsweep
 
 #small for 1 gpu, big for 4 or 8
 #SBATCH --partition=big
@@ -21,19 +21,31 @@
 # send mail to this address
 #SBATCH --mail-user=guillefix@gmail.com
 
-#SBATCH --array=0-14
+#SBATCH --array=0-2
 
 #Launching the commands within script.sh
 
-archs=(vgg19 vgg16 resnet50 resnet101 resnet152 resnetv2_50 resnetv2_101 resnetv2_152 resnext50 resnext101 densenet121 densenet169 densenet201 mobilenetv2 nasnet)
+#archs=(vgg19 vgg16 resnet50 resnet101 resnet152 resnetv2_50 resnetv2_101 resnetv2_152 resnext50 resnext101 densenet121 densenet169 densenet201 mobilenetv2 nasnet)
+#
+#echo ${archs[$SLURM_ARRAY_TASK_ID]}.sh
+#rm ${archs[$SLURM_ARRAY_TASK_ID]}.sh
+#echo '#!/bin/bash' > ${archs[$SLURM_ARRAY_TASK_ID]}.sh
+#echo './meta_script_arch_sweep '${archs[$SLURM_ARRAY_TASK_ID]} >> ${archs[$SLURM_ARRAY_TASK_ID]}.sh
+#chmod +x ${archs[$SLURM_ARRAY_TASK_ID]}.sh
 
-echo ${archs[$SLURM_ARRAY_TASK_ID]}.sh
-rm ${archs[$SLURM_ARRAY_TASK_ID]}.sh
-echo '#!/bin/bash' > ${archs[$SLURM_ARRAY_TASK_ID]}.sh
-echo './meta_script_arch_sweep '${archs[$SLURM_ARRAY_TASK_ID]} >> ${archs[$SLURM_ARRAY_TASK_ID]}.sh
-chmod +x ${archs[$SLURM_ARRAY_TASK_ID]}.sh
+#vars=(0.1 0.3 0.6 1.0 1.3 1.6 2.0 2.3 2.6 3.0)
+vars=(none max avg)
+
+net=cnn
+
+echo ${vars[$SLURM_ARRAY_TASK_ID]}.sh
+filename=scripts/${net}_${vars[$SLURM_ARRAY_TASK_ID]}.sh
+rm $filename
+echo '#!/bin/bash' > $filename
+echo './meta_script_arch_sweep '${net}' '${vars[$SLURM_ARRAY_TASK_ID]} >> $filename
+chmod +x $filename
 
 #/jmain01/apps/docker/tensorflow-batch -v 18.07-py3 -c ./densenet201.sh
 #/jmain01/apps/docker/tensorflow-batch -v 18.07-py3 -c ./meta_script
 #/jmain01/apps/docker/tensorflow-batch -v 18.07-py3 -c ./meta_script_layer_sweep
-/jmain01/apps/docker/tensorflow-batch -v 18.07-py3 -c ${archs[$SLURM_ARRAY_TASK_ID]}.sh
+/jmain01/apps/docker/tensorflow-batch -v 18.07-py3 -c $filename
