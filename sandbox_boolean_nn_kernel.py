@@ -28,7 +28,7 @@ target_fun = "110111011111111111111101111111111111111111111111111111111111111111
 # target_fun = "00000000100000000000000010100000000000000000000000000000000000000000000010100000000000001011000000000000000000000000000000000000" #63.0
 
 input_dim = 7
-number_layers=2
+number_layers=5
 sigmaw=1.0
 sigmab=1.0
 K = kernel_matrix(inputs,number_layers=number_layers,sigmaw=sigmaw,sigmab=sigmab)
@@ -37,6 +37,28 @@ K = kernel_matrix(inputs,number_layers=number_layers,sigmaw=sigmaw,sigmab=sigmab
 # import pickle
 # pickle.dump(K,open("K_"+str(input_dim)+"_"+str(number_layers)+"_"+str(sigmaw)+"_"+str(sigmab)+".p","wb"))
 target_ys=np.array([[int(xx)] for xx in list(target_fun)])
+
+#%% sampling from GP, and counting number of 1s
+
+N = len(inputs)
+
+from collections import Counter
+import matplotlib.pyplot as plt
+# %matplotlib
+freqs = np.array([0 for i in range(N+1)])
+# for i in range(1000):
+#     ts[sum(np.random.multivariate_normal(np.zeros(N),K) > 0)] += 1
+
+num_samples = 100000
+ts = np.sum(np.random.multivariate_normal(np.zeros(N),K, num_samples) > 0 , axis=-1)
+for t, cnt in zip(*np.unique(ts, return_counts=True)): freqs[t]+=cnt
+
+plt.plot(freqs/num_samples, label=str(number_layers))
+plt.yscale("log")
+plt.xlabel("Number of points classified as 1")
+plt.ylabel("Probability")
+plt.legend()
+plt.savefig("num_points_classified_as_1_for_different_depths_GP.png")
 
 #%%
 

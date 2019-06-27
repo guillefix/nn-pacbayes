@@ -22,21 +22,48 @@ def main(_):
             if network == "xception":
                 image_size=71
             else:
-                image_size=75 
+                image_size=75
     else:
         image_size=32
 
     if dataset == "cifar":
-        (train_images,train_labels),(test_images,test_labels) = pickle.load(open(datasets_folder+"cifar10_dataset.p","rb"))
-        train_labels = [label[0] for label in train_labels]
-        test_labels = [label[0] for label in test_labels]
+        # (train_images,train_labels),(test_images,test_labels) = pickle.load(open(datasets_folder+"cifar10_dataset.p","rb"))
+        # train_labels = [label[0] for label in train_labels]
+        # test_labels = [label[0] for label in test_labels]
+        d = torchvision.datasets.CIFAR10("./datasets",download=True,
+                transform=transforms.Compose(
+                    [transforms.ToPILImage()]+
+                    ([transforms.Resize(image_size)] if image_size is not None else [])+
+                    [transforms.ToTensor()]
+                ))
+        print(d)
+        mm = ceil(d.data.shape[0]*5/6)
+        (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
         num_classes = 10
     elif dataset == "mnist":
-        (train_images,train_labels),(test_images,test_labels) = pickle.load(open(datasets_folder+"mnist_dataset.p","rb"))
+        # (train_images,train_labels),(test_images,test_labels) = pickle.load(open(datasets_folder+"mnist_dataset.p","rb"))
         num_classes = 10
+        d = torchvision.datasets.MNIST("./datasets",download=True,
+                transform=transforms.Compose(
+                    [transforms.ToPILImage()]+
+                    ([transforms.Resize(image_size)] if image_size is not None else [])+
+                    [transforms.ToTensor()]
+                ))
+        print(d)
+        mm = ceil(d.data.shape[0]*5/6)
+        (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
     elif dataset == "mnist-fashion":
-        (train_images,train_labels),(test_images,test_labels) = pickle.load(open(datasets_folder+"mnist_fashion_dataset.p","rb"))
+        # (train_images,train_labels),(test_images,test_labels) = pickle.load(open(datasets_folder+"mnist_fashion_dataset.p","rb"))
         num_classes = 10
+        d = torchvision.datasets.FashionMNIST("./datasets",download=True,
+                transform=transforms.Compose(
+                    [transforms.ToPILImage()]+
+                    ([transforms.Resize(image_size)] if image_size is not None else [])+
+                    [transforms.ToTensor()]
+                ))
+        print(d)
+        mm = ceil(d.data.shape[0]*5/6)
+        (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
     elif dataset == "KMNIST":
         d = torchvision.datasets.KMNIST("./datasets",download=True,
                 transform=transforms.Compose(

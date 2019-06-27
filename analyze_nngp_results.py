@@ -12,10 +12,12 @@ results_folder = "./"
 # prefix = "new_sigmas_"
 prefix = "layer_sweep"
 # prefix = "arch_sweep"
+prefix = "test_"
 
 training_results = pd.read_csv(results_folder+prefix+"nn_training_results.txt",comment="#", header='infer',sep="\t")
 bounds = pd.read_csv(results_folder+prefix+"bounds.txt",comment="#", header='infer',sep="\t")
 
+training_results.iloc[-1]
 training_results.columns
 bounds.columns
 # bounds

@@ -140,14 +140,15 @@ def main(_):
         test_acc_std = np.std(np.array(train_accs))
         mean_iters = np.mean(iterss)
 
-        useful_flags = FLAGS.copy()
-        if "data_dir" in useful_flags: del useful_flags["data_dir"]
-        if "helpfull" in useful_flags: del useful_flags["helpfull"]
-        if "help" in useful_flags: del useful_flags["help"]
-        if "helpshort" in useful_flags: del useful_flags["helpshort"]
-        if "h" in useful_flags: del useful_flags["h"]
-        if "f" in useful_flags: del useful_flags["f"]
-        if "prefix" in useful_flags: del useful_flags["prefix"]
+        # useful_flags = FLAGS.copy()
+        # if "data_dir" in useful_flags: del useful_flags["data_dir"]
+        # if "helpfull" in useful_flags: del useful_flags["helpfull"]
+        # if "help" in useful_flags: del useful_flags["help"]
+        # if "helpshort" in useful_flags: del useful_flags["helpshort"]
+        # if "h" in useful_flags: del useful_flags["h"]
+        # if "f" in useful_flags: del useful_flags["f"]
+        # if "prefix" in useful_flags: del useful_flags["prefix"]
+        useful_flags = ["dataset", "m", "network", "pooling", "number_layers", "sigmaw", "sigmab", "whitening", "training", "binarized", "confusion","filter_sizes", "gamma", "intermediate_pooling", "label_corruption", "n_gpus", "n_sample_repeats", "num_filters", "number_inits", "padding", ]
         with open(prefix+"nn_training_results.txt","a") as file:
             file.write("#")
             for key, value in sorted(useful_flags.items()):
