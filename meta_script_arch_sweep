@@ -26,5 +26,3 @@ pool=$2
 #sigmaw=$2
 echo $sigmaw
 ./script2 --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --compute_bound --pooling $pool --n_samples_repeats 2.0 --use_empirical_K
-	# ./$py NN_train.py --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training -sigmaw $sigmaw -sigmab $sigmab --confusion $c --ngpus $n_gpus --compute_bound --pooling $pool --n_samples_repeats 2.0 --use_empirical_K
-#done

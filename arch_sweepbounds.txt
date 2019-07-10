@@ -15,6 +15,7 @@ cifar	mobilenetv2	10000	0.0	0.0	1	1.0	1.0	True	avg	0	False	True	1	0.501502967399
 #dataset	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound
 cifar	nasnet	10000	0.0	0.0	1	1.0	1.0	True	avg	0	False	True	1	0.4725760975490635
 #dataset	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound
+####
 #cifar	vgg19	10000	0.0	0.0	1	1.0	1.0	True	avg	0	False	True	8	0.4546788522395362
 #dataset	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound
 #cifar	vgg16	10000	0.0	0.0	1	1.0	1.0	True	avg	0	False	True	8	0.4532064565081857
@@ -44,3 +45,24 @@ EMNIST	densenet169	10000	0.0	0.0	1	2.0	0.1	True	avg	0	False	True	8	0.42875244078
 EMNIST	densenet201	10000	0.0	0.0	1	2.0	0.1	True	avg	0	False	True	8	0.4332437876393874
 #dataset	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound
 EMNIST	nasnet	10000	0.0	0.0	1	2.0	0.1	True	avg	0	False	True	8	0.4441868744035219
+####
+cifar	vgg19	10000	0.0	0.0	1	2.0	2.0	True	avg	0	False	True	1	0.5834610953281743
+#dataset	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound
+cifar	vgg19	10000	0.0	0.0	1	0.5	0.5	True	avg	0	False	True	1	0.4986716703197305
+#dataset	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound
+cifar	densenet121	10000	0.0	0.0	1	0.5	0.5	True	avg	0	False	True	1	0.501378298650482
+#dataset	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound
+cifar	resnet50	10000	0.0	0.0	1	0.5	0.5	True	avg	0	False	True	1	0.501528294156024
+#dataset	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound
+cifar	densenet201	10000	0.0	0.0	1	2.0	0.1	True	avg	0	False	True	1	0.46463882159283487
+#dataset	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound
+cifar	resnet50	10000	0.0	0.0	1	2.0	0.1	True	avg	0	False	True	1	0.5407056702324416
+#dataset	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound
+cifar	vgg19	10000	0.0	0.0	1	2.0	0.1	True	avg	0	False	True	1	0.5799371766076156
+#dataset	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound
+cifar	vgg16	10000	0.0	0.0	1	2.0	0.1	True	avg	0	False	True	1	0.3519245065781995
+#dataset	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound
+cifar	densenet121	10000	0.0	0.0	1	2.0	0.1	True	avg	0	False	True	1	0.46784651374394115
+#dataset	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound
+cifar	nasnet	10000	0.0	0.0	1	2.0	0.1	True	avg	0	False	True	1	0.4944939057062251
+####
