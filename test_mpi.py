@@ -7,7 +7,7 @@ rank = comm.Get_rank()
 size = comm.Get_size()
 print(rank)
 
-n_gpus=8
+n_gpus=1
 config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
 config.log_device_placement = False  # to log device placement (on which device the operation ran)
