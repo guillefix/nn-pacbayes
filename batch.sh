@@ -7,7 +7,7 @@
 #SBATCH --time=24:00:00
 
 # set name of job
-#SBATCH -J poolsweep
+#SBATCH -J msweep
 
 #small for 1 gpu, big for 4 or 8
 #SBATCH --partition=big
@@ -34,9 +34,11 @@
 #chmod +x ${archs[$SLURM_ARRAY_TASK_ID]}.sh
 
 #vars=(0.1 0.3 0.6 1.0 1.3 1.6 2.0 2.3 2.6 3.0)
-vars=(none max avg)
+#vars=(500 1000 5000 10000 20000 30000 40000)
+vars=(20000 30000 40000)
+#vars=(none max avg)
 
-net=cnn
+net=vgg16
 
 echo ${vars[$SLURM_ARRAY_TASK_ID]}.sh
 filename=scripts/${net}_${vars[$SLURM_ARRAY_TASK_ID]}.sh
