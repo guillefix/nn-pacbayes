@@ -75,28 +75,148 @@ K = Kfull[0:m,0:m]
 #%%
 
 ### trying TF prob now
+y_tensor = tf.squeeze(tf.constant(Y,dtype=tf.float64))
 import tensorflow_probability as tfp
 
 tfd = tfp.distributions
 
-init_f = tf.zeros((m,))
-P = tfd.MultivariateNormalFullCovariance(loc=tf.zeros_like(init_f),covariance_matrix=K)
+init_f = tf.zeros((m,),dtype=tf.float64)
+# init_f = tf.zeros((m,),dtype=tf.float32)
+P = tfd.MultivariateNormalFullCovariance(loc=tf.zeros_like(init_f, dtype=tf.float64),covariance_matrix=K)
 
+# L=tfd.Logistic(loc=tf.zeros_like(init_f, dtype=tf.float64),scale=tf.ones_like(init_f, dtype=tf.float64))
+# L=tfd.Logistic(loc=[0]*m,scale=[1.0]*m)
+# why doesn't logistic work with negative values???
+
+
+# init_f.shape
+# errors = tf.math.equal(tf.dtypes.cast(init_f > 0, tf.float64), y_tensor)
+# # errors
+# sess=tf.Session()
+# with sess.as_default():
+#     thing = tf.math.log(tf.dtypes.cast(errors,tf.float32)).eval()
+    # thing = unnormalized_posterior_log_prob(init_f).eval()
+    # print(((2*y_tensor-1)*(init_f+1)*10).eval())
+    # thing=-tf.math.log(1+tf.math.exp(-(2*y_tensor-1)*(init_f))).eval()
+    # thing = L.log_prob((2*y_tensor-1)*(init_f+1)*10).eval()
+    # thing = L.prob(init_f+10).eval()
+
+#
+# P.log_prob(init_f)
+# thing
+# np.log(thing)
+
+beta = 5
 def unnormalized_posterior_log_prob(f):
+    # errors = tf.math.equal(tf.dtypes.cast(f > 0,tf.float64), y_tensor)
+    # return P.log_prob(f) + tf.math.reduce_sum(tf.math.log(tf.dtypes.cast(errors,tf.float64)))
+    # return P.log_prob(f) - tf.math.reduce_sum(tf.math.log(1+tf.math.exp(-beta*(2*y_tensor-1)*f)))
     return P.log_prob(f)
 
 sample_chain = tfp.mcmc.sample_chain
-_, kernel_results = sample_chain(
-        num_results=num_results,
-        num_burnin_steps=num_burnin_steps,
+
+Nsamples = 10000
+states, kernel_results = sample_chain(
+        num_results=Nsamples,
+        num_burnin_steps=500,
         current_state=(
             init_f,
         ),
         kernel=tfp.mcmc.HamiltonianMonteCarlo(
             target_log_prob_fn=unnormalized_posterior_log_prob,
-            step_size=step_size,
-            num_leapfrog_steps=num_leapfrog_steps))
+            step_size=0.5,
+            num_leapfrog_steps=2))
 
+with tf.Session() as sess:
+    states, is_accepted_ = sess.run([states, kernel_results.is_accepted])
+    # accepted = np.sum(np.prod(is_accepted_,1))
+    accepted = np.sum(is_accepted_)
+    print("Acceptance rate: {}".format(accepted / Nsamples))
+
+states[0].shape
+states[0]
+
+np.prod(states[0][0,:] > 0)
+((states[0][0,:] > 0) == Y).all()
+
+np.prod((1/(1+np.exp(-beta*(2*Y-1)*states[0][0,:]))))
+
+# totprob = 0
+totlogprob = 0
+for f in states[0]:
+    # totprob += ((states[0][0,:] > 0) == Y).all()
+    # totprob += np.prod((1/(1+np.exp(-beta*(2*Y-1)*states[0][0,:]))))
+    totlogprob += np.sum(-np.log(1+np.exp(-beta*(2*Y-1)*states[0][0,:])))
+
+## importance sampling?
+
+##############
+### now trying pyro
+## N U T S
+
+import torch, pyro
+from pyro.distributions import MultivariateNormal, Bernoulli
+from pyro.infer.mcmc import MCMC, NUTS
+# import torch.nn.functional as F
+
+# y_tensor = torch.ByteTensor(Y).squeeze()
+y_tensor = torch.Tensor(Y).squeeze()
+
+def model():
+    prior = MultivariateNormal(torch.zeros(m),torch.Tensor(K))
+    fs = pyro.sample("fs",prior)
+    likelihood = Bernoulli(probs = (fs > 0).float())
+    # softprobs = torch.sigmoid(fs)
+    # likelihood = Bernoulli(probs = softprobs)
+    ys = pyro.sample("ys",likelihood)
+    return ys
+    # dataprob = torch.prod((fs > 0) == y_tensor)
+    # return (fs > 0).float()
+
+# likelihood = Bernoulli(probs = (fs > 0).float())
+# fs.unsqueeze(-1)
+# softprobs = torch.sigmoid(fs)
+# likelihood = Bernoulli(probs = softprobs)
+#
+# torch.prod((fs > 0) == torch.ByteTensor(Y).squeeze())
+
+# conditioned_model = pyro.condition(model, data={"ys":y_tensor})
+conditioned_model = pyro.condition(model, data={})
+
+thing = model(); thing
+thing.shape
+# fs.shape
+
+# likelihood.sample()
+
+# def model(data):
+
+# nuts_kernel = NUTS(model, adapt_step_size=True)
+nuts_kernel = NUTS(conditioned_model, adapt_step_size=True)
+
+mcmc_run = MCMC(nuts_kernel, num_samples=500, warmup_steps=300).run()
+
+posterior = pyro.infer.abstract_infer.EmpiricalMarginal(mcmc_run, 'fs')
+
+posterior.
+
+
+from pyro.infer.abstract_infer import EmpiricalMarginal
+import pyro.distributions as dist
+true_coefs = torch.tensor([1., 2., 3.])
+data = torch.randn(2000, 3)
+dim = 3
+labels = dist.Bernoulli(logits=(true_coefs * data).sum(-1)).sample()
+def model(data):
+ coefs_mean = torch.zeros(dim)
+ coefs = pyro.sample('beta', dist.Normal(coefs_mean, torch.ones(3)))
+ # y = pyro.sample('y', dist.Bernoulli(logits=(coefs * data).sum(-1)), obs=labels)
+ y = pyro.sample('y', dist.Bernoulli(logits=(coefs * data).sum(-1)))
+ return y
+nuts_kernel = NUTS(model, adapt_step_size=True)
+mcmc_run = MCMC(nuts_kernel, num_samples=500, warmup_steps=300).run(data)
+posterior = EmpiricalMarginal(mcmc_run, 'beta')
+posterior.mean
 
 ##################################
 
@@ -170,6 +290,8 @@ for i, V in samples.iterrows():
     loglik_samples.append(m.compute_log_likelihood())
     p = m.predict_y(test_images)[0].squeeze()
     ps.append(p)
+
+#wrongggg v
 
 print(loglik_samples)
 

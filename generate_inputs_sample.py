@@ -23,6 +23,8 @@ def main(_):
                 image_size=71
             else:
                 image_size=75
+        else:
+            image_size=None
     else:
         image_size=32
 
