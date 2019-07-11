@@ -5,7 +5,10 @@ import sys
 # sys.path.insert(0, 'gp/nngp/')
 # imp.reload(GP_prob_gpy)
 from GP_prob_gpy import GP_prob as logGPProb
+from collections import Counter
+import matplotlib.pyplot as plt
 
+import numpy.matlib
 import pickle
 
 target_comp=84.0
@@ -20,45 +23,92 @@ train_acc=1.0
 
 #%%
 
+from scipy.stats import ortho_group
+R = ortho_group.rvs(7)
+M = np.random.randn(7,7)
+
 #
 inputs = np.array([[float(x) for x in "{0:b}".format(i).zfill(input_dim)] for i in range(0,2**input_dim)])
+
+inputs = np.dot(inputs,R)
+inputs = np.dot(inputs,M)
+inputs.shape
+inputs = np.maximum(inputs,0)
 
 target_fun = "11110011011100010111000100110001000000000000000000000000000000000011000101110001000100000011000000000000000000000000000000000000" #84.0
 target_fun = "11011101111111111111110111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111" #84.0
 # target_fun = "00000000100000000000000010100000000000000000000000000000000000000000000010100000000000001011000000000000000000000000000000000000" #63.0
 
+# inputs = np.random.randn(128,7) + 1*np.ones(7)
+inputs = np.random.randn(128,7) + np.abs(np.random.randn(7))
+inputs = inputs/np.expand_dims(np.sqrt(np.sum(inputs**2, axis=1)),1)
+
+#%%
+
 input_dim = 7
 number_layers=5
 sigmaw=1.0
-sigmab=1.0
+sigmab=0.0001
+
 K = kernel_matrix(inputs,number_layers=number_layers,sigmaw=sigmaw,sigmab=sigmab)
+# pickle.dump(K,open("K_"+str(input_dim)+"_"+str(number_layers)+"_"+str(sigmaw)+"_"+str(sigmab)+".p","wb"))
+
+Kraw = np.matmul(inputs,inputs.T)/input_dim
+K = np.copy(Kraw)
+plt.matshow(Kraw)
+
+#%%
+variances = np.diag(K)
+variances = np.expand_dims(variances,0)
+plt.matshow(K/np.sqrt(variances)/np.sqrt(variances.T))
+#%%
+
+dK = np.abs(np.random.randn(2**7,2**7))
+dK = np.random.randn(2**7,2**7)
+
+dK = dK - np.diag(np.diag(dK))
+K += 2
+K += 2+dK
+K = (K+K.T)/2
+#%%
+
+# variances_raw = np.diag(Kraw)
+# variances_raw = np.expand_dims(variances_raw,0)
+# plt.matshow( K/np.sqrt(variances)/np.sqrt(variances.T) > Kraw/np.sqrt(variances_raw)/np.sqrt(variances_raw.T))
+# plt.matshow(Kraw < K)
 # K=pickle.load(open("data/K_"+str(input_dim)+"_"+str(hidden_layers)+"_"+str(sigmaw)+"_"+str(sigmab)+".p","rb"))
 #
 # import pickle
-# pickle.dump(K,open("K_"+str(input_dim)+"_"+str(number_layers)+"_"+str(sigmaw)+"_"+str(sigmab)+".p","wb"))
 target_ys=np.array([[int(xx)] for xx in list(target_fun)])
 
-#%% sampling from GP, and counting number of 1s
+#%% #sampling from GP, and counting number of 1s
 
 N = len(inputs)
 
-from collections import Counter
-import matplotlib.pyplot as plt
 # %matplotlib
 freqs = np.array([0 for i in range(N+1)])
 # for i in range(1000):
 #     ts[sum(np.random.multivariate_normal(np.zeros(N),K) > 0)] += 1
 
-num_samples = 100000
+# np.linalg.det(K)
+
+# np.all(K == K.T)
+
+# np.linalg.eigh(K)
+
+num_samples = 1000000
 ts = np.sum(np.random.multivariate_normal(np.zeros(N),K, num_samples) > 0 , axis=-1)
 for t, cnt in zip(*np.unique(ts, return_counts=True)): freqs[t]+=cnt
 
-plt.plot(freqs/num_samples, label=str(number_layers))
+# ts[ts==128].size
+
+#plt.plot(freqs/num_samples, '.', label=str(number_layers))
+plt.plot(freqs/num_samples, '.')
 plt.yscale("log")
 plt.xlabel("Number of points classified as 1")
 plt.ylabel("Probability")
 plt.legend()
-plt.savefig("num_points_classified_as_1_for_different_depths_GP.png")
+# plt.savefig("num_points_classified_as_1_for_different_depths_GP.png")
 
 #%%
 
