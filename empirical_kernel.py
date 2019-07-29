@@ -44,18 +44,18 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
     #os.environ["CUDA_VISIBLE_DEVICES"]=str(rank%n_gpus)
     #print(rank%n_gpus)
 
-#    config = tf.ConfigProto()
-#    if n_gpus > 0:
-#        #config = tf.ConfigProto(device_count={'GPU': rank%num_gpus})
-#        #config.device_count = {'GPU': rank%num_gpus}
-#        # config.gpu_options.allow_growth = True
-#        #config.gpu_options.per_process_gpu_memory_fraction = 0.5
-#        config.gpu_options.visible_device_list = str(rank%n_gpus)
-#    
-#    #tf.enable_eager_execution(config=config)
+    #config = tf.ConfigProto()
+    #if n_gpus > 0:
+    #    #config = tf.ConfigProto(device_count={'GPU': rank%num_gpus})
+    #    #config.device_count = {'GPU': rank%num_gpus}
+    #    config.gpu_options.allow_growth = True
+    #    #config.gpu_options.per_process_gpu_memory_fraction = 0.5
+    #    config.gpu_options.visible_device_list = str(rank%n_gpus)
+    #
+    ##tf.enable_eager_execution(config=config)
     #set_session = keras.backend.set_session
-#    config.log_device_placement = False  # to log device placement (on which device the operation ran)
-#    sess = tf.Session(config=config)
+    #config.log_device_placement = False  # to log device placement (on which device the operation ran)
+    #sess = tf.Session(config=config)
     #set_session(sess)  # set this TensorFlow session as the default session for Keras
 
     #data = tf.constant(data)
@@ -75,9 +75,10 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
     def reset_weights(model):
         def initialize_var(shape):
             if len(shape) == 1:
-               #return tf.random.normal(shape).eval(session=sess)
-               return np.random.normal(0,sigmab,shape)
+                #return tf.random.normal(shape,stddev=sigmab).eval(session=sess)
+                return np.random.normal(0,sigmab,shape)
             else:
+                #return tf.random.normal(shape,stddev=1.0/np.sqrt(np.prod(shape[:-1]))).eval(session=sess)
                 #return np.random.normal(0,1.0/np.sqrt(np.prod(shape[:-1])),shape)
                 return np.random.normal(0,sigmaw/np.sqrt(shape[-2]),shape) #assumes NHWC so that we divide by number of channels as in GP limit
         new_weights = [initialize_var(w.shape) for w in initial_weights]
@@ -92,7 +93,7 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
         #outputs = model.predict(data,batch_size=data.shape[0])
         #outputs = model.predict(data,steps=1)
         outputs = model.predict(data)
-        keras.backend.clear_session()
+        #keras.backend.clear_session()
         # print(outputs)
         fs.append(outputs)
 

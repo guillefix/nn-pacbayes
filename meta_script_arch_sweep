@@ -1,6 +1,7 @@
 #!/bin/bash
 
-export PYTHONPATH="/home_directory/.local/lib/python3.5/site-packages/:/usr/local/lib/python3.5/dist-packages/"
+#export PYTHONPATH="/home_directory/.local/lib/python3.5/site-packages/:/usr/local/lib/python3.5/dist-packages/"
+export PYTHONPATH=""
 
 #m=10000
 #dataset=cifar
@@ -11,7 +12,7 @@ prefix=msweep_
 sigmaw=2.0
 sigmab=0.1
 
-n_gpus=8
+n_gpus=1
 #n_gpus=1
 export n_gpus=$n_gpus
 
