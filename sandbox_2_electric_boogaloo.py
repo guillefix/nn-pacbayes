@@ -29,154 +29,37 @@ M = np.random.randn(7,7)
 
 #
 inputs = np.array([[float(x) for x in "{0:b}".format(i).zfill(input_dim)] for i in range(0,2**input_dim)])
-inputs = np.array([[2*float(x)-1 for x in "{0:b}".format(i).zfill(input_dim)] for i in range(0,2**input_dim)])
-
-inputs = np.dot(inputs,R)
-inputs = np.dot(inputs,M)
-inputs = np.random.randn(128,7)
-inputs = np.random.randn(64,100)
-inputs = np.random.randn(256,7)
-inputs.shape
-inputs = np.maximum(inputs,0)
-
-np.min(Kraw)
-
-inputs += 0.2
-
-np.all(inputs>=0)
-
-target_fun = "11110011011100010111000100110001000000000000000000000000000000000011000101110001000100000011000000000000000000000000000000000000" #84.0
-target_fun = "11011101111111111111110111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111" #84.0
-# target_fun = "00000000100000000000000010100000000000000000000000000000000000000000000010100000000000001011000000000000000000000000000000000000" #63.0
-
-# inputs = np.random.randn(128,7) + 1*np.ones(7)
-inputs = np.random.rand(128,7) - 0.1*np.abs(np.random.randn(7))
-inputs = inputs/np.expand_dims(np.sqrt(np.sum(inputs**2, axis=1)),1)
-
-#%%
-
-input_dim = 7
-number_layers=1
-sigmaw=1.0
-sigmab=0.4
-
-K = kernel_matrix(inputs,number_layers=number_layers,sigmaw=sigmaw,sigmab=sigmab)
-K
-np.all(K>0)
-# plt.matshow(K>0)
-K.shape
-# np.where( np.abs(np.linalg.eigh(K)[1][:,-1]) > 0)
-eigvals = np.linalg.eigh(K)[0]
-lambda_min = min(eigvals)
-lambda_max = max(eigvals)
-np.log2((lambda_min/lambda_max)**input_dim)
-np.linalg.eigh(K)[1][-1]
-plt.plot(np.linalg.eigh(K)[1][:,-1])
-np.linalg.eigh(K)[0][-1]
-
-# pickle.dump(K,open("K_"+str(input_dim)+"_"+str(number_layers)+"_"+str(sigmaw)+"_"+str(sigmab)+".p","wb"))
-# K += 1e-16
-
-np.abs(np.random.randn(128))
-np.dot(np.abs(np.random.randn(128)),np.matmul(np.linalg.inv(K),np.abs(np.random.randn(128))))
-np.dot(K[1:,0],np.matmul(np.linalg.inv(K[1:,1:]),np.abs(np.random.randn(127))))
-#%%
-dim=3
-#sanity check that K is all positive covariance matrix
-np.all(K>0) and np.all(K==K.T) and np.all(np.linalg.eigvals(K) > 0)
-for i in range(int(1e6)):
-    #variable to get conditional distribution of
-    idx = np.random.choice(range(128),size=1)
-    #get a subset of observations
-    idxs = np.random.choice(range(128),size=dim-1, replace=False)
-    #find mean of conditional distribution of idxth element as per formula in wikipedia
-    observations = np.abs(np.random.randn(dim-1)) #all positive
-    mu = np.dot(K[idxs,idx],np.matmul(np.linalg.inv(K[np.ix_(idxs,idxs)]),observations))
-    if mu < 0:
-        break
-all_idxs = np.concatenate([idx,idxs])
-K[np.ix_(all_idxs,all_idxs)]
-# x,y=list(zip(*np.random.multivariate_normal(np.zeros(2),K[np.ix_([117,109],[117,109])], 1000)))
-x,y,z=list(zip(*np.random.multivariate_normal(np.zeros(3),K[np.ix_(all_idxs,all_idxs)], 10000)))
-samples = np.random.multivariate_normal(np.zeros(3),K[np.ix_(all_idxs,all_idxs)], 1000000)
-observations
-samples
-# mask = np.prod(samples[:,[1,2]]>0,axis=1)
-# np.mean(samples[:,0][mask==1])
-%matplotlib
-#%%
-from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
-fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
-ax.scatter(x,y,z)
-plt.show()
-ax.scatter(np.linspace(-2,2,100),[1.1599996]*100,[0.00554967]*100)
-#%%
-v = np.abs(np.random.randn(128))
-np.dot(v,np.matmul(np.linalg.inv(K),v))
-
-#%%
-Kraw = np.matmul(inputs,inputs.T)/input_dim #+ 0.01
-K = np.copy(Kraw)
-# plt.matshow(Kraw)
-plt.matshow(K)
-
-#%%
-variances = np.diag(K)
-variances = np.expand_dims(variances,0)
-corr = K/np.sqrt(variances)/np.sqrt(variances.T)
-plt.matshow(corr)
-#%%
-0.5**2
-np.min(K)
-np.min(corr)
-np.mean(corr)
-plt.hist(corr.flatten())
-
-dK = np.abs(np.random.randn(2**7,2**7))
-dK = np.random.randn(2**7,2**7)
-
-dK = dK - np.diag(np.diag(dK))
-K += 2
-K += 2+dK
-K = (K+K.T)/2
-#%%
-
-# variances_raw = np.diag(Kraw)
-# variances_raw = np.expand_dims(variances_raw,0)
-# plt.matshow( K/np.sqrt(variances)/np.sqrt(variances.T) > Kraw/np.sqrt(variances_raw)/np.sqrt(variances_raw.T))
-# plt.matshow(Kraw < K)
-# K=pickle.load(open("data/K_"+str(input_dim)+"_"+str(hidden_layers)+"_"+str(sigmaw)+"_"+str(sigmab)+".p","rb"))
-#
-# import pickle
-target_ys=np.array([[int(xx)] for xx in list(target_fun)])
 
 #%% #sampling from GP, and counting number of 1s
+
+# inputs.shape
 
 N = len(inputs)
 
 # %matplotlib
 freqs = np.array([0 for i in range(N+1)])
-# for i in range(1000):
-#     ts[sum(np.random.multivariate_normal(np.zeros(N),K) > 0)] += 1
-
-# np.linalg.det(K)
-# np.all(K == K.T)
-# np.linalg.eigh(K)
-# N
-# K.sh
-# K
 num_samples = 1000000
+for i in range(10):
+    print(i)
+    input_dim = inputs.shape[1]
+    w2 = np.random.randn(input_dim,num_samples)
+    w1 = np.random.randn(input_dim,input_dim,num_samples)
+    # w3 = np.random.randn(input_dim,input_dim,num_samples)
+    # b1 = 0*np.random.randn(input_dim,num_samples)
+    # b2 = 0*np.random.randn(1,num_samples)
+    # ts = np.sum(np.matmul(inputs,np.sum(w1*w2*w3,axis=1)) + b > 0 , axis=0)
+    # h = np.maximum(np.dot(inputs,w1) + b1,0)
+    # ts = np.sum(np.sum(h*w2,axis=1)+b2 > 0 , axis=0)
+    h = np.maximum(np.dot(inputs,w1),0)
+    ts = np.sum(np.sum(h*w2,axis=1) > 0 , axis=0)
 
-w = np.random.randn(inputs.shape[1],num_samples)
-b = 0*np.random.randn(1,num_samples)
-ts = np.sum(np.matmul(inputs,w) + b > 0 , axis=0)
-# ts
-# np.sum(ts==63)
-# np.matmul(inputs,w) > 0
+    # ts = np.sum(np.matmul(inputs,w) + b > 0 , axis=0)
+    # ts
+    # np.sum(ts==63)
+    # np.matmul(inputs,w) > 0
 
-# ts = np.sum(np.random.multivariate_normal(np.zeros(K.shape[0]),K, num_samples) > 0 , axis=-1)
-for t, cnt in zip(*np.unique(ts, return_counts=True)): freqs[t]+=cnt
+    # ts = np.sum(np.random.multivariate_normal(np.zeros(K.shape[0]),K, num_samples) > 0 , axis=-1)
+    for t, cnt in zip(*np.unique(ts, return_counts=True)): freqs[t]+=cnt
 
 # ts[ts==128].size
 # inputs.shape
@@ -185,46 +68,13 @@ for t, cnt in zip(*np.unique(ts, return_counts=True)): freqs[t]+=cnt
 freqs
 
 #plt.plot(freqs/num_samples, '.', label=str(number_layers))
-# plt.plot(freqs/num_samples, '.')
-plt.plot((freqs-freqs_old+3000)/num_samples, '.')
-# freqs-freqs_old
-# freqs_old = freqs
+np.diff(freqs)[:64]
+plt.plot(freqs/num_samples, '.')
 plt.yscale("log")
 plt.xlabel("Number of points classified as 1")
 plt.ylabel("Probability")
 plt.legend()
 # plt.savefig("num_points_classified_as_1_for_different_depths_GP.png")
-
-#%%
-deltaPs=[]
-for i in range(100):
-
-    M = np.random.randn(7,7)
-    inputs = np.array([[float(x) for x in "{0:b}".format(i).zfill(input_dim)] for i in range(0,2**input_dim)])
-    inputs = np.dot(inputs,M)
-    freqs = np.array([0 for i in range(N+1)])
-
-    N = len(inputs)
-    num_samples = 100000
-    w = np.random.randn(inputs.shape[1],num_samples)
-    b = 0*np.random.randn(1,num_samples)
-    ts = np.sum(np.matmul(inputs,w) + b > 0 , axis=0)
-    for t, cnt in zip(*np.unique(ts, return_counts=True)): freqs[t]+=cnt
-
-    freqs_old = freqs
-
-    inputs = np.maximum(inputs,0)
-    freqs = np.array([0 for i in range(N+1)])
-    w = np.random.randn(inputs.shape[1],num_samples)
-    b = 0*np.random.randn(1,num_samples)
-    ts = np.sum(np.matmul(inputs,w) + b > 0 , axis=0)
-    for t, cnt in zip(*np.unique(ts, return_counts=True)): freqs[t]+=cnt
-
-    deltaPs.append(freqs-freqs_old+4000)
-
-np.mean(np.array(deltaPs),axis=0)
-plt.plot(np.mean(np.array(deltaPs),axis=0)/num_samples, '.')
-plt.yscale("log")
 
 #%%
 
