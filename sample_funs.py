@@ -180,6 +180,7 @@ if __name__ == '__main__':
 
     from utils import define_default_flags
 
+    f.DEFINE_int('number_samples', None, "Number of samples")
     define_default_flags(f)
 
     tf.app.run()
