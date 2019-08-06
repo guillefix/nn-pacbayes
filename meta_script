@@ -3,7 +3,7 @@
 export PYTHONPATH="/home_directory/.local/lib/python3.5/site-packages/:/usr/local/lib/python3.5/dist-packages/"
 
 
-m=100 
+m=30
 dataset=mnist 
 net=resnet50
 L=2
@@ -16,7 +16,7 @@ sigmab=1.0
 #sigmab=10.0 
 pool=avg
 
-n_gpus=1
+n_gpus=0
 export n_gpus=$n_gpus
 
 
