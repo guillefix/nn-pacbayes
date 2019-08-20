@@ -21,6 +21,7 @@ size=100
 m=118
 train_acc=1.0
 
+input_dim = 5
 #%%
 
 from scipy.stats import ortho_group
@@ -33,7 +34,8 @@ inputs = np.array([[2*float(x)-1 for x in "{0:b}".format(i).zfill(input_dim)] fo
 
 inputs = np.dot(inputs,R)
 inputs = np.dot(inputs,M)
-inputs = np.random.randn(128,7)
+# inputs = np.random.randn(128,7)
+inputs = np.random.randn(32,5)
 inputs = np.random.randn(64,100)
 inputs = np.random.randn(256,7)
 inputs.shape
@@ -55,7 +57,6 @@ inputs = inputs/np.expand_dims(np.sqrt(np.sum(inputs**2, axis=1)),1)
 
 #%%
 
-input_dim = 7
 number_layers=1
 sigmaw=1.0
 sigmab=0.4
@@ -149,7 +150,7 @@ K = (K+K.T)/2
 # K=pickle.load(open("data/K_"+str(input_dim)+"_"+str(hidden_layers)+"_"+str(sigmaw)+"_"+str(sigmab)+".p","rb"))
 #
 # import pickle
-target_ys=np.array([[int(xx)] for xx in list(target_fun)])
+# target_ys=np.array([[int(xx)] for xx in list(target_fun)])
 
 #%% #sampling from GP, and counting number of 1s
 
@@ -184,9 +185,11 @@ for t, cnt in zip(*np.unique(ts, return_counts=True)): freqs[t]+=cnt
 
 freqs
 
-#plt.plot(freqs/num_samples, '.', label=str(number_layers))
+plt.plot(freqs/num_samples, '.')
+# plt.plot(freqs/num_samples, '.', c=[np.random.rand(3).tolist() for f in freqs])
+# plt.plot(freqs/num_samples, '.', label=str(number_layers))
 # plt.plot(freqs/num_samples, '.')
-plt.plot((freqs-freqs_old+3000)/num_samples, '.')
+# plt.plot((freqs-freqs_old+3000)/num_samples, '.')
 # freqs-freqs_old
 # freqs_old = freqs
 plt.yscale("log")

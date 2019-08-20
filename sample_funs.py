@@ -69,40 +69,26 @@ def main(_):
     input_dim = data.shape[1]
     num_channels = data.shape[-1]
 
-    sample_weights = np.ones(total_samples)
-    sample_weights[m:] = gamma
-
     arch_json_string = load_model(FLAGS)
     from tensorflow.keras.models import model_from_json
     model = model_from_json(arch_json_string)
 
-    K = np.load(open(kernel_folder+"K_"+str(FLAGS["m"])+"_"+FLAGS["dataset"]+"_"+FLAGS["network"]+"_"+str(FLAGS["number_layers"])+("_whitening" if whitening else "")+".npy","rb"))
-
-    '''LOAD ARCHITECTURE'''
-
-    from tensorflow.keras.models import model_from_json
-    filename=arch_folder
-    for flag in ["network","binarized","number_layers","pooling","intermediate_pooling"]:
-        filename+=FLAGS[flag]+"_"
-    filename += "model.npy"
-    json_string_filename = filename
-    arch_json_string = open(arch_folder+"model_string_"+"_"+FLAGS["network"]+"_"+FLAGS["dataset"]+"_"+str(FLAGS["number_layers"])+"_"+FLAGS["pooling"]+"_"+FLAGS["intermediate_pooling"], "r") .read()
-    model = model_from_json(arch_json_string)
+    #K = load_kernel(FLAGS)
 
     #sess = tf.Session()
 
     #from keras.initializers import lecun_normal  # Or your initializer of choice
 
-    # def reset_weights(model):
-    #     initial_weights = model.get_weights()
-    #     def initialize_var(shape):
-    #         if len(shape) == 1:
-    #            #return tf.random.normal(shape).eval(session=sess)
-    #            return np.random.normal(0,1,shape)
-    #         else:
-    #             return np.random.normal(0,1.0/np.sqrt(np.prod(shape[:-1])),shape)
-    #     new_weights = [initialize_var(w.shape) for w in initial_weights]
-    #     model.set_weights(new_weights)
+    def reset_weights(model):
+        initial_weights = model.get_weights()
+        def initialize_var(shape):
+            if len(shape) == 1:
+               #return tf.random.normal(shape).eval(session=sess)
+               return np.random.normal(0,1,shape)
+            else:
+                return np.random.normal(0,1.0/np.sqrt(np.prod(shape[:-1])),shape)
+        new_weights = [initialize_var(w.shape) for w in initial_weights]
+        model.set_weights(new_weights)
 
     from GP_prob_gpy import GP_prob
 
@@ -130,14 +116,6 @@ def main(_):
 
     #%%
 
-    # from mpi4py import MPI
-    # comm = MPI.COMM_WORLD
-    # rank = comm.Get_rank()
-    # size = comm.Get_size()
-    # print(rank)
-    # num_inits_per_task = number_samples//size
-    #
-
     print("Doing task %d of %d" % (rank, size))
     import time
     start_time = time.time()
@@ -148,21 +126,28 @@ def main(_):
     for index in tasks:
         print(index)
         # index = rank*num_inits_per_task+i
-        # reset_weights(model)
-        model = model_from_json(arch_json_string) # this resets the weights (makes sense as the json string only has architecture)
-        model.save_weights("sampled_nets/"+str(index)+"_"+json_string_filename+".h5")
+        reset_weights(model)
+        #model = model_from_json(arch_json_string) # this resets the weights (makes sense as the json string only has architecture)
+
+        #save weights?
+        #model.save_weights("sampled_nets/"+str(index)+"_"+json_string_filename+".h5")
+
         #predictions = tf.keras.backend.eval(model(data)) > 0
         # if network == "resnet":
         #     predictions = model.predict(data,steps=1) > 0.5 #because resnet is defined with sigmoid as output, rather than logits (because I use a module that requires that :P)
         # else:
+
         predictions = model.predict(data) > 0
-        #print(predictions)
         fstring = "".join([str(int(x[0])) for x in predictions])
         ent = entropy(fstring)
-        if fstring not in fun_probs:
-            fun_probs[fstring] = calculate_logPU(predictions)
-        index_fun_probs.append((index,ent,fstring,fun_probs[fstring]))
-        keras.backend.clear_session()
+
+        #if fstring not in fun_probs:
+        #    fun_probs[fstring] = calculate_logPU(predictions)
+        #index_fun_probs.append((index,ent,fstring,fun_probs[fstring]))
+        
+        index_fun_probs.append((index,ent,fstring))
+        #keras.backend.clear_session()
+        #del model
 
     print("--- %s seconds ---" % (time.time() - start_time))
 
@@ -171,8 +156,10 @@ def main(_):
     if rank == 0:
         index_fun_probs = sum(index_fun_probs, [])
         with open(results_folder+"index_funs_probs_"+FLAGS["prefix"]+"_"+FLAGS["dataset"]+"_"+FLAGS["network"]+"_"+str(FLAGS["number_layers"])+"_"+FLAGS["pooling"]+"_"+FLAGS["intermediate_pooling"]+".txt","w") as f:
-            for index,ent,fstring,logProb in index_fun_probs:
-                    f.write(str(index)+"\t"+fstring+"\t"+str(ent)+"\t"+str(logProb)+"\n")
+            #for index,ent,fstring,logProb in index_fun_probs:
+            for index,ent,fstring in index_fun_probs:
+                    #f.write(str(index)+"\t"+fstring+"\t"+str(ent)+"\t"+str(logProb)+"\n")
+                    f.write(str(index)+"\t"+fstring+"\t"+str(ent)+"\n")
 
 if __name__ == '__main__':
 
@@ -180,7 +167,7 @@ if __name__ == '__main__':
 
     from utils import define_default_flags
 
-    f.DEFINE_int('number_samples', None, "Number of samples")
+    f.DEFINE_integer('number_samples', None, "Number of samples")
     define_default_flags(f)
 
     tf.app.run()

@@ -9,7 +9,7 @@ arch_folder = "archs/"
 kernel_folder = "kernels/"
 
 FLAGS = {}
-FLAGS['m'] = 100
+FLAGS['m'] = 10
 FLAGS['number_inits'] = 1
 FLAGS['label_corruption'] =  0.0
 FLAGS['confusion'] = 0.0
@@ -58,12 +58,12 @@ for flag in ["network","dataset","m","confusion","label_corruption","binarized",
     filename+=str(FLAGS[flag])+"_"
 filename += "kernel.npy"
 np.save(open(filename,"wb"),Kfull)
+K = Kfull[0:m,0:m]
 
 #%%
 
 Kfull = load_kernel(FLAGS)
 K = Kfull[0:m,0:m]
-
 #%%
 
 import GPy
@@ -77,7 +77,7 @@ inference_method = GPy.inference.latent_function_inference.expectation_propagati
 # X = flat_train_images
 # Y = np.array(ys)
 # Y
-m = GPy.core.GP(X=X,
+model = GPy.core.GP(X=X,
                 Y=Y,
                 kernel=CustomMatrix(X.shape[1],X,K),
                 inference_method=inference_method,
@@ -87,7 +87,7 @@ m = GPy.core.GP(X=X,
 #%%
 
 # m.posterior_samples(X, size=20)
-mean, cov = m._raw_predict(X, full_cov=True)
+mean, cov = model._raw_predict(X, full_cov=True)
 # mean = mean.squeeze()
 # cov.shape
 
@@ -97,29 +97,32 @@ mean, cov = m._raw_predict(X, full_cov=True)
 
 # np.matmul(np.linalg.inv(cov), (f-mean).T)
 
-num_post_samples = int(1e6)
-sample = m.posterior_samples_f(X, size=num_post_samples)
+num_post_samples = int(1e7)
+sample = model.posterior_samples_f(X, size=num_post_samples)
 # f = sample[:,:,0]
 normalization1 = (np.sqrt(np.power(2*np.pi,len(X)) * np.linalg.det(cov)))
 normalization2 = (np.sqrt(np.power(2*np.pi,len(X)) * np.linalg.det(K)))
 covinv = np.linalg.inv(cov)
 Kinv = np.linalg.inv(K)
 tot = 0
+shift = m*np.log(2)*0.3
 for i in range(num_post_samples):
     f = sample[:,:,i]
     # print(f.shape)
     # Q = np.exp(-0.5*np.matmul( (f-mean).T, np.matmul(covinv, (f-mean)) ))/normalization1
     # P = np.exp(-0.5*np.matmul( (f).T, np.matmul(Kinv, (f)) ))/normalization2
-    PQratio = np.exp(-0.5*(np.matmul(f.T, np.matmul(Kinv, f)) - np.matmul((f-mean).T, np.matmul(covinv, (f-mean))) ))*normalization1/normalization2
+    PQratio = np.exp(shift-0.5*(np.matmul(f.T, np.matmul(Kinv, f)) - np.matmul((f-mean).T, np.matmul(covinv, (f-mean))) ))*normalization1/normalization2
     # PQratio = 0.5*(np.matmul(f.T, np.matmul(Kinv, f)) - np.matmul((f-mean).T, np.matmul(covinv, (f-mean))) ) - np.log(normalization1/normalization2)
     if np.prod((f.T>0) == Y.T):
         tot += PQratio
 
 PU = tot/num_post_samples
 
-np.log(PU)
+np.log(PU) - shift
 
-exact_samples = np.random.multivariate_normal(np.zeros(10),K,int(1e6))>0
+#%%
+
+exact_samples = np.random.multivariate_normal(np.zeros(m),K,int(1e7))>0
 
 count = 0
 for i in range(len(exact_samples)):
@@ -127,7 +130,9 @@ for i in range(len(exact_samples)):
     if np.prod(exact_samples[i,:] == Y.T):
         count += 1
 
-count/1e6
+PU = count/1e7
+PU
+np.log(PU)
 # m.likelihood.log_predictive_density(X,sample[:,:,0])
 
-m.log_likelihood()
+# m.log_likelihood()

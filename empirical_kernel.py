@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 import keras
 
-import os
+import os,sys
 #os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 # os.chdir("/users/guillefix/bias/nn_bias/CSR")
 #tf.enable_eager_execution()
@@ -51,7 +51,7 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
 #        # config.gpu_options.allow_growth = True
 #        #config.gpu_options.per_process_gpu_memory_fraction = 0.5
 #        config.gpu_options.visible_device_list = str(rank%n_gpus)
-#    
+#
 #    #tf.enable_eager_execution(config=config)
     #set_session = keras.backend.set_session
 #    config.log_device_placement = False  # to log device placement (on which device the operation ran)
@@ -86,13 +86,14 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
 
     fs = []
     for index in tasks:
-        # print(index)
+        print("sample for kernel", index)
+        sys.stdout.flush()
         reset_weights(model)
         #model.save_weights("sampled_nets/"+str(index)+"_"+json_string_filename+".h5")
         #outputs = model.predict(data,batch_size=data.shape[0])
         #outputs = model.predict(data,steps=1)
         outputs = model.predict(data)
-        keras.backend.clear_session()
+        # keras.backend.clear_session()
         # print(outputs)
         fs.append(outputs)
 
