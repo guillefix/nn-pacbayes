@@ -7,17 +7,17 @@ m=20000
 dataset=cifar
 net=vgg16
 L=4
-#net=resnet 
-#L=32 
-prefix=test_ 
-sigmaw=2.0 
-sigmab=0.0 
-#sigmaw=10.0 
-#sigmab=10.0 
+#net=resnet
+#L=32
+prefix=test_
+sigmaw=2.0
+sigmab=0.0
+#sigmaw=10.0
+#sigmab=10.0
 pool=avg
 c=0.0
 
-n_gpus=1
+n_gpus=0
 export n_gpus=$n_gpus
 
 

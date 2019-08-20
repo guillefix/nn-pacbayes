@@ -1,16 +1,19 @@
 #!/bin/bash
 
+#echo $PYTHONPATH
+#export PYTHONPATH="$PYTHONPATH:/usr/local/lib/python3.5/dist-packages:~/.local/lib/"
 #export PYTHONPATH="/home_directory/.local/lib/python3.5/site-packages/"
 
-#py=/usr/bin/python3 
+#py=/usr/bin/python3
 #py=~/anaconda3/bin/python3
-py=python3
+#py=/usr/bin/python3.6
+#py=python3
+py=python
 
 #echo $n_gpus
-n_gpus=1
 
 $py generate_NN_arch.py $@
 $py generate_inputs_sample.py $@
-mpiexec -n $n_gpus $py compute_kernel_and_bound.py $@
-#mpiexec -n 1 $py sample_funs.py $@ --number_samples 10000
-#mpiexec -n 1 $py NN_train.py $@
+/usr/local/shared/openmpi/4.0.0/bin/mpiexec -n 250 $py compute_kernel_and_bound.py $@
+#/usr/local/shared/openmpi/4.0.0/bin/mpiexec -n 100 $py sample_funs.py $@ --number_samples 10000
+##mpiexec -n 1 $py NN_train.py $@
