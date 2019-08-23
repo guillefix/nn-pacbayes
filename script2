@@ -1,12 +1,13 @@
 #!/bin/bash
 
-#export PYTHONPATH="/home_directory/.local/lib/python3.5/site-packages/"
+export PYTHONPATH="/home_directory/.local/lib/python3.5/site-packages/"
 
 #py=/usr/bin/python3 
 #py=~/anaconda3/bin/python3
-py=python3
+#py=python3
+py=python
 
-#echo $n_gpus
+echo $n_gpus
 
 $py generate_NN_arch.py $@
 $py generate_inputs_sample.py $@

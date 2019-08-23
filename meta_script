@@ -3,24 +3,23 @@
 export PYTHONPATH="/home_directory/.local/lib/python3.5/site-packages/:/usr/local/lib/python3.5/dist-packages/"
 
 
-m=100 
-dataset=mnist 
-net=resnet50
-L=2
+m=10000
+dataset=cifar
+net=$1
+pool=$2
+L=4
 #net=resnet 
 #L=32 
-prefix=test_ 
+prefix=poolsweep_
 sigmaw=1.0 
-sigmab=1.0 
+sigmab=1.0
 #sigmaw=10.0 
 #sigmab=10.0 
-pool=avg
 
 n_gpus=1
 export n_gpus=$n_gpus
 
-
 c=0.0
 #for c in 1 2 3; do
-    ./script2 --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --compute_bound --pooling $pool --n_samples_repeats 2.0 --number_inits 5 #--use_empirical_K
+./script2 --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --compute_bound --pooling $pool --n_samples_repeats 5.0 --number_inits 1 --use_empirical_K
 #done

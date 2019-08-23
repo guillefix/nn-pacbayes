@@ -4,10 +4,8 @@
 #SBATCH --nodes=1
 
 # set max wallclock time
-#SBATCH --time=24:00:00
-
-# set name of job
-#SBATCH -J msweep
+#SBATCH --time=24:00:00 # set name of job
+#SBATCH -J poolsweep
 
 #small for 1 gpu, big for 4 or 8
 #SBATCH --partition=big
@@ -35,19 +33,23 @@
 
 #vars=(0.1 0.3 0.6 1.0 1.3 1.6 2.0 2.3 2.6 3.0)
 #vars=(500 1000 5000 10000 20000 30000 40000)
-vars=(20000 30000 40000)
-#vars=(none max avg)
+#vars=(20000 30000 40000)
+vars=(none max avg)
 
-net=vgg16
+#net=vgg16
+net=cnn
 
 echo ${vars[$SLURM_ARRAY_TASK_ID]}.sh
 filename=scripts/${net}_${vars[$SLURM_ARRAY_TASK_ID]}.sh
 rm $filename
 echo '#!/bin/bash' > $filename
-echo './meta_script_arch_sweep '${net}' '${vars[$SLURM_ARRAY_TASK_ID]} >> $filename
+echo './meta_script '${net}' '${vars[$SLURM_ARRAY_TASK_ID]} >> $filename
 chmod +x $filename
 
 #/jmain01/apps/docker/tensorflow-batch -v 18.07-py3 -c ./densenet201.sh
 #/jmain01/apps/docker/tensorflow-batch -v 18.07-py3 -c ./meta_script
 #/jmain01/apps/docker/tensorflow-batch -v 18.07-py3 -c ./meta_script_layer_sweep
 /jmain01/apps/docker/tensorflow-batch -v 18.07-py3 -c $filename
+#/jmain01/apps/docker/tensorflow-batch -v 18.07-py3 -c $(echo ./meta_script $net vars[$SLURM_ARRAY_TASK_ID])
+#/jmain01/apps/docker/tensorflow-batch -v 19.05-py2 -c $(echo ./meta_script $net vars[$SLURM_ARRAY_TASK_ID])
+#/jmain01/apps/docker/tensorflow-batch -v 18.07-py3 -c $(echo ./meta_script_arch_sweep $net vars[$SLURM_ARRAY_TASK_ID])

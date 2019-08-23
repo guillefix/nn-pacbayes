@@ -1,2 +1,2 @@
 #!/bin/bash
-./meta_script_arch_sweep cnn none
+./meta_script cnn none
