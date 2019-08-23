@@ -1,2 +1,2 @@
 #!/bin/bash
-./meta_script_arch_sweep cnn avg
+./meta_script cnn avg
