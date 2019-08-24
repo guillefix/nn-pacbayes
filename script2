@@ -8,13 +8,13 @@
 #py=~/anaconda3/bin/python3
 #py=/usr/bin/python3.6
 #py=python3
-py=python3
+py=python
 
 #echo $n_gpus
 
 $py generate_NN_arch.py $@
 $py generate_inputs_sample.py $@
+mpiexec -n 1 $py compute_kernel_and_bound.py $@
 #/usr/local/shared/openmpi/4.0.0/bin/mpiexec -n 250 $py compute_kernel_and_bound.py $@
-mpiexec -n $n_gpus $py compute_kernel_and_bound.py $@
 #/usr/local/shared/openmpi/4.0.0/bin/mpiexec -n 100 $py sample_funs.py $@ --number_samples 10000
 ##mpiexec -n 1 $py NN_train.py $@

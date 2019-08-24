@@ -6,8 +6,8 @@ import torchvision
 from torchvision import transforms, utils
 
 
-#data_folder = "/mnt/zfsusers/guillefix/nn-pacbayes/data/"
-data_folder = "data/"
+data_folder = "/mnt/zfsusers/guillefix/nn-pacbayes/data/"
+#data_folder = "data/"
 datasets_folder = "datasets/"
 
 def main(_):
