@@ -35,20 +35,6 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
     #num_gpus = n_gpus
     #print("num_gpus",num_gpus)
 
-    save_freq = 500
-    try:
-        chkpt = pickle.load(open("checkpoint.p","rb"))
-        print("getting checkopoint of "+str(chkpt)+" functions")
-    except FileNotFoundError:
-        chkpt = 0
-    if rank == 0:
-        try:
-            fs_init = pickle.load(open("fs.p","rb"))
-        except FileNotFoundError:
-            fs_init = []
-
-    num_tasks = num_tasks - chkpt
-
     num_tasks_per_job = num_tasks//size
     tasks = list(range(rank*num_tasks_per_job,(rank+1)*num_tasks_per_job))
 
@@ -111,13 +97,6 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
         #keras.backend.clear_session()
         # print(outputs)
         fs.append(outputs)
-        if index % save_freq == save_freq-1:
-            fs_tmp = comm.gather(fs,root=0)
-            if rank == 0:
-                fs_tmp = sum(fs_tmp, [])
-                fs_tmp += fs_init
-                pickle.dump(fs_tmp,open("fs.p","wb"))
-                pickle.dump(len(fs_tmp),open("checkpoint.p","wb"))
 
     print("--- %s seconds ---" % (time.time() - start_time))
 
@@ -125,7 +104,6 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
 
     if rank == 0:
         fs = sum(fs, [])
-        fs += fs_init
         fs = np.array(fs)
         fs = np.squeeze(fs)
         # print(fs.shape)

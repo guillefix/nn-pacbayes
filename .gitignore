@@ -1,8 +1,7 @@
-archs/*
-kernels/*
-sampled_nets/*
-data/*
-datasets/*
+kernels/
+sampled_nets/
+data/
+datasets/
 *.out
 **/*.swp
 **/*.pyc
@@ -14,6 +13,7 @@ datasets/*
 others/
 data/*.np
 data/*.h5
+archs/
 core
 
 .sh
