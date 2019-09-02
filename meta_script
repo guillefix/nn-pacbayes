@@ -1,6 +1,7 @@
 #!/bin/bash
 
 #export PYTHONPATH="/home_directory/.local/lib/python3.5/site-packages/:/usr/local/lib/python3.5/dist-packages/"
+export PYTHONPATH=""
 
 
 m=20000
