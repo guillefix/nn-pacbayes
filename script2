@@ -12,8 +12,13 @@ py=python
 
 #echo $n_gpus
 
+#module load mpi
+
 $py generate_NN_arch.py $@
 $py generate_inputs_sample.py $@
-/usr/local/shared/openmpi/4.0.0/bin/mpiexec -n 250 $py compute_kernel_and_bound.py $@
+#mpiexec -n $n_gpus $py compute_kernel_and_bound.py $@
+/usr/bin/mpirun.mpich -n 4 $py compute_kernel_and_bound.py $@
+#mpiexec -n 4 $py compute_kernel_and_bound.py $@
+#/usr/local/shared/openmpi/4.0.0/bin/mpiexec -n 250 $py compute_kernel_and_bound.py $@
 #/usr/local/shared/openmpi/4.0.0/bin/mpiexec -n 100 $py sample_funs.py $@ --number_samples 10000
 ##mpiexec -n 1 $py NN_train.py $@
