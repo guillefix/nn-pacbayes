@@ -63,6 +63,7 @@ sigmab=0.4
 
 K = kernel_matrix(inputs,number_layers=number_layers,sigmaw=sigmaw,sigmab=sigmab)
 K
+#%%
 np.all(K>0)
 # plt.matshow(K>0)
 K.shape
@@ -72,38 +73,13 @@ lambda_min = min(eigvals)
 lambda_max = max(eigvals)
 np.log2((lambda_min/lambda_max)**input_dim)
 np.linalg.eigh(K)[1][-1]
-plt.plot(np.linalg.eigh(K)[1][:,-1])
+np.linalg.eigh(K)[1].shape
+plt.plot(np.linalg.eigh(K)[1][:,-2])
 np.linalg.eigh(K)[0][-1]
 
 # pickle.dump(K,open("K_"+str(input_dim)+"_"+str(number_layers)+"_"+str(sigmaw)+"_"+str(sigmab)+".p","wb"))
 # K += 1e-16
 
-np.abs(np.random.randn(128))
-np.dot(np.abs(np.random.randn(128)),np.matmul(np.linalg.inv(K),np.abs(np.random.randn(128))))
-np.dot(K[1:,0],np.matmul(np.linalg.inv(K[1:,1:]),np.abs(np.random.randn(127))))
-#%%
-dim=3
-#sanity check that K is all positive covariance matrix
-np.all(K>0) and np.all(K==K.T) and np.all(np.linalg.eigvals(K) > 0)
-for i in range(int(1e6)):
-    #variable to get conditional distribution of
-    idx = np.random.choice(range(128),size=1)
-    #get a subset of observations
-    idxs = np.random.choice(range(128),size=dim-1, replace=False)
-    #find mean of conditional distribution of idxth element as per formula in wikipedia
-    observations = np.abs(np.random.randn(dim-1)) #all positive
-    mu = np.dot(K[idxs,idx],np.matmul(np.linalg.inv(K[np.ix_(idxs,idxs)]),observations))
-    if mu < 0:
-        break
-all_idxs = np.concatenate([idx,idxs])
-K[np.ix_(all_idxs,all_idxs)]
-# x,y=list(zip(*np.random.multivariate_normal(np.zeros(2),K[np.ix_([117,109],[117,109])], 1000)))
-x,y,z=list(zip(*np.random.multivariate_normal(np.zeros(3),K[np.ix_(all_idxs,all_idxs)], 10000)))
-samples = np.random.multivariate_normal(np.zeros(3),K[np.ix_(all_idxs,all_idxs)], 1000000)
-observations
-samples
-# mask = np.prod(samples[:,[1,2]]>0,axis=1)
-# np.mean(samples[:,0][mask==1])
 %matplotlib
 #%%
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
@@ -169,14 +145,14 @@ freqs = np.array([0 for i in range(N+1)])
 # K
 num_samples = 1000000
 
-w = np.random.randn(inputs.shape[1],num_samples)
-b = 0*np.random.randn(1,num_samples)
-ts = np.sum(np.matmul(inputs,w) + b > 0 , axis=0)
+# w = np.random.randn(inputs.shape[1],num_samples)
+# b = 0*np.random.randn(1,num_samples)
+# ts = np.sum(np.matmul(inputs,w) + b > 0 , axis=0)
 # ts
 # np.sum(ts==63)
 # np.matmul(inputs,w) > 0
 
-# ts = np.sum(np.random.multivariate_normal(np.zeros(K.shape[0]),K, num_samples) > 0 , axis=-1)
+ts = np.sum(np.random.multivariate_normal(np.zeros(K.shape[0]),K, num_samples) > 0 , axis=-1)
 for t, cnt in zip(*np.unique(ts, return_counts=True)): freqs[t]+=cnt
 
 # ts[ts==128].size
@@ -199,6 +175,36 @@ plt.legend()
 # plt.savefig("num_points_classified_as_1_for_different_depths_GP.png")
 
 #%%
+
+#### checking that one can have conditionals with negative correlation wehn all pairwise correlations are positive
+np.abs(np.random.randn(128))
+np.dot(np.abs(np.random.randn(128)),np.matmul(np.linalg.inv(K),np.abs(np.random.randn(128))))
+np.dot(K[1:,0],np.matmul(np.linalg.inv(K[1:,1:]),np.abs(np.random.randn(127))))
+#%%
+dim=3
+#sanity check that K is all positive covariance matrix
+np.all(K>0) and np.all(K==K.T) and np.all(np.linalg.eigvals(K) > 0)
+for i in range(int(1e6)):
+    #variable to get conditional distribution of
+    idx = np.random.choice(range(128),size=1)
+    #get a subset of observations
+    idxs = np.random.choice(range(128),size=dim-1, replace=False)
+    #find mean of conditional distribution of idxth element as per formula in wikipedia
+    observations = np.abs(np.random.randn(dim-1)) #all positive
+    mu = np.dot(K[idxs,idx],np.matmul(np.linalg.inv(K[np.ix_(idxs,idxs)]),observations))
+    if mu < 0:
+        break
+all_idxs = np.concatenate([idx,idxs])
+K[np.ix_(all_idxs,all_idxs)]
+# x,y=list(zip(*np.random.multivariate_normal(np.zeros(2),K[np.ix_([117,109],[117,109])], 1000)))
+x,y,z=list(zip(*np.random.multivariate_normal(np.zeros(3),K[np.ix_(all_idxs,all_idxs)], 10000)))
+samples = np.random.multivariate_normal(np.zeros(3),K[np.ix_(all_idxs,all_idxs)], 1000000)
+observations
+samples
+# mask = np.prod(samples[:,[1,2]]>0,axis=1)
+# np.mean(samples[:,0][mask==1])
+
+###########################################
 deltaPs=[]
 for i in range(100):
 

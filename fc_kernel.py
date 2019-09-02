@@ -10,7 +10,7 @@ def kern(X1,X2,number_layers,sigmaw,sigmab):
     if X2 is None:
         K = sigmab**2 + sigmaw**2 * tf.matmul(X1,tf.transpose(X1))/input_dim
         for l in range(number_layers):
-            K_diag = tf.diag_part(K)
+            K_diag = tf.linalg.diag_part(K)
             K_diag = tf.expand_dims(K_diag,-1)
             K1 = tf.tile(K_diag,[1,N])
             K2 = tf.tile(tf.transpose(K_diag),[N,1])
@@ -57,12 +57,12 @@ def kernel_matrix(X,number_layers,sigmaw,sigmab,n_gpus = 1):
         for i in range(j, m, n_max))
 
     # X = train_images
-    with tf.Session() as sess:
+    with tf.compat.v1.Session() as sess:
         K_ops = []
         for i in range(n_gpus):
             with tf.device("gpu:{}".format(i)):
-                X1 = tf.placeholder(np.float64, [n_max, X.shape[1]], "X1")
-                X2 = tf.placeholder(np.float64, X1.shape, "X2")
+                X1 = tf.compat.v1.placeholder(np.float64, [n_max, X.shape[1]], "X1")
+                X2 = tf.compat.v1.placeholder(np.float64, X1.shape, "X2")
                 K_cross = kern(X1, X2,number_layers,sigmaw,sigmab)
                 K_symm = kern(X1, None,number_layers,sigmaw,sigmab)
                 K_ops.append((X1, X2, K_cross, K_symm))

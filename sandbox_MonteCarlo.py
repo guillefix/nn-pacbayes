@@ -9,7 +9,7 @@ arch_folder = "archs/"
 kernel_folder = "kernels/"
 
 FLAGS = {}
-FLAGS['m'] = 10
+FLAGS['m'] = 1000
 FLAGS['number_inits'] = 1
 FLAGS['label_corruption'] =  0.0
 FLAGS['confusion'] = 0.0
