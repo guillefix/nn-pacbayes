@@ -14,6 +14,8 @@ def main(_):
     FLAGS = preprocess_flags(FLAGS)
     globals().update(FLAGS)
 
+    print("Generating architecture", network, number_layers)
+
     from mpi4py import MPI
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
@@ -79,7 +81,7 @@ def main(_):
         model = keras.Sequential(
             sum([
                 [keras.layers.Conv2D(input_shape=(image_height,image_width,number_channels), filters=num_filters, kernel_size=filter_size, padding=padding, strides=strides, activation=tf.nn.relu,
-                # kernel_initializer=weight_initializer,
+                kernel_initializer=weight_initializer,
                 bias_initializer=bias_initializer,)] +
                  ([keras.layers.MaxPool2D(pool_size=2, padding='same')] if have_pooling else [])
                 # kernel_regularizer=keras.regularizers.l2(0.01*input_dim/(2*sigmaw**2)),
@@ -92,9 +94,9 @@ def main(_):
             + [ keras.layers.Flatten() ]
             + [
                 # keras.layers.Dense(1,activation=tf.nn.sigmoid,)
-                keras.layers.Dense(1),#activation=tf.nn.sigmoid,)
-                # kernel_initializer=weight_initializer,
-                # bias_initializer=bias_initializer,)
+                keras.layers.Dense(1,#activation=tf.nn.sigmoid,)
+                kernel_initializer=weight_initializer,
+                bias_initializer=bias_initializer,)
                 # kernel_regularizer=keras.regularizers.l2(0.01*input_dim/(2*sigmaw**2)),
                 # bias_regularizer=keras.regularizers.l2(1/(2*sigmab**2)))
                 # kernel_regularizer=keras.regularizers.l2(0.05),

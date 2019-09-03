@@ -40,7 +40,7 @@ num_channels = train_images.shape[-1]
 # tp_order = np.concatenate([[0,len(train_images.shape)-1], np.arange(1, len(train_images.shape)-1)])
 # train_images = tf.constant(train_images)
 
-X = train_images
+X = flat_train_images
 ys2 = [[y] for y in ys]
 Y = np.array(ys2)
 
@@ -83,7 +83,7 @@ mean, cov = model._raw_predict(X, full_cov=True)
 mean *= 1
 mean = mean.flatten()
 cov /= 3
-num_post_samples = int(1e5)
+num_post_samples = int(1e5/2)
 # sample = model.posterior_samples_f(X, size=num_post_samples)
 
 # np.prod((sample[:,0,np.random.randint(num_post_samples)].T>0) == Y.T)

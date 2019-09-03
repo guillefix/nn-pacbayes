@@ -16,6 +16,9 @@ def main(_):
     from utils import preprocess_flags
     FLAGS = preprocess_flags(FLAGS)
     globals().update(FLAGS)
+
+    print("Generating input samples", dataset, m)
+
     from math import ceil
 
     if network in ["cnn","fc","inception_resnet_v2", "inception_v3","xception"]:
