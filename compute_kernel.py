@@ -76,33 +76,6 @@ def main(_):
         filename += "kernel.npy"
         np.save(open(filename,"wb"),K)
 
-        #compute PAC-Bayes bound
-
-        if compute_bound:
-            from GP_prob_gpy import GP_prob
-            ys = [[y] for y in ys]
-            logPU = GP_prob(K,flat_train_images,np.array(ys))
-
-            delta = 2**-10
-            bound = (-logPU+2*np.log(total_samples)+1-np.log(delta))/total_samples
-            bound = 1-np.exp(-bound)
-            print("pre-confusion-correction bound: ", bound)
-            rho = confusion/(1.0+confusion)
-            bound = (bound - 0.5*rho)/(1-rho) #to correct for the confusion changing the training data distribution (in training set, but not in test set)!
-            print("Bound: ", bound)
-            print("Accuracy bound: ", 1-bound)
-            useful_flags = ["dataset", "network", "m","label_corruption","confusion", "number_layers", "sigmaw", "sigmab", "binarized", "pooling", "intermediate_pooling", "whitening", "training", "n_gpus"]
-            with open(prefix+"bounds.txt","a") as file:
-                file.write("#")
-                for key in useful_flags:
-                    file.write("{}\t".format(key))
-                file.write("bound")
-                file.write("\n")
-                for key in useful_flags:
-                    file.write("{}\t".format(FLAGS[key]))
-                file.write("{}".format(bound))
-                file.write("\n")
-
 if __name__ == '__main__':
 
     f = tf.app.flags
