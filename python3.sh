@@ -1,6 +1,6 @@
 #!/bin/bash -l
 echo =========================================================   
-echo Job submitted  date = Thu Feb 21 06:11:43 GMT 2019      
+echo Job submitted  date = Tue Sep  3 16:47:27 BST 2019      
 date_start=`date +%s`
 echo $SLURM_JOB_NUM_NODES nodes \( $SMP processes per node \)        
 echo $SLURM_JOB_NUM_NODES hosts used: $SLURM_JOB_NODELIST      
@@ -8,10 +8,16 @@ echo Job output begins
 echo -----------------                                           
 echo   
 #hostname
-#ulimit -l
+
+# Need to set the max locked memory very high otherwise IB can't allocate enough and fails with "UCX  ERROR Failed to allocate memory pool chunk: Input/output error"
+ulimit -l unlimited
+
+# To allow mvapich to run ok
+export MV2_SMP_USE_CMA=0
+
 #which mpirun
 export OMP_NUM_THEADS=1
- /usr/local/shared/slurm/bin/srun -n 250 --mpi=pmi2 --mem-per-cpu=5000 nice -n 10 /users/guillefix/anaconda3/bin/python3 sample_funs.py --prefix new_run --number_samples 1000 --m 1000 --dataset mnist-fashion --network resnet --number_layers 32 --whitening -n_gpus 0
+ /usr/local/shared/slurm/bin/srun -u -n 100 --mpi=pmi2 --mem-per-cpu=1000 nice -n 10 /users/guillefix/anaconda3/envs/venv/bin/python3 sandbox_MonteCarlo.py
 # If we've been checkpointed
 #if [ -n "${DMTCP_CHECKPOINT_DIR}" ]; then
   if [ -d "${DMTCP_CHECKPOINT_DIR}" ]; then

@@ -26,6 +26,13 @@ FLAGS['whitening'] =  False
 FLAGS['random_labels'] =  True
 FLAGS['training'] =  True
 FLAGS['no_training'] =  False
+FLAGS['n_gpus'] =  1
+
+from mpi4py import MPI
+comm = MPI.COMM_WORLD
+rank = comm.Get_rank()
+size = comm.Get_size()
+print(rank)
 
 # python3 generate_inputs_sample.py --m 500 --dataset mnist --training --number_layers 1
 
@@ -55,9 +62,11 @@ filename += "kernel.npy"
 if path.exists(filename):
     K = load_kernel(FLAGS)
 else:
-    from fc_kernel import kernel_matrix
-    K = kernel_matrix(X,number_layers=number_layers,sigmaw=sigmaw,sigmab=sigmab)
-    np.save(open(filename,"wb"),K)
+    if rank == 0:
+        from fc_kernel import kernel_matrix
+        K = kernel_matrix(X,number_layers=number_layers,sigmaw=sigmaw,sigmab=sigmab, n_gpus=n_gpus)
+        np.save(open(filename,"wb"),K)
+    K = load_kernel(FLAGS)
 
 print("Loaded kernel")
 #%%
@@ -82,8 +91,8 @@ model = GPy.core.GP(X=X,
 mean, cov = model._raw_predict(X, full_cov=True)
 mean *= 1
 mean = mean.flatten()
-cov /= 3
-num_post_samples = int(1e5)
+cov /= 2
+num_post_samples = int(1e6)
 # sample = model.posterior_samples_f(X, size=num_post_samples)
 
 # np.prod((sample[:,0,np.random.randint(num_post_samples)].T>0) == Y.T)
@@ -97,11 +106,6 @@ covinv = np.linalg.inv(cov)
 Kinv = np.linalg.inv(K)
 tot = 0
 shift = m*np.log(2)*0.3
-from mpi4py import MPI
-comm = MPI.COMM_WORLD
-rank = comm.Get_rank()
-size = comm.Get_size()
-print(rank)
 # num_inits_per_task = 1
 num_tasks = num_post_samples
 num_tasks_per_job = num_tasks//size
