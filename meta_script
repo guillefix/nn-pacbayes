@@ -1,7 +1,10 @@
 #!/bin/bash
 
 #export PYTHONPATH="/home_directory/.local/lib/python3.5/site-packages/:/usr/local/lib/python3.5/dist-packages/"
-export PYTHONPATH=""
+#export PYTHONPATH=""
+#export PYTHONPATH="${PYTHONPATH}:/home_directory/.local/lib/python3.5/site-packages/:/usr/local/lib/python3.5/dist-packages/"
+#export PYTHONPATH="${PYTHONPATH}:/home_directory/.local/lib/python3.5/site-packages/"
+#export PYTHONPATH="${PYTHONPATH}:/home_directory/.local/lib/python2.7/site-packages/:/home_directory/.local/lib/python2.7/dist-packages/"
 
 m=1000
 dataset=mnist
@@ -13,7 +16,7 @@ sigmab=0.0
 pool=avg
 c=0.0
 
-n_gpus=1
+n_gpus=4
 export n_gpus=$n_gpus
 
   ./run_experiment --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --n_samples_repeats 2.0 --use_empirical_K
