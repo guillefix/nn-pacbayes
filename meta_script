@@ -19,7 +19,7 @@ sigmab=0.0
 pool=avg
 c=0.0
 
-n_gpus=1
+n_gpus=4
 export n_gpus=$n_gpus
 
 

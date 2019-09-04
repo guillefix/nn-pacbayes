@@ -31,3 +31,7 @@ resnext101.sh
 resnext50.sh
 vgg16.sh
 
+checkpoint.p
+fs.p
+
+batch_devel.sh

@@ -39,18 +39,18 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
     try:
         chkpt = pickle.load(open("checkpoint.p","rb"))
         print("getting checkopoint of "+str(chkpt)+" functions")
-    except FileNotFoundError:
+    except IOError:
         chkpt = 0
     if rank == 0:
         try:
             fs_init = pickle.load(open("fs.p","rb"))
-        except FileNotFoundError:
+        except IOError:
             fs_init = []
 
     num_tasks = num_tasks - chkpt
 
     num_tasks_per_job = num_tasks//size
-    tasks = list(range(rank*num_tasks_per_job,(rank+1)*num_tasks_per_job))
+    tasks = list(range(int(rank*num_tasks_per_job),int((rank+1)*num_tasks_per_job)))
 
     if rank < num_tasks%size:
         tasks.append(size*num_tasks_per_job+rank)
