@@ -1,14 +1,51 @@
 import numpy as np
 import tensorflow as tf
 from math import ceil
+import h5py
+import os
 
-def load_data(FLAGS):
-    import h5py
-    data_folder = "data/"
+ROOT_FOLDER = os.path.dirname(os.path.realpath(__file__))+"/"
+data_folder = ROOT_FOLDER+"data/"
+datasets_folder = ROOT_FOLDER+"datasets/"
+arch_folder = ROOT_FOLDER+"archs/"
+kernel_folder = ROOT_FOLDER+"kernels/"
+results_folder = ROOT_FOLDER+"results/"
+if not os.path.isdir(data_folder):
+    os.mkdir(data_folder)
+if not os.path.isdir(datasets_folder):
+    os.mkdir(datasets_folder)
+if not os.path.isdir(arch_folder):
+    os.mkdir(arch_folder)
+if not os.path.isdir(kernel_folder):
+    os.mkdir(kernel_folder)
+if not os.path.isdir(results_folder):
+    os.mkdir(results_folder)
+
+'''DATA FUNCTIONS'''
+def data_filename(FLAGS):
     filename=data_folder
     for flag in ["network","dataset","m","confusion","label_corruption","binarized","whitening","random_labels"]:
         filename+=str(FLAGS[flag])+"_"
+    if FLAGS["dataset"] == "boolean" and FLAGS["boolfun_comp"] is not None:
+        filename+=str(FLAGS["boolfun_comp"])+"_"
     filename += "data.h5"
+    return filename
+
+def save_data(train_images,ys,test_images,test_ys,FLAGS):
+    filename = data_filename(FLAGS)
+    h5f = h5py.File(filename,"w")
+    h5f.create_dataset('train_images', data=train_images)
+
+    if FLAGS["training"]:
+        ys = [y[0] for y in ys]
+        h5f.create_dataset('ys', data=ys)
+        h5f.create_dataset('test_images', data=test_images)
+        h5f.create_dataset('test_ys', data=test_ys)
+
+    h5f.close()
+
+def load_data(FLAGS):
+    filename = data_filename(FLAGS)
     h5f = h5py.File(filename,'r')
     train_images = h5f['train_images'][:]
     if FLAGS["training"]:
@@ -22,12 +59,22 @@ def load_data(FLAGS):
     flat_data = np.array([train_image.flatten() for train_image in flat_data])
     return train_images,flat_data,ys,test_images,test_ys
 
-def load_model(FLAGS):
-    arch_folder = "archs/"
+'''ARCHITECTURE FUNCTIONS'''
+def arch_filename(FLAGS):
     filename=arch_folder
-    for flag in ["network","binarized","number_layers","pooling","intermediate_pooling"]:
+    for flag in ["network","binarized","number_layers","pooling","intermediate_pooling","intermediate_pooling_type"]:
         filename+=str(FLAGS[flag])+"_"
     filename += "model"
+    return filename
+
+
+def save_arch(json_string,FLAGS):
+    filename = arch_filename(FLAGS)
+    with open(filename, "w") as f:
+        f.write(json_string)
+
+def load_model(FLAGS):
+    filename = arch_filename(FLAGS)
     json_string_filename = filename
     arch_json_string = open(filename, "r") .read()
     return arch_json_string
@@ -43,12 +90,19 @@ def reset_weights(model):
     new_weights = [initialize_var(w.shape) for w in initial_weights]
     model.set_weights(new_weights)
 
-def load_kernel(FLAGS):
-    kernel_folder = "kernels/"
+def kernel_filename(FLAGS):
     filename=kernel_folder
-    for flag in ["network","dataset","m","confusion","label_corruption","binarized","whitening","random_labels","number_layers","sigmaw","sigmab"]:
+    for flag in ["network","dataset","m","confusion","label_corruption","binarized","whitening","random_labels","number_layers","sigmaw","sigmab","pooling","intermediate_pooling","intermediate_pooling_type"]:
         filename+=str(FLAGS[flag])+"_"
     filename += "kernel.npy"
+    return filename
+
+def save_kernel(K,FLAGS):
+    filename = kernel_filename(FLAGS)
+    np.save(open(filename,"wb"),K)
+
+def load_kernel(FLAGS):
+    filename = kernel_filename(FLAGS)
     K = np.load(filename,"r")
     return K
 
@@ -56,12 +110,15 @@ def define_default_flags(f):
     f.DEFINE_integer('m',None,"Number of training examples")
     f.DEFINE_float('label_corruption', 0.0, "Fraction of corrupted labels")
     f.DEFINE_float('confusion',0.0,"Number of confusion samples to add to training data, as a fraction of m")
+    f.DEFINE_string('boolfun_comp', "none", "The LZ complexity of the Boolean function to use is using boolean dataset")
+    f.DEFINE_string('boolfun', "none", "The Boolean function to use if using boolean dataset")
     f.DEFINE_string('dataset', None, "The dataset to use")
     f.DEFINE_string('network', None, "The type of network to use")
     f.DEFINE_integer('number_layers', None, "The number of layers in the network")
     f.DEFINE_boolean('binarized', True, "Whether to convert classification labels to binary")
-    f.DEFINE_string('pooling', "none", "The pooling type to use")
-    f.DEFINE_string('intermediate_pooling', "0000", "Whether invidiaual layers have a local maxpooling after them; 1 is maxpool; 0 no maxpool")
+    f.DEFINE_string('pooling', "none", "The pooling type to use (none/avg/max)")
+    f.DEFINE_string('intermediate_pooling', "0000", "Whether individual layers have a local maxpooling after them; 1 is maxpool; 0 no maxpool")
+    f.DEFINE_string('intermediate_pooling_type', "max", "The type of pooling at intermediate layers (avg/max)")
     # f.DEFINE_integer('number_inits',1,"Number of initializations")
     f.DEFINE_float('sigmaw', 1.0, "The variance parameter of the weights; their variance will be sigmaw/sqrt(number of inputs to neuron")
     f.DEFINE_float('sigmab', 1.0, "The variance of the biases")

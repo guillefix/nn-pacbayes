@@ -6,17 +6,17 @@
 #export PYTHONPATH="${PYTHONPATH}:/home_directory/.local/lib/python3.5/site-packages/"
 #export PYTHONPATH="${PYTHONPATH}:/home_directory/.local/lib/python2.7/site-packages/:/home_directory/.local/lib/python2.7/dist-packages/"
 
-m=1000
-dataset=mnist
-net=cnn
-L=4
+m=100
+dataset=boolean
+net=fc
+L=1
 prefix=test_
 sigmaw=2.0
 sigmab=0.0
-pool=avg
+pool=none
 c=0.0
 
-n_gpus=4
+n_gpus=1
 export n_gpus=$n_gpus
 
-  ./run_experiment --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --n_samples_repeats 2.0 --use_empirical_K
+  ./run_experiment --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --n_samples_repeats 2.0 --boolfun_comp 35.0 #--use_empirical_K --intermediate_pooling 1111 --intermediate_pooling_type none

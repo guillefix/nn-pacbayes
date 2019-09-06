@@ -4,15 +4,12 @@ import keras
 import pickle
 import os
 
-data_folder = "data/"
-kernel_folder = "kernels/"
-arch_folder = "archs/"
-
+from utils import preprocess_flags
+from utils import data_folder,kernel_folder,arch_folder,results_folder
 
 def main(_):
 
     FLAGS = tf.app.flags.FLAGS.flag_values_dict()
-    from utils import preprocess_flags
     FLAGS = preprocess_flags(FLAGS)
     globals().update(FLAGS)
 
@@ -24,7 +21,6 @@ def main(_):
 
     os.environ["CUDA_VISIBLE_DEVICES"]=str((rank+1)%n_gpus)
     config = tf.ConfigProto()
-    #config.gpu_options.per_process_gpu_memory_fraction = 0.1
     config.gpu_options.allow_growth = True
 
     #tf.enable_eager_execution(config=config)
@@ -35,9 +31,6 @@ def main(_):
 
     from utils import load_data,load_model,load_kernel
     train_images,flat_train_images,ys,_,_ = load_data(FLAGS)
-    #print(train_images)
-    #train_images = tf.constant(train_images)
-
     X = flat_train_images
     ys2 = [[y] for y in ys]
     Y = np.array(ys2)
@@ -52,18 +45,17 @@ def main(_):
 
     K = load_kernel(FLAGS)
 
-        #compute PAC-Bayes bound
-
+    #finding log marginal likelihood of data
     if using_EP:
-        from GP_prob_gpy import GP_prob
+        from GP_prob.GP_prob_gpy import GP_prob
         logPU = GP_prob(K,X,Y)
     elif using_MC:
-        from GP_prob_MC import GP_prob
+        from GP_prob.GP_prob_MC import GP_prob
         logPU = GP_prob(K,X,Y,FLAGS)
 
     if rank == 0:
         print(logPU)
-
+        #compute PAC-Bayes bound
         delta = 2**-10
         bound = (-logPU+2*np.log(total_samples)+1-np.log(delta))/total_samples
         bound = 1-np.exp(-bound)
@@ -73,7 +65,7 @@ def main(_):
         print("Bound: ", bound)
         print("Accuracy bound: ", 1-bound)
         useful_flags = ["dataset", "network", "m","label_corruption","confusion", "number_layers", "sigmaw", "sigmab", "binarized", "pooling", "intermediate_pooling", "whitening", "training", "n_gpus"]
-        with open(prefix+"bounds.txt","a") as file:
+        with open(results_folder+prefix+"bounds.txt","a") as file:
             file.write("#")
             for key in useful_flags:
                 file.write("{}\t".format(key))

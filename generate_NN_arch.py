@@ -1,16 +1,12 @@
 import numpy as np
 import tensorflow as tf
 
-# import tqdm
-#import missinglink
-#missinglink_callback = missinglink.KerasCallback()
-
-arch_folder = "archs/"
+from utils import preprocess_flags, save_arch
+from utils import arch_folder
 
 def main(_):
 
     FLAGS = tf.app.flags.FLAGS.flag_values_dict()
-    from utils import preprocess_flags
     FLAGS = preprocess_flags(FLAGS)
     globals().update(FLAGS)
 
@@ -50,12 +46,15 @@ def main(_):
     elif dataset == "EMNIST":
             image_size=28
             number_channels=1
+    elif dataset == "boolean":
+        input_dim = 7
     else:
-            raise NotImplementedError
+        raise NotImplementedError
 
-    image_height = image_size
-    image_width = image_size
-    input_dim = image_height*image_width*number_channels
+    if dataset != "boolean":
+        image_height = image_size
+        image_width = image_size
+        input_dim = image_height*image_width*number_channels
     set_session = keras.backend.set_session
 
     bias_initializer = keras.initializers.RandomNormal(stddev=sigmab)
@@ -72,6 +71,13 @@ def main(_):
     set_session(sess)  # set this TensorFlow session as the default session for Keras
 
     if network == "cnn":
+        if intermediate_pooling_type=="avg":
+            intermediate_pooling_layer = [keras.layers.AvgPool2D(pool_size=2, padding='same')]
+        elif intermediate_pooling_type=="max":
+            intermediate_pooling_layer = [keras.layers.MaxPool2D(pool_size=2, padding='same')]
+        else:
+            intermediate_pooling_layer = []
+
         if pooling=="avg":
             pooling_layer = [keras.layers.GlobalAveragePooling2D()]
         elif pooling=="max":
@@ -83,7 +89,7 @@ def main(_):
                 [keras.layers.Conv2D(input_shape=(image_height,image_width,number_channels), filters=num_filters, kernel_size=filter_size, padding=padding, strides=strides, activation=tf.nn.relu,
                 kernel_initializer=weight_initializer,
                 bias_initializer=bias_initializer,)] +
-                 ([keras.layers.MaxPool2D(pool_size=2, padding='same')] if have_pooling else [])
+                 (intermediate_pooling_layer if have_pooling else [])
                 # kernel_regularizer=keras.regularizers.l2(0.01*input_dim/(2*sigmaw**2)),
                 # bias_regularizer=keras.regularizers.l2(1/(2*sigmab**2)))
                 # kernel_regularizer=keras.regularizers.l2(0.05),
@@ -232,12 +238,7 @@ def main(_):
     json_string = model.to_json()
 
     '''SAVE ARCHITECTURE'''
-    filename=arch_folder
-    for flag in ["network","binarized","number_layers","pooling","intermediate_pooling"]:
-        filename+=str(FLAGS[flag])+"_"
-    filename += "model"
-    with open(filename, "w") as f:
-        f.write(json_string)
+    save_arch(json_string,FLAGS)
 
 if __name__ == '__main__':
 

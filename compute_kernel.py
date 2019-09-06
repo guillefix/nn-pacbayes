@@ -3,16 +3,15 @@ import tensorflow as tf
 import keras
 import pickle
 import os
+from math import ceil
 
-data_folder = "data/"
-kernel_folder = "kernels/"
-arch_folder = "archs/"
-
+from utils import preprocess_flags, save_kernel
+from utils import load_data,load_model,load_kernel
+from utils import data_folder,kernel_folder,arch_folder
 
 def main(_):
 
     FLAGS = tf.app.flags.FLAGS.flag_values_dict()
-    from utils import preprocess_flags
     FLAGS = preprocess_flags(FLAGS)
     globals().update(FLAGS)
 
@@ -33,7 +32,6 @@ def main(_):
     sess = tf.Session(config=config)
     set_session(sess)  # set this TensorFlow session as the default session for Keras
 
-    from utils import load_data,load_model,load_kernel
     train_images,flat_train_images,ys,_,_ = load_data(FLAGS)
     #print(train_images)
     #train_images = tf.constant(train_images)
@@ -47,34 +45,29 @@ def main(_):
 
     # COMPUTE KERNEL
     if use_empirical_K:
-        from empirical_kernel import empirical_K
-        from math import ceil
+        from nngp_kernel.empirical_kernel import empirical_K
         print("n_samples_repeats",n_samples_repeats)
         print(ceil(int(train_images.shape[0])*n_samples_repeats))
         K = empirical_K(arch_json_string,train_images,ceil(int(train_images.shape[0])*n_samples_repeats),sigmaw=sigmaw,sigmab=sigmab,n_gpus=n_gpus,sess=sess)
     if rank == 0:
         if not use_empirical_K:
             if network=="cnn":
-                from cnn_kernel import kernel_matrix
+                from nngp_kernel.cnn_kernel import kernel_matrix
                 K = kernel_matrix(flat_train_images,image_size=image_size,number_channels=number_channels,filter_sizes=filter_sizes,padding=padding,strides=strides,sigmaw=sigmaw,sigmab=sigmab,n_gpus=n_gpus)
 
             elif network=="resnet":
-                from resnet_kernel import kernel_matrix
+                from nngp_kernel.resnet_kernel import kernel_matrix
                 K = kernel_matrix(flat_train_images,depth=number_layers,image_size=image_size,number_channels=number_channels,n_blocks=3,sigmaw=sigmaw,sigmab=sigmab,n_gpus=n_gpus)
 
             elif network == "fc":
-                from fc_kernel import kernel_matrix
+                from nngp_kernel.fc_kernel import kernel_matrix
                 K = kernel_matrix(flat_train_images,number_layers=number_layers,sigmaw=sigmaw,sigmab=sigmab,n_gpus=n_gpus)
 
         print(K)
 
         '''SAVE KERNEL'''
+        save_kernel(K,FLAGS)
 
-        filename=kernel_folder
-        for flag in ["network","dataset","m","confusion","label_corruption","binarized","whitening","random_labels","number_layers","sigmaw","sigmab"]:
-            filename+=str(FLAGS[flag])+"_"
-        filename += "kernel.npy"
-        np.save(open(filename,"wb"),K)
 
 if __name__ == '__main__':
 

@@ -1,8 +1,0 @@
-#dataset	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound
-cifar	vgg16	500	0.0	0.0	4	2.0	0.1	True	avg	0000	False	True	8	0.5399591713544907
-#dataset	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound
-cifar	vgg16	1000	0.0	0.0	4	2.0	0.1	True	avg	0000	False	True	8	0.4959093035080161
-#dataset	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound
-cifar	vgg16	5000	0.0	0.0	4	2.0	0.1	True	avg	0000	False	True	8	0.3987327443384715
-#dataset	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound
-cifar	vgg16	10000	0.0	0.0	4	2.0	0.1	True	avg	0000	False	True	8	0.3608713389566339

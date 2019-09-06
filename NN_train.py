@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 from math import *
 
-import load_dataset
+# import load_dataset
 #from gpflow import settings
 # import tqdm
 #import missinglink
@@ -78,10 +78,10 @@ def main(_):
                       loss=binary_crossentropy_from_logits,
                       # loss_weights=[50000],
                       metrics=['accuracy'])
-        
+
         if network == "fc":
             num_filters = input_dim
-                      
+
         weights, biases = get_weights(model), get_biases(model)
         weights_norm, biases_norm = measure_sigmas(model)
         print(weights_norm,biases_norm)
@@ -151,11 +151,11 @@ def main(_):
         useful_flags = ["dataset", "m", "network", "pooling", "number_layers", "sigmaw", "sigmab", "whitening", "training", "binarized", "confusion","filter_sizes", "gamma", "intermediate_pooling", "label_corruption", "n_gpus", "n_sample_repeats", "num_filters", "number_inits", "padding", ]
         with open(prefix+"nn_training_results.txt","a") as file:
             file.write("#")
-            for key, value in sorted(useful_flags.items()):
+            for key, value in sorted(useful_flags):
                 file.write("{}\t".format(key))
             file.write("\t".join(["train_acc", "test_error","weights_std","biases_std","weights_mean", "biases_mean", "weights_norm_mean","weights_norm_std","biases_norm_mean","biases_norm_std","mean_iters","train_acc_std","test_acc_std"]))
             file.write("\n")
-            for key, value in sorted(useful_flags.items()):
+            for key, value in sorted(useful_flags):
                 file.write("{}\t".format(value))
             file.write("{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:d}\t{:.4f}\t{:.4f}\n".format(train_acc, 1-test_acc,weights_std,biases_std,\
                 weights_mean,biases_mean,weights_norm_mean,weights_norm_std,biases_norm_mean,biases_norm_std,int(mean_iters),train_acc_std,test_acc_std)) #normalized to sqrt(input_dim)
