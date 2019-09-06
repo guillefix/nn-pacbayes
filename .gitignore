@@ -31,3 +31,5 @@ resnext101.sh
 resnext50.sh
 vgg16.sh
 
+checkpint.p
+fs.p

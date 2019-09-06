@@ -3,13 +3,13 @@
 #export PYTHONPATH="/home_directory/.local/lib/python3.5/site-packages/:/usr/local/lib/python3.5/dist-packages/"
 export PYTHONPATH=""
 
-m=1000
-dataset=mnist
-net=cnn
+m=20000
+dataset=cifar
+net=vgg16
 L=4
-prefix=test_
+prefix=msweep
 sigmaw=2.0
-sigmab=0.0
+sigmab=0.1
 pool=avg
 c=0.0
 

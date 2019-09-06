@@ -4,9 +4,9 @@ import keras
 import pickle
 import os
 
-data_folder = "data/"
-kernel_folder = "kernels/"
-arch_folder = "archs/"
+data_folder = "/mnt/zfsusers/guillefix/nn-pacbayes/data/"
+kernel_folder = "/mnt/zfsusers/guillefix/nn-pacbayes/kernels/"
+arch_folder = "/mnt/zfsusers/guillefix/nn-pacbayes/archs/"
 
 
 def main(_):
