@@ -3,6 +3,11 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import tensorflow as tf
 import GPy
+import os, sys
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT_DIR = os.path.abspath(os.path.join(THIS_DIR, os.pardir))
+GP_prob_folder = os.path.join(ROOT_DIR, 'GP_prob')
+sys.path.append(GP_prob_folder)
 from custom_kernel_matrix.custom_kernel_matrix import CustomMatrix
 from mpi4py import MPI
 comm = MPI.COMM_WORLD

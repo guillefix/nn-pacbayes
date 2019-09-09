@@ -133,7 +133,9 @@ def main(_):
         biases_norm_std = np.std(biases_norm)
 
         test_acc = np.mean(np.array(test_accs))
+        print('Mean test accuracy:', test_acc)
         train_acc = np.mean(np.array(train_accs))
+        print('Mean train accuracy:', train_acc)
         test_acc = np.mean(np.array(test_accs))
         train_acc = np.mean(np.array(train_accs))
         train_acc_std = np.std(np.array(test_accs))
@@ -148,15 +150,15 @@ def main(_):
         # if "h" in useful_flags: del useful_flags["h"]
         # if "f" in useful_flags: del useful_flags["f"]
         # if "prefix" in useful_flags: del useful_flags["prefix"]
-        useful_flags = ["dataset", "m", "network", "pooling", "number_layers", "sigmaw", "sigmab", "whitening", "training", "binarized", "confusion","filter_sizes", "gamma", "intermediate_pooling", "label_corruption", "n_gpus", "n_sample_repeats", "num_filters", "number_inits", "padding", ]
+        useful_flags = ["dataset", "m", "network", "pooling", "number_layers", "sigmaw", "sigmab", "whitening", "training", "binarized", "confusion","filter_sizes", "gamma", "intermediate_pooling", "label_corruption", "n_gpus", "n_samples_repeats", "num_filters", "number_inits", "padding"]
         with open(prefix+"nn_training_results.txt","a") as file:
             file.write("#")
-            for key, value in sorted(useful_flags):
+            for key in sorted(useful_flags):
                 file.write("{}\t".format(key))
             file.write("\t".join(["train_acc", "test_error","weights_std","biases_std","weights_mean", "biases_mean", "weights_norm_mean","weights_norm_std","biases_norm_mean","biases_norm_std","mean_iters","train_acc_std","test_acc_std"]))
             file.write("\n")
-            for key, value in sorted(useful_flags):
-                file.write("{}\t".format(value))
+            for key in sorted(useful_flags):
+                file.write("{}\t".format(FLAGS[key]))
             file.write("{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:d}\t{:.4f}\t{:.4f}\n".format(train_acc, 1-test_acc,weights_std,biases_std,\
                 weights_mean,biases_mean,weights_norm_mean,weights_norm_std,biases_norm_mean,biases_norm_std,int(mean_iters),train_acc_std,test_acc_std)) #normalized to sqrt(input_dim)
     else:

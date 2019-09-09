@@ -24,7 +24,7 @@ if not os.path.isdir(results_folder):
 '''DATA FUNCTIONS'''
 def data_filename(FLAGS):
     filename=data_folder
-    for flag in ["network","dataset","m","confusion","label_corruption","binarized","whitening","random_labels"]:
+    for flag in ["network","dataset","m","confusion","label_corruption","binarized","whitening","centering","channel_normalization","random_labels"]:
         filename+=str(FLAGS[flag])+"_"
     if FLAGS["dataset"] == "boolean" and FLAGS["boolfun_comp"] is not None:
         filename+=str(FLAGS["boolfun_comp"])+"_"
@@ -125,9 +125,12 @@ def define_default_flags(f):
     # f.DEFINE_boolean('compute_bound', False, "Whether to compute the PAC-Bayes bound or just generate the training data")
     #f.DEFINE_boolean('compute_kernel', False, "Whether to compute the kernel or just generate the training data")
     f.DEFINE_boolean('whitening', False, "Whether to perform ZCA whitening and normalization on the training data")
+    f.DEFINE_boolean('centering', False, "Whether to substract the mean of the data")
+    f.DEFINE_boolean('channel_normalization', False, "Whether to normalize the channel of the images")
     f.DEFINE_boolean('no_training', False, "Whether to also generate labels and test data")
     f.DEFINE_boolean('use_empirical_K', False, "Whether to use the empirical kernel matrix (from sampling) or the analytical one")
     f.DEFINE_integer('n_gpus', 1, "Number of GPUs to use")
+    f.DEFINE_integer('threshold', -1, "Label above or on which to binarze as 1, and below which to binarize as 0")
     f.DEFINE_float('n_samples_repeats', 1.0, "Number of samples to compute empirical kernel, as a multiple of training set size, m")
     f.DEFINE_boolean('random_labels', True, "Whether the confusion data is constructed by randomizing the labels, or by taking a wrong label")
     f.DEFINE_string('prefix', "", "A prefix to use for the result files")

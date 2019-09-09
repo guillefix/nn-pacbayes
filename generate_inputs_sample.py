@@ -123,6 +123,10 @@ def main(_):
     else:
         raise NotImplementedError
 
+    global threshold
+    if threshold==-1:
+        threshold=ceil(num_classes/2)
+
     ##adding channel dimenions for image datasets without them
     if dataset in ["mnist","mnist-fashion","KMNIST","EMNIST"]:
         train_images = np.expand_dims(train_images,-1)
@@ -141,9 +145,12 @@ def main(_):
 
     ##get random training sample##
 
+    np.random.seed(42069)
+
     #for datasets that are not images, like the boolean one
     if dataset == "boolean":
         indices = np.random.choice(range(len(inputs)), size=total_samples, replace=False)
+        # print(indices)
         test_indices = np.array([i for i in range(len(inputs)) if i not in indices])
         train_inputs = inputs[indices,:].astype(np.float32)
         train_labels = labels[indices]
@@ -155,8 +162,8 @@ def main(_):
         flat_train_images = train_inputs
 
     else:
-
         indices = np.random.choice(range(len(train_images)), size=total_samples, replace=False)
+        # print(indices)
         train_images = (train_images[indices,:,:,:]/255.0).astype(np.float32) #NHWC
         if training:
             test_images = test_images/255.0
@@ -170,19 +177,11 @@ def main(_):
             flat_test_images = np.transpose(test_images, tp_order)  # NHWC -> NCHW
             flat_test_images = np.array([test_image.flatten() for test_image in flat_test_images])
 
-        #WHITENING using training_images
-        if whitening:
+        if channel_normalization:
             #flatten to compute SVD matrix
-            print("whitening")
+            print("channel normalizing")
             x = train_images
             flat_x = flat_train_images
-            sigma = np.matmul(flat_x.T, flat_x) / flat_x.shape[0]
-            u, s, _ = np.linalg.svd(sigma)
-            zca_epsilon = 1e-10  # avoid division by 0
-            d = np.diag(1. / np.sqrt(s + zca_epsilon))
-            Q = np.matmul(np.matmul(u, d), u.T)
-            flat_x = np.matmul(flat_x, Q.T)
-            flat_train_images = flat_x
 
             #normalize each channel (3 colors for e.g.)
             #to do this we reshape the tensor to NHWC form
@@ -197,7 +196,6 @@ def main(_):
 
             #test images
             if training:
-                flat_test_images = np.matmul(flat_test_images, Q.T)
                 test_images = flat_test_images.reshape((test_images.shape[0], test_images.shape[3], test_images.shape[1],test_images.shape[2]))
                 test_images =  np.transpose(test_images, tp_order)
                 # test_images = flat_test_images.reshape((test_images.shape[0], test_images.shape[1], test_images.shape[2],test_images.shape[3]))
@@ -213,6 +211,70 @@ def main(_):
                 flat_test_images = np.array([test_image.flatten() for test_image in flat_test_images])
 
 
+        if centering:
+            #flatten to compute SVD matrix
+            print("centering")
+            x = train_images
+            flat_x = flat_train_images
+            flat_x -= flat_x.mean(axis=0)
+
+            x = flat_x.reshape((x.shape[0], x.shape[3], x.shape[1],x.shape[2]))
+            tp_order = np.concatenate([[0], np.arange(2, len(train_images.shape)), [1]])
+            train_images =  np.transpose(x, tp_order)
+
+            #test images
+            if training:
+                flat_test_images -= flat_test_images.mean(axis=0)
+                test_images = flat_test_images.reshape((test_images.shape[0], test_images.shape[3], test_images.shape[1],test_images.shape[2]))
+                test_images =  np.transpose(test_images, tp_order)
+                # test_images = flat_test_images.reshape((test_images.shape[0], test_images.shape[1], test_images.shape[2],test_images.shape[3]))
+                # test_images = (test_images - x_mean) / x_std
+
+        #WHITENING using training_images
+        if whitening:
+            #flatten to compute SVD matrix
+            print("ZCA whitening")
+            x = train_images
+            flat_x = flat_train_images
+            flat_x -= flat_x.mean(axis=0)
+            sigma = np.matmul(flat_x.T, flat_x) / flat_x.shape[0]
+            u, s, _ = np.linalg.svd(sigma)
+            zca_epsilon = 1e-10  # avoid division by 0
+            d = np.diag(1. / np.sqrt(s + zca_epsilon))
+            Q = np.matmul(np.matmul(u, d), u.T)
+            flat_x = np.matmul(flat_x, Q.T)
+            flat_train_images = flat_x
+
+            #normalize each channel (3 colors for e.g.)
+            #to do this we reshape the tensor to NHWC form
+            x = flat_x.reshape((x.shape[0], x.shape[3], x.shape[1],x.shape[2]))
+            tp_order = np.concatenate([[0], np.arange(2, len(train_images.shape)), [1]])
+            train_images =  np.transpose(x, tp_order)
+            # x = train_images
+            # x_mean = np.mean(x, axis=(0,1,2))
+            # x_std = np.std(x, axis=(0,1,2))
+            # x = (x - x_mean) / x_std
+            # train_images = x
+
+            #test images
+            if training:
+                flat_test_images -= flat_test_images.mean(axis=0)
+                flat_test_images = np.matmul(flat_test_images, Q.T)
+                test_images = flat_test_images.reshape((test_images.shape[0], test_images.shape[3], test_images.shape[1],test_images.shape[2]))
+                test_images =  np.transpose(test_images, tp_order)
+                # test_images = flat_test_images.reshape((test_images.shape[0], test_images.shape[1], test_images.shape[2],test_images.shape[3]))
+                # test_images = (test_images - x_mean) / x_std
+
+
+            #flatten again after normalizing
+            # tp_order = np.concatenate([[0,len(train_images.shape)-1], np.arange(1, len(train_images.shape)-1)])
+            # flat_train_images = np.transpose(train_images, tp_order)  # NHWC -> NCHW
+            # flat_train_images = np.array([train_image.flatten() for train_image in flat_train_images])
+            # if training:
+            #     flat_test_images = np.transpose(test_images, tp_order)  # NHWC -> NCHW
+            #     flat_test_images = np.array([test_image.flatten() for test_image in flat_test_images])
+
+
     if network == "fc":
         train_images = flat_train_images
         if training:
@@ -223,23 +285,23 @@ def main(_):
 
     #corrupting images, and adding confusion data
 
-    def binarize(label):
-        return label>=ceil(num_classes/2)
+    def binarize(label, threshold):
+        return label>=threshold
 
     # %%
     if training:
-        def corrupted_label(label,label_corruption,zero_one=False,binarized=True):
+        def process_labels(label,label_corruption,threshold,zero_one=False,binarized=True):
             if binarized:
                 if zero_one:
                     if np.random.rand() < label_corruption:
                         return np.random.choice([0,1])
                     else:
-                        return float(binarize(label))
+                        return float(binarize(label,threshold))
                 else:
                     if np.random.rand() < label_corruption:
                         return np.random.choice([-1.0,1.0])
                     else:
-                        return float(binarize(label))*2.0-1
+                        return float(binarize(label,threshold))*2.0-1
             else:
                 if np.random.rand() < label_corruption:
                     return np.random.choice(range(num_classes))
@@ -247,11 +309,11 @@ def main(_):
                     return float(label)
 
         if random_labels:
-    	    ys = [[corrupted_label(label,label_corruption,zero_one=True,binarized=binarized)] for label in train_labels[:m]] + [[corrupted_label(label,1.0,zero_one=True,binarized=binarized)] for label in train_labels[m:]]
+    	    ys = [[process_labels(label,label_corruption,threshold,zero_one=True,binarized=binarized)] for label in train_labels[:m]] + [[process_labels(label,1.0,threshold,zero_one=True,binarized=binarized)] for label in train_labels[m:]]
         else:
-    	    ys = [[corrupted_label(label,label_corruption,zero_one=True,binarized=binarized)] for label in train_labels[:m]] + [[float(not binarize(label))] for label in train_labels[m:]]
+    	    ys = [[process_labels(label,label_corruption,threshold,zero_one=True,binarized=binarized)] for label in train_labels[:m]] + [[float(not binarize(label,threshold))] for label in train_labels[m:]]
 
-        test_ys = np.array([corrupted_label(label,label_corruption,zero_one=True,binarized=binarized) for label in test_labels])
+        test_ys = np.array([process_labels(label,label_corruption,threshold,zero_one=True,binarized=binarized) for label in test_labels])
 
     '''SAVING DATA SAMPLES'''
 
