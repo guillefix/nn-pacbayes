@@ -43,7 +43,7 @@ def main(_):
     input_dim = train_images.shape[1]
     num_channels = train_images.shape[-1]
 
-    sample_weights = np.ones(total_samples)
+    sample_weights = np.ones(int(total_samples))
     sample_weights[m:] = gamma
 
     arch_json_string = load_model(FLAGS)
@@ -150,7 +150,7 @@ def main(_):
         # if "h" in useful_flags: del useful_flags["h"]
         # if "f" in useful_flags: del useful_flags["f"]
         # if "prefix" in useful_flags: del useful_flags["prefix"]
-        useful_flags = ["dataset", "m", "network", "pooling", "number_layers", "sigmaw", "sigmab", "whitening", "training", "binarized", "confusion","filter_sizes", "gamma", "intermediate_pooling", "label_corruption", "n_gpus", "n_samples_repeats", "num_filters", "number_inits", "padding"]
+        useful_flags = ["dataset", "m", "network", "pooling", "number_layers", "sigmaw", "sigmab", "whitening", "centering", "channel_normalization", "training", "binarized", "confusion","filter_sizes", "gamma", "intermediate_pooling", "label_corruption", "n_gpus", "n_samples_repeats", "num_filters", "number_inits", "padding"]
         with open(prefix+"nn_training_results.txt","a") as file:
             file.write("#")
             for key in sorted(useful_flags):

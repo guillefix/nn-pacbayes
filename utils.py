@@ -24,7 +24,7 @@ if not os.path.isdir(results_folder):
 '''DATA FUNCTIONS'''
 def data_filename(FLAGS):
     filename=data_folder
-    for flag in ["network","dataset","m","confusion","label_corruption","binarized","whitening","centering","channel_normalization","random_labels"]:
+    for flag in ["network","dataset","m","confusion","label_corruption","binarized","whitening","centering","channel_normalization","threshold","random_labels"]:
         filename+=str(FLAGS[flag])+"_"
     if FLAGS["dataset"] == "boolean" and FLAGS["boolfun_comp"] is not None:
         filename+=str(FLAGS["boolfun_comp"])+"_"
