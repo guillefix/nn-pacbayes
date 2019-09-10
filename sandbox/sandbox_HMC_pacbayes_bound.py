@@ -17,20 +17,24 @@ kernel_folder = "kernels/"
 #RUN this if no data file found
 # python3 generate_inputs_sample.py --m 100 --dataset mnist --sigmaw 10.0 --sigmab 10.0 --network fc --prefix test --random_labels --training --number_layers 1
 FLAGS = {}
-FLAGS['m'] = 100
-FLAGS['number_inits'] = 1
+FLAGS['m'] = 50
+FLAGS['number_inits'] = 24
 FLAGS['label_corruption'] =  0.0
 FLAGS['confusion'] = 0.0
 FLAGS['dataset'] =  "mnist"
+# FLAGS['dataset'] =  "EMNIST"
 FLAGS['binarized'] =  True
 FLAGS['number_layers'] =  1
 FLAGS['pooling'] =  "none"
 FLAGS['intermediate_pooling'] =  "0000"
-FLAGS['sigmaw'] =  10.0
-FLAGS['sigmab'] =  10.0
+FLAGS['intermediate_pooling_type'] =  "max"
+FLAGS['sigmaw'] =  2.0
+FLAGS['sigmab'] =  0.0
 FLAGS['network'] =  "fc"
-FLAGS['prefix'] =  "test"
+FLAGS['prefix'] =  "test_"
 FLAGS['whitening'] =  False
+FLAGS['centering'] =  False
+FLAGS['channel_normalization'] =  False
 FLAGS['random_labels'] =  True
 FLAGS['training'] =  True
 FLAGS['no_training'] =  False
@@ -45,9 +49,9 @@ input_dim = train_images.shape[1]
 num_channels = train_images.shape[-1]
 # tp_order = np.concatenate([[0,len(train_images.shape)-1], np.arange(1, len(train_images.shape)-1)])
 # train_images = tf.constant(train_images)
-
-test_images = test_images[:50]
-test_ys = test_ys[:50]
+test_set_size = 50
+test_images = test_images[:test_set_size]
+test_ys = test_ys[:test_set_size]
 
 
 X = train_images
@@ -57,12 +61,15 @@ ysfull = ys2 + [[y] for y in test_ys]
 Yfull = np.array(ysfull)
 Y = np.array(ys2)
 
-from fc_kernel import kernel_matrix
+Xfull.shape
+
+from nngp_kernel.fc_kernel import kernel_matrix
+number_layers = 6
 Kfull = kernel_matrix(Xfull,number_layers=number_layers,sigmaw=sigmaw,sigmab=sigmab)
 
 
 # FLAGS["m"] = 1500
-#Kfull = load_kernel(FLAGS)
+# Kfull = load_kernel(FLAGS)
 K = Kfull[0:m,0:m]
 
 # filename=kernel_folder
@@ -71,6 +78,74 @@ K = Kfull[0:m,0:m]
 # filename += "kernel.npy"
 # np.save(open(filename,"wb"),Kfull)
 #
+
+### GP exact inference for classification tasks! ###
+
+#%%
+
+import os
+
+os.environ["CUDA_PATH"] = "/usr/local/cuda-10.0"
+os.environ["LD_LIBRARY_PATH"] = "/usr/local/cuda-10.0/lib64:/usr/local/cuda-8.0/lib64::/usr/local/lib:/usr/local/cuda-10.0/lib64"
+
+import cupy as cp
+# import numpy as cp
+
+Yfull = np.array(ysfull)
+Y = np.array(ys2)
+Y = cp.array(Y)
+Yfull = cp.array(Yfull)
+
+mempool = cp.get_default_memory_pool()
+pinned_mempool = cp.get_default_pinned_memory_pool()
+
+#%%
+
+generrors=[]
+# for i in range(1000):
+while len(generrors)<100:
+    mempool.free_all_blocks()
+    pinned_mempool.free_all_blocks()
+    exact_samples = cp.random.multivariate_normal(cp.zeros(m+test_set_size),Kfull,int(1e5),dtype=np.float32)>0
+    # exact_samples = cp.random.multivariate_normal(cp.zeros(m+test_set_size),Kfull,int(1e6))>0
+
+
+    # Y_extended = np.concatenate([Y.T[0,:],np.ones(50)])==1
+    fits_data = cp.prod(~(exact_samples[:,:m]^(Y.T==1)),1)
+
+    # indices = cp.where(fits_data)
+    indices = cp.where(fits_data)[0]
+
+    generrors += (cp.sum(~(exact_samples[indices,:][:,m:]^(Yfull.T[0,m:]==1)),1)/test_set_size*1.0).tolist()
+
+# np.mean(np.concatenate(generrors))
+print(len(generrors), generrors)
+np.mean(generrors)
+
+#%%
+
+freq = 0
+for i in range(1000):
+    mempool.free_all_blocks()
+    pinned_mempool.free_all_blocks()
+    exact_samples = cp.random.multivariate_normal(cp.zeros(m),K,int(1e5),dtype=np.float32)>0
+    # exact_samples = cp.random.multivariate_normal(cp.zeros(m+test_set_size),Kfull,int(1e6))>0
+
+
+    # Y_extended = np.concatenate([Y.T[0,:],np.ones(50)])==1
+    fits_data = cp.prod(~(exact_samples[:,:m]^(Y.T==1)),1)
+
+    # indices = cp.where(fits_data)
+    indices = cp.where(fits_data)[0]
+    freq += len(indices)
+
+    # generrors += (cp.sum(~(exact_samples[indices,:][:,m:]^(Yfull.T[0,m:]==1)),1)/test_set_size*1.0).tolist()
+
+print(freq/1e8)
+# print(len(generrors), generrors)
+# np.mean(generrors)
+
+###############################
 
 #%%
 

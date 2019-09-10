@@ -1,10 +1,10 @@
 #%%
-from fc_kernel import kernel_matrix
+from nngp_kernel.fc_kernel import kernel_matrix
 import numpy as np
 import sys
 # sys.path.insert(0, 'gp/nngp/')
 # imp.reload(GP_prob_gpy)
-from GP_prob_gpy import GP_prob as logGPProb
+from GP_prob.GP_prob_gpy import GP_prob as logGPProb
 from collections import Counter
 import matplotlib.pyplot as plt
 
@@ -35,11 +35,17 @@ inputs = np.array([[float(x) for x in "{0:b}".format(i).zfill(input_dim)] for i 
 # inputs.shape
 
 N = len(inputs)
+num_samples = 100000
 
+#%%
+# w2 = np.random.randn(input_dim,1)
+# w2 = np.tile(w2,(1,num_samples))
+# b2 = 0*np.random.randn(1,1)
+# b2 = np.tile(b2,(1,num_samples))
 # %matplotlib
 freqs = np.array([0 for i in range(N+1)])
-num_samples = 1000000
-for i in range(10):
+num_repeats = 2
+for i in range(num_repeats):
     print(i)
     input_dim = inputs.shape[1]
     w2 = np.random.randn(input_dim,num_samples)
@@ -66,14 +72,16 @@ for i in range(10):
 # np.mean(inputs)
 
 freqs
-
+# %matplotlib
 #plt.plot(freqs/num_samples, '.', label=str(number_layers))
-np.diff(freqs)[:64]
-plt.plot(freqs/num_samples, '.')
+# np.diff(freqs)[:64]
+plt.plot(freqs/(num_repeats*num_samples), '.')
+#%%
 plt.yscale("log")
 plt.xlabel("Number of points classified as 1")
 plt.ylabel("Probability")
 plt.legend()
+plt.savefig("p_vs_t_fixing_last_layer_sampling_first_layer_moar.png")
 # plt.savefig("num_points_classified_as_1_for_different_depths_GP.png")
 
 #%%

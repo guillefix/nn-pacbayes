@@ -61,6 +61,7 @@ def main(_):
     set_session(sess)  # set this TensorFlow session as the default session for Keras
 
     test_accs = []
+    test_sensitivities = []
     train_accs = []
     weightss = []
     biasess = []
@@ -77,7 +78,7 @@ def main(_):
                       #loss='binary_crossentropy',
                       loss=binary_crossentropy_from_logits,
                       # loss_weights=[50000],
-                      metrics=['accuracy'])
+                      metrics=['accuracy',tf.keras.metrics.SensitivityAtSpecificity(0.99)])
 
         if network == "fc":
             num_filters = input_dim
@@ -88,7 +89,8 @@ def main(_):
 
         # model.fit(train_images, ys, verbose=2, epochs=500)
         # print(ys)
-        model.fit(train_images, ys, verbose=1, sample_weight=sample_weights, validation_data=(train_images, ys), epochs=3000,callbacks=callbacks)
+        model.fit(train_images, ys, verbose=1,\
+        sample_weight=sample_weights, validation_data=(train_images, ys), epochs=3000,callbacks=callbacks)
         #print([w.shape for w in model.get_weights()])
         #print(np.concatenate([w.flatten() for w in model.get_weights()]).shape)
 
@@ -97,11 +99,13 @@ def main(_):
         weights_norm, biases_norm = measure_sigmas(model)
         print(weights_norm,biases_norm)
 
-        train_loss, train_acc = model.evaluate(train_images, ys)
-        test_loss, test_acc = model.evaluate(test_images, test_ys)
+        train_loss, train_acc,train_sensitivity = model.evaluate(train_images, ys)
+        test_loss, test_acc, test_sensitivity = model.evaluate(test_images, test_ys)
 
         print('Test accuracy:', test_acc)
+        print('Test sensitivity:', test_sensitivity)
         test_accs.append(test_acc)
+        test_sensitivities.append(test_sensitivity)
         train_accs.append(train_acc)
         weightss.append(weights)
         biasess.append(biases)
@@ -112,6 +116,7 @@ def main(_):
 
     print("HI")
     test_accs = comm.gather(test_accs, root=0)
+    test_sensitivities = comm.gather(test_sensitivities, root=0)
     train_accs = comm.gather(train_accs, root=0)
 
     weightss = comm.gather(weightss, root=0)
@@ -133,7 +138,9 @@ def main(_):
         biases_norm_std = np.std(biases_norm)
 
         test_acc = np.mean(np.array(test_accs))
+        test_sensitivity = np.mean(np.array(test_sensitivities))
         print('Mean test accuracy:', test_acc)
+        print('Mean test sensitivity:', test_sensitivity)
         train_acc = np.mean(np.array(train_accs))
         print('Mean train accuracy:', train_acc)
         test_acc = np.mean(np.array(test_accs))
@@ -150,7 +157,7 @@ def main(_):
         # if "h" in useful_flags: del useful_flags["h"]
         # if "f" in useful_flags: del useful_flags["f"]
         # if "prefix" in useful_flags: del useful_flags["prefix"]
-        useful_flags = ["dataset", "m", "network", "pooling", "number_layers", "sigmaw", "sigmab", "whitening", "training", "binarized", "confusion","filter_sizes", "gamma", "intermediate_pooling", "label_corruption", "n_gpus", "n_samples_repeats", "num_filters", "number_inits", "padding"]
+        useful_flags = ["dataset", "m", "network", "pooling", "number_layers", "sigmaw", "sigmab", "whitening", "centering", "channel_normalization", "training", "binarized", "confusion","filter_sizes", "gamma", "intermediate_pooling", "label_corruption", "n_gpus", "n_samples_repeats", "num_filters", "number_inits", "padding"]
         with open(prefix+"nn_training_results.txt","a") as file:
             file.write("#")
             for key in sorted(useful_flags):

@@ -9,24 +9,27 @@ arch_folder = "archs/"
 kernel_folder = "kernels/"
 
 FLAGS = {}
-FLAGS['m'] = 1000
-FLAGS['number_inits'] = 1
+FLAGS['m'] = 50
+FLAGS['number_inits'] = 24
 FLAGS['label_corruption'] =  0.0
 FLAGS['confusion'] = 0.0
 FLAGS['dataset'] =  "mnist"
+# FLAGS['dataset'] =  "EMNIST"
 FLAGS['binarized'] =  True
 FLAGS['number_layers'] =  1
 FLAGS['pooling'] =  "none"
 FLAGS['intermediate_pooling'] =  "0000"
-FLAGS['sigmaw'] =  10.0
-FLAGS['sigmab'] =  10.0
+FLAGS['intermediate_pooling_type'] =  "max"
+FLAGS['sigmaw'] =  2.0
+FLAGS['sigmab'] =  0.0
 FLAGS['network'] =  "fc"
-FLAGS['prefix'] =  "test"
+FLAGS['prefix'] =  "test_"
 FLAGS['whitening'] =  False
+FLAGS['centering'] =  False
+FLAGS['channel_normalization'] =  False
 FLAGS['random_labels'] =  True
 FLAGS['training'] =  True
 FLAGS['no_training'] =  False
-FLAGS['n_gpus'] =  1
 
 from mpi4py import MPI
 comm = MPI.COMM_WORLD
@@ -145,6 +148,8 @@ if rank == 0:
     logPU = GP_prob(K,X,Y)
     print(logPU)
 
+####
+#%%
 
 # exact_samples = np.random.multivariate_normal(np.zeros(m),K,int(1e7))>0
 #
@@ -158,5 +163,5 @@ if rank == 0:
 # PU
 # np.log(PU)
 # m.likelihood.log_predictive_density(X,sample[:,:,0])
-
+#
 # m.log_likelihood()
