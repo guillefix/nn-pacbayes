@@ -7,11 +7,11 @@
 #export PYTHONPATH="${PYTHONPATH}:/home_directory/.local/lib/python2.7/site-packages/:/home_directory/.local/lib/python2.7/dist-packages/"
 
 m=50
-# dataset=mnist
-dataset=mnist
+dataset=boolean
+#dataset=EMNIST
 net=fc
 L=1
-prefix=test_
+prefix=boolfun
 sigmaw=2.0
 sigmab=0.0
 pool=none
@@ -21,9 +21,6 @@ t=1
 
 n_gpus=1
 export n_gpus=$n_gpus
-
-  # ./run_experiment --prefix $prefix --m $m --centering --threshold $t --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 2.0 --boolfun_comp 35.0 #--use_empirical_K --intermediate_pooling 1111 --intermediate_pooling_type none
-  ./run_experiment --prefix $prefix --m $m --threshold $t --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 2.0 --boolfun_comp 35.0 #--use_empirical_K --intermediate_pooling 1111 --intermediate_pooling_type none
 
   #unblanced MNIST t=1
   # 93.5 uncentered L=1 b=0 (bound: 51.2) (MC bound: 68.8)
@@ -54,3 +51,13 @@ export n_gpus=$n_gpus
   #70.2 for uncentered L=5
   #73. for centered L=1
   #72. for uncentered L=1
+
+for L in `seq 1 2 6`; do
+
+for sigmab in 0.0 0.5 1.0 2.0; do
+
+  ./run_experiment --prefix $prefix --m $m --centering --threshold $t --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 2.0 --boolfun_comp 35.0 #--use_empirical_K --intermediate_pooling 1111 --intermediate_pooling_type none
+  ./run_experiment --prefix $prefix --m $m --threshold $t --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 2.0 --boolfun_comp 35.0 #--use_empirical_K --intermediate_pooling 1111 --intermediate_pooling_type none
+
+done
+done

@@ -38,7 +38,7 @@ def main(_):
                     [transforms.ToTensor()]
                 ))
         print(d)
-        mm = ceil(d.data.shape[0]*5/6)
+        mm = int(ceil(d.data.shape[0]*5/6))
         (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
         num_classes = 10
     elif dataset == "mnist":
@@ -50,7 +50,7 @@ def main(_):
                     [transforms.ToTensor()]
                 ))
         print(d)
-        mm = ceil(d.data.shape[0]*5/6)
+        mm = int(ceil(d.data.shape[0]*5/6))
         (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
     elif dataset == "mnist-fashion":
         num_classes = 10
@@ -61,7 +61,7 @@ def main(_):
                     [transforms.ToTensor()]
                 ))
         print(d)
-        mm = ceil(d.data.shape[0]*5/6)
+        mm = int(ceil(d.data.shape[0]*5/6))
         (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
     elif dataset == "KMNIST":
         d = torchvision.datasets.KMNIST("./datasets",download=True,
@@ -81,7 +81,7 @@ def main(_):
                 ),
                 split="byclass")
         print(d)
-        mm = ceil(d.data.shape[0]*5/6)
+        mm = int(ceil(d.data.shape[0]*5/6))
         (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
         num_classes = 62
 
@@ -149,7 +149,7 @@ def main(_):
 
     #for datasets that are not images, like the boolean one
     if dataset == "boolean":
-        indices = np.random.choice(range(len(inputs)), size=total_samples, replace=False)
+        indices = np.random.choice(range(int(len(inputs))), size=int(total_samples), replace=False)
         # print(indices)
         test_indices = np.array([i for i in range(len(inputs)) if i not in indices])
         train_inputs = inputs[indices,:].astype(np.float32)
@@ -162,7 +162,7 @@ def main(_):
         flat_train_images = train_inputs
 
     else:
-        indices = np.random.choice(range(len(train_images)), size=total_samples, replace=False)
+        indices = np.random.choice(range(len(train_images)), size=int(total_samples), replace=False)
         # print(indices)
         train_images = (train_images[indices,:,:,:]/255.0).astype(np.float32) #NHWC
         if training:
