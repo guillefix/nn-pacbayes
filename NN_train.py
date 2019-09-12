@@ -78,6 +78,7 @@ def main(_):
                       #loss='binary_crossentropy',
                       loss=binary_crossentropy_from_logits,
                       # loss_weights=[50000],
+                      #metrics=['accuracy'])
                       metrics=['accuracy',tf.keras.metrics.SensitivityAtSpecificity(0.99)])
 
         if network == "fc":
