@@ -126,7 +126,7 @@ def main(_):
                     for i in range(number_layers-1)
                 ]
                 + [
-                    keras.layers.Dense(1,#)#activation=tf.nn.sigmoid,)
+                    keras.layers.Dense(1,#activation=tf.nn.sigmoid,
                     kernel_initializer=weight_initializer,
                     bias_initializer=bias_initializer,)
                     # kernel_regularizer=keras.regularizers.l2(0.01*input_dim/(2*sigmaw**2)),
@@ -134,6 +134,7 @@ def main(_):
                     # kernel_regularizer=keras.regularizers.l2(0.05),
                     # bias_regularizer=keras.regularizers.l2(0.1))
                 ])
+
     elif network == "resnet":
         from keras_contrib.applications.resnet import ResNet
         import keras
