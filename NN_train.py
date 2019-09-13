@@ -74,10 +74,21 @@ def main(_):
         print(init)
         model = model_from_json(arch_json_string)
 
+        # import keras.backend as K
+        #
+        # def sensitivity(y_true, y_pred):
+        #     fns=tf.math.reduce_sum((~((y_true==1)^(y_pred>0.5)))&(y_true==1))
+        #     return tf.divide(tf.to_float(fns),tf.math.reduce_sum(y_true))
+        #     # m=tf.keras.metrics.SensitivityAtSpecificity(0.99)
+        #     # # m.update_state(y_true,tf.math.sigmoid(y_pred))
+        #     # m.update_state(y_true,y_pred)
+        #     # return m.result()
+
         model.compile(optimizer='sgd',#keras.optimizers.SGD(lr=0.01,momentum=0.9,decay=1e-6),#'sgd',#tf.keras.optimizers.SGD(lr=0.01),
                       #loss='binary_crossentropy',
                       loss=binary_crossentropy_from_logits,
                       # loss_weights=[50000],
+                      #metrics=['accuracy',sensitivity])
                       metrics=['accuracy',tf.keras.metrics.SensitivityAtSpecificity(0.99)])
 
         if network == "fc":
