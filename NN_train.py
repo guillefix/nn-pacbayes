@@ -11,6 +11,7 @@ from math import *
 from utils import binary_crossentropy_from_logits,EarlyStoppingByAccuracy, get_biases, get_weights, measure_sigmas, get_rescaled_weights
 
 def main(_):
+    MAX_TRAIN_EPOCHS=3000
 
     FLAGS = tf.app.flags.FLAGS.flag_values_dict()
     from utils import preprocess_flags
@@ -43,7 +44,8 @@ def main(_):
     input_dim = train_images.shape[1]
     num_channels = train_images.shape[-1]
 
-    sample_weights = np.ones(int(total_samples))
+
+    sample_weights = np.ones(len(ys))
     sample_weights[m:] = gamma
 
     arch_json_string = load_model(FLAGS)
@@ -101,7 +103,7 @@ def main(_):
         # model.fit(train_images, ys, verbose=2, epochs=500)
         # print(ys)
         model.fit(train_images, ys, verbose=1,\
-        sample_weight=sample_weights, validation_data=(train_images, ys), epochs=3000,callbacks=callbacks)
+        sample_weight=sample_weights, validation_data=(train_images, ys), epochs=MAX_TRAIN_EPOCHS,callbacks=callbacks)
         #print([w.shape for w in model.get_weights()])
         #print(np.concatenate([w.flatten() for w in model.get_weights()]).shape)
 

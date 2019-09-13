@@ -14,6 +14,7 @@ def main(_):
     FLAGS = tf.app.flags.FLAGS.flag_values_dict()
     FLAGS = preprocess_flags(FLAGS)
     globals().update(FLAGS)
+    global m
 
     print("Generating input samples", dataset, m)
 
@@ -149,7 +150,17 @@ def main(_):
 
     #for datasets that are not images, like the boolean one
     if dataset == "boolean":
-        indices = np.random.choice(range(int(len(inputs))), size=int(total_samples), replace=False)
+        if oversampling:
+            probs = list(map(lambda x: threshold/(num_classes*len(inputs)) if x>=threshold else (num_classes-threshold)/(num_classes*len(inputs)), inputs))
+            probs = np.array(probs)
+            probs /= np.sum(probs)
+            indices = np.random.choice(range(len(inputs)), size=int(total_samples), replace=False, p=probs)
+            # indices = sum([[i]*(num_classes-threshold) for i in indices if train_labels[i]<threshold] \
+            #     + [[i]*threshold for i in indices if train_labels[i]>=threshold],[])
+            #
+            # m*=int((2*(num_classes-threshold)*threshold/(num_classes)))
+        else:
+            indices = np.random.choice(range(int(len(inputs))), size=int(total_samples), replace=False)
         # print(indices)
         test_indices = np.array([i for i in range(len(inputs)) if i not in indices])
         train_inputs = inputs[indices,:].astype(np.float32)
@@ -162,12 +173,26 @@ def main(_):
         flat_train_images = train_inputs
 
     else:
-        indices = np.random.choice(range(len(train_images)), size=int(total_samples), replace=False)
+
+        if oversampling:
+            probs = list(map(lambda x: threshold/(num_classes) if x>=threshold else (num_classes-threshold)/(num_classes), train_labels))
+            probs = np.array(probs)
+            probs /= np.sum(probs)
+            # print(probs)
+            indices = np.random.choice(range(len(train_images)), size=int(total_samples), replace=False, p=probs)
+            # indices = sum([[i]*(num_classes-threshold) for i in indices if train_labels[i]<threshold] \
+            #     + [[i]*threshold for i in indices if train_labels[i]>=threshold],[])
+            #
+            # m*=int((2*(num_classes-threshold)*threshold/(num_classes)))
+        else:
+            indices = np.random.choice(range(len(train_images)), size=int(total_samples), replace=False)
         # print(indices)
         train_images = (train_images[indices,:,:,:]/255.0).astype(np.float32) #NHWC
         if training:
             test_images = test_images/255.0
             train_labels = np.take(train_labels,indices)
+            print(len([x for x in train_labels if x<threshold])/len(train_images))
+
 
         #flattened images, as the kernel function takes flattened vectors (row major for NCHW images)
         tp_order = np.concatenate([[0,len(train_images.shape)-1], np.arange(1, len(train_images.shape)-1)])

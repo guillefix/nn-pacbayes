@@ -24,7 +24,7 @@ if not os.path.isdir(results_folder):
 '''DATA FUNCTIONS'''
 def data_filename(FLAGS):
     filename=data_folder
-    for flag in ["network","dataset","m","confusion","label_corruption","binarized","whitening","centering","channel_normalization","threshold","random_labels"]:
+    for flag in ["network","dataset","m","confusion","label_corruption","binarized","whitening","centering","channel_normalization","threshold","random_labels", "oversampling"]:
         filename+=str(FLAGS[flag])+"_"
     if FLAGS["dataset"] == "boolean" and FLAGS["boolfun_comp"] is not None:
         filename+=str(FLAGS["boolfun_comp"])+"_"
@@ -116,6 +116,7 @@ def define_default_flags(f):
     f.DEFINE_string('network', None, "The type of network to use")
     f.DEFINE_integer('number_layers', None, "The number of layers in the network")
     f.DEFINE_boolean('binarized', True, "Whether to convert classification labels to binary")
+    f.DEFINE_boolean('oversampling', False, "Whether to oversample the minority class (a standard technique when dealing with class imbalance)")
     f.DEFINE_string('pooling', "none", "The pooling type to use (none/avg/max)")
     f.DEFINE_string('intermediate_pooling', "0000", "Whether individual layers have a local maxpooling after them; 1 is maxpool; 0 no maxpool")
     f.DEFINE_string('intermediate_pooling_type', "max", "The type of pooling at intermediate layers (avg/max)")
