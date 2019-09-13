@@ -43,7 +43,7 @@ def main(_):
     input_dim = train_images.shape[1]
     num_channels = train_images.shape[-1]
 
-    sample_weights = np.ones(total_samples)
+    sample_weights = np.ones(int(total_samples))
     sample_weights[m:] = gamma
 
     arch_json_string = load_model(FLAGS)
