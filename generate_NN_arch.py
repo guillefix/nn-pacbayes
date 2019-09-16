@@ -48,10 +48,12 @@ def main(_):
             number_channels=1
     elif dataset == "boolean":
         input_dim = 7
+    elif dataset == "calabiyau":
+        input_dim = 180
     else:
         raise NotImplementedError
 
-    if dataset != "boolean":
+    if not(dataset == "boolean" or dataset == "calabiyau"):
         image_height = image_size
         image_width = image_size
         input_dim = image_height*image_width*number_channels

@@ -24,6 +24,7 @@ d1
 
 d1.groupby(["centering"]).mean()["test_acc"].plot.line()
 d1.groupby(["number_layers"]).mean()["test_acc"].plot.line()
+# d1.groupby(["number_layers"]).mean()["test_sensitivity"].plot.line()
 %matplotlib
 
 # d1.groupby(["centering"]).mean()["test_sensitivity"].plot.line()

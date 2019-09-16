@@ -13,8 +13,9 @@ def main(_):
 
     FLAGS = tf.app.flags.FLAGS.flag_values_dict()
     FLAGS = preprocess_flags(FLAGS)
+    print(FLAGS)
     globals().update(FLAGS)
-    global m
+    global m, total_samples
 
     print("Generating input samples", dataset, m)
 
@@ -93,7 +94,7 @@ def main(_):
         assert network == "fc"
         num_classes = 2
         #we ignore the 0 input, because it casues problems when computing the kernel matrix :P
-        if whitening:
+        if centering:
             inputs = np.array([[float(l)*2.0-1 for l in "{0:07b}".format(i)] for i in range(1,2**7)])
         else:
             inputs = np.array([[float(l) for l in "{0:07b}".format(i)] for i in range(1,2**7)])
@@ -121,6 +122,14 @@ def main(_):
             # pickle.dump(funs,open("funs_per_complexity.p","wb"))
 
         labels=np.array([[int(xx)*2.0-1] for xx in list(fun)])
+    elif dataset == "calabiyau":
+        assert network == "fc"
+        num_classes = 2
+        #we ignore the 0 input, because it casues problems when computing the kernel matrix :P
+        data = np.load("datasets/calabiyau.npz")
+        inputs, labels = data["inputs"], data["targets"]
+        if whitening:
+            inputs = inputs - inputs.mean(0)
     else:
         raise NotImplementedError
 
@@ -149,15 +158,17 @@ def main(_):
     # np.random.seed(42069)
 
     #for datasets that are not images, like the boolean one
-    if dataset == "boolean":
+    if dataset == "boolean" or dataset == "calabiyau":
         if oversampling:
             probs = list(map(lambda x: threshold/(num_classes*len(inputs)) if x>=threshold else (num_classes-threshold)/(num_classes*len(inputs)), inputs))
             probs = np.array(probs)
             probs /= np.sum(probs)
             indices = np.random.choice(range(len(inputs)), size=int(total_samples), replace=False, p=probs)
         elif oversampling2:
+            indices = np.random.choice(range(len(inputs)), size=int(total_samples), replace=False)
             indices = sum([[i]*(num_classes-threshold) for i in indices if train_labels[i]<threshold] \
                 + [[i]*threshold for i in indices if train_labels[i]>=threshold],[])
+            print("Indices: ", indices)
 
             m*=int((2*(num_classes-threshold)*threshold/(num_classes)))
         else:
@@ -181,6 +192,7 @@ def main(_):
             probs /= np.sum(probs)
             indices = np.random.choice(range(len(train_images)), size=int(total_samples), replace=False, p=probs)
         elif oversampling2:
+            indices = np.random.choice(range(len(train_images)), size=int(total_samples), replace=False)
             indices = sum([[i]*(num_classes-threshold) for i in indices if train_labels[i]<threshold] \
                 + [[i]*threshold for i in indices if train_labels[i]>=threshold],[])
 

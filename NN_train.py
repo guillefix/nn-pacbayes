@@ -109,7 +109,7 @@ def main(_):
 
         # model.fit(train_images, ys, verbose=2, epochs=500)
         # print(ys)
-        model.fit(train_images, ys, verbose=1,\
+        model.fit(train_images, ys, verbose=0,\
         sample_weight=sample_weights, validation_data=(train_images, ys), epochs=MAX_TRAIN_EPOCHS,callbacks=callbacks)
         #print([w.shape for w in model.get_weights()])
         #print(np.concatenate([w.flatten() for w in model.get_weights()]).shape)
@@ -125,11 +125,19 @@ def main(_):
         # print(preds)
         # print(preds.shape)
         # test_false_positive_rate = test_fps/(len([x for x in test_ys if x==1]))
-        test_sensitivity_base = sum([(preds[i]>0.5)==x for i,x in enumerate(test_ys) if x==1])/(len([x for x in test_ys if x==1]))
-        test_specificity_base = sum([(preds[i]>0.5)==x for i,x in enumerate(test_ys) if x==0])/(len([x for x in test_ys if x==0]))
+        def sigmoid(x):
+            return np.exp(x)/(1+np.exp(x))
+        print(test_ys)
+        for th in np.linspace(0,1,1000):
+            test_sensitivity_base = sum([(sigmoid(preds[i])>th)==x for i,x in enumerate(test_ys) if x==1])/(len([x for x in test_ys if x==1]))
+            test_specificity_base = sum([(sigmoid(preds[i])>th)==x for i,x in enumerate(test_ys) if x==0])/(len([x for x in test_ys if x==0]))
+            if test_specificity_base>0.99:
+                break
+
+        # print([preds[i] for i,x in enumerate(test_ys) if x==0 and preds[i]>=1-1e-3])
 
         print('Test accuracy:', test_acc)
-        print('Test sensitivity (at 99% accuracy):', test_sensitivity)
+        # print('Test sensitivity (at 99% accuracy):', test_sensitivity)
         print('Test sensitivity base:', test_sensitivity_base)
         print('Test specificity base:', test_specificity_base)
         # print('Test false positive rate:', test_false_positive_rate)
@@ -176,8 +184,8 @@ def main(_):
         test_specificity_base = np.mean(np.array(test_specificities_base))
         print('Mean test accuracy:', test_acc)
         print('Mean test sensitivity:', test_sensitivity)
-        print('Mean test sensitivity base:', test_sensitivity_base)
-        print('Mean test specificity base:', test_specificity_base)
+        print('Mean test sensitivity:', test_sensitivity_base)
+        print('Mean test specificity:', test_specificity_base)
         train_acc = np.mean(np.array(train_accs))
         print('Mean train accuracy:', train_acc)
         test_acc = np.mean(np.array(test_accs))
@@ -194,16 +202,16 @@ def main(_):
         # if "h" in useful_flags: del useful_flags["h"]
         # if "f" in useful_flags: del useful_flags["f"]
         # if "prefix" in useful_flags: del useful_flags["prefix"]
-        useful_flags = ["dataset", "m", "network", "pooling", "number_layers", "sigmaw", "sigmab", "whitening", "centering", "channel_normalization", "training", "binarized", "confusion","filter_sizes", "gamma", "intermediate_pooling", "label_corruption", "n_gpus", "n_samples_repeats", "num_filters", "number_inits", "padding"]
+        useful_flags = ["dataset", "m", "network", "pooling", "number_layers", "sigmaw", "sigmab", "whitening", "centering", "oversampling", "oversampling2", "channel_normalization", "training", "binarized", "confusion","filter_sizes", "gamma", "intermediate_pooling", "label_corruption", "n_gpus", "n_samples_repeats", "num_filters", "number_inits", "padding"]
         with open(prefix+"nn_training_results.txt","a") as file:
             file.write("#")
             for key in sorted(useful_flags):
                 file.write("{}\t".format(key))
-            file.write("\t".join(["train_acc", "test_error", "test_acc","test_sensitivity","test_sensitivity_base","test_specificity_base","weights_std","biases_std","weights_mean", "biases_mean", "weights_norm_mean","weights_norm_std","biases_norm_mean","biases_norm_std","mean_iters","train_acc_std","test_acc_std"]))
+            file.write("\t".join(["train_acc", "test_error", "test_acc","test_sensitivity","test_specificity","weights_std","biases_std","weights_mean", "biases_mean", "weights_norm_mean","weights_norm_std","biases_norm_mean","biases_norm_std","mean_iters","train_acc_std","test_acc_std"]))
             file.write("\n")
             for key in sorted(useful_flags):
                 file.write("{}\t".format(FLAGS[key]))
-            file.write("{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:d}\t{:.4f}\t{:.4f}\n".format(train_acc, 1-test_acc,test_acc,test_sensitivity,\
+            file.write("{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:d}\t{:.4f}\t{:.4f}\n".format(train_acc, 1-test_acc,test_acc,\
                 test_sensitivity_base,test_specificity_base,weights_std,biases_std,\
                 weights_mean,biases_mean,weights_norm_mean,weights_norm_std,biases_norm_mean,biases_norm_std,int(mean_iters),train_acc_std,test_acc_std)) #normalized to sqrt(input_dim)
     else:
