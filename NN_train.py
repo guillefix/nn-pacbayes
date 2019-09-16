@@ -74,7 +74,8 @@ def main(_):
         print(init)
         model = model_from_json(arch_json_string)
 
-        model.compile(optimizer='sgd',#keras.optimizers.SGD(lr=0.01,momentum=0.9,decay=1e-6),#'sgd',#tf.keras.optimizers.SGD(lr=0.01),
+        #model.compile(optimizer='sgd',#keras.optimizers.SGD(lr=0.01,momentum=0.9,decay=1e-6),#'sgd',#tf.keras.optimizers.SGD(lr=0.01),
+        model.compile(optimizer=optimizer,#keras.optimizers.SGD(lr=0.01,momentum=0.9,decay=1e-6),#'sgd',#tf.keras.optimizers.SGD(lr=0.01),
                       #loss='binary_crossentropy',
                       loss=binary_crossentropy_from_logits,
                       # loss_weights=[50000],
@@ -90,7 +91,7 @@ def main(_):
 
         # model.fit(train_images, ys, verbose=2, epochs=500)
         # print(ys)
-        model.fit(train_images, ys, verbose=1,\
+        model.fit(train_images, ys, verbose=0,\
         sample_weight=sample_weights, validation_data=(train_images, ys), epochs=3000,callbacks=callbacks)
         #print([w.shape for w in model.get_weights()])
         #print(np.concatenate([w.flatten() for w in model.get_weights()]).shape)
@@ -185,6 +186,7 @@ if __name__ == '__main__':
     define_default_flags(f)
 
     f.DEFINE_integer('number_inits',1,"Number of initializations")
+    f.DEFINE_string('optimizer',"sgd","algorithm for training (sgd/adam)")
     f.DEFINE_float('gamma',1.0,"weight for confusion samples (1.0 weigths them the same as normal samples)")
 
     tf.app.run()
