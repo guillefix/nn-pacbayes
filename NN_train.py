@@ -46,7 +46,11 @@ def main(_):
 
 
     sample_weights = np.ones(len(ys))
-    sample_weights[m:] = gamma
+    if gamma != 1.0:
+        if not oversampling2:
+            sample_weights[m:] = gamma
+        else:
+            raise NotImplementedError("Gamma not equal to 1.0 with oversampling2 not implemented")
 
     arch_json_string = load_model(FLAGS)
     from tensorflow.keras.models import model_from_json
@@ -64,6 +68,8 @@ def main(_):
 
     test_accs = []
     test_sensitivities = []
+    test_sensitivities_base = []
+    test_specificities_base = []
     train_accs = []
     weightss = []
     biasess = []
@@ -91,7 +97,8 @@ def main(_):
                       loss=binary_crossentropy_from_logits,
                       # loss_weights=[50000],
                       #metrics=['accuracy',sensitivity])
-                      metrics=['accuracy',tf.keras.metrics.SensitivityAtSpecificity(0.99)])
+                      metrics=['accuracy',tf.keras.metrics.SensitivityAtSpecificity(0.99),\
+                                tf.keras.metrics.FalsePositives()])
 
         if network == "fc":
             num_filters = input_dim
@@ -112,13 +119,24 @@ def main(_):
         weights_norm, biases_norm = measure_sigmas(model)
         print(weights_norm,biases_norm)
 
-        train_loss, train_acc,train_sensitivity = model.evaluate(train_images, ys)
-        test_loss, test_acc, test_sensitivity = model.evaluate(test_images, test_ys)
+        train_loss, train_acc,train_sensitivity,train_fps = model.evaluate(train_images, ys)
+        test_loss, test_acc, test_sensitivity,test_fps = model.evaluate(test_images, test_ys)
+        preds = model.predict(test_images)[:,0]
+        # print(preds)
+        # print(preds.shape)
+        # test_false_positive_rate = test_fps/(len([x for x in test_ys if x==1]))
+        test_sensitivity_base = sum([(preds[i]>0.5)==x for i,x in enumerate(test_ys) if x==1])/(len([x for x in test_ys if x==1]))
+        test_specificity_base = sum([(preds[i]>0.5)==x for i,x in enumerate(test_ys) if x==0])/(len([x for x in test_ys if x==0]))
 
         print('Test accuracy:', test_acc)
-        print('Test sensitivity:', test_sensitivity)
+        print('Test sensitivity (at 99% accuracy):', test_sensitivity)
+        print('Test sensitivity base:', test_sensitivity_base)
+        print('Test specificity base:', test_specificity_base)
+        # print('Test false positive rate:', test_false_positive_rate)
         test_accs.append(test_acc)
         test_sensitivities.append(test_sensitivity)
+        test_sensitivities_base.append(test_sensitivity_base)
+        test_specificities_base.append(test_specificity_base)
         train_accs.append(train_acc)
         weightss.append(weights)
         biasess.append(biases)
@@ -130,6 +148,8 @@ def main(_):
     print("HI")
     test_accs = comm.gather(test_accs, root=0)
     test_sensitivities = comm.gather(test_sensitivities, root=0)
+    test_sensitivities_base = comm.gather(test_sensitivities_base, root=0)
+    test_specificities_base = comm.gather(test_specificities_base, root=0)
     train_accs = comm.gather(train_accs, root=0)
 
     weightss = comm.gather(weightss, root=0)
@@ -152,8 +172,12 @@ def main(_):
 
         test_acc = np.mean(np.array(test_accs))
         test_sensitivity = np.mean(np.array(test_sensitivities))
+        test_sensitivity_base = np.mean(np.array(test_sensitivities_base))
+        test_specificity_base = np.mean(np.array(test_specificities_base))
         print('Mean test accuracy:', test_acc)
         print('Mean test sensitivity:', test_sensitivity)
+        print('Mean test sensitivity base:', test_sensitivity_base)
+        print('Mean test specificity base:', test_specificity_base)
         train_acc = np.mean(np.array(train_accs))
         print('Mean train accuracy:', train_acc)
         test_acc = np.mean(np.array(test_accs))
@@ -175,11 +199,12 @@ def main(_):
             file.write("#")
             for key in sorted(useful_flags):
                 file.write("{}\t".format(key))
-            file.write("\t".join(["train_acc", "test_error", "test_acc","test_sensitivity","weights_std","biases_std","weights_mean", "biases_mean", "weights_norm_mean","weights_norm_std","biases_norm_mean","biases_norm_std","mean_iters","train_acc_std","test_acc_std"]))
+            file.write("\t".join(["train_acc", "test_error", "test_acc","test_sensitivity","test_sensitivity_base","test_specificity_base","weights_std","biases_std","weights_mean", "biases_mean", "weights_norm_mean","weights_norm_std","biases_norm_mean","biases_norm_std","mean_iters","train_acc_std","test_acc_std"]))
             file.write("\n")
             for key in sorted(useful_flags):
                 file.write("{}\t".format(FLAGS[key]))
-            file.write("{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:d}\t{:.4f}\t{:.4f}\n".format(train_acc, 1-test_acc,test_acc,test_sensitivity,weights_std,biases_std,\
+            file.write("{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:d}\t{:.4f}\t{:.4f}\n".format(train_acc, 1-test_acc,test_acc,test_sensitivity,\
+                test_sensitivity_base,test_specificity_base,weights_std,biases_std,\
                 weights_mean,biases_mean,weights_norm_mean,weights_norm_std,biases_norm_mean,biases_norm_std,int(mean_iters),train_acc_std,test_acc_std)) #normalized to sqrt(input_dim)
     else:
         assert test_accs is None

@@ -155,10 +155,11 @@ def main(_):
             probs = np.array(probs)
             probs /= np.sum(probs)
             indices = np.random.choice(range(len(inputs)), size=int(total_samples), replace=False, p=probs)
-            # indices = sum([[i]*(num_classes-threshold) for i in indices if train_labels[i]<threshold] \
-            #     + [[i]*threshold for i in indices if train_labels[i]>=threshold],[])
-            #
-            # m*=int((2*(num_classes-threshold)*threshold/(num_classes)))
+        elif oversampling2:
+            indices = sum([[i]*(num_classes-threshold) for i in indices if train_labels[i]<threshold] \
+                + [[i]*threshold for i in indices if train_labels[i]>=threshold],[])
+
+            m*=int((2*(num_classes-threshold)*threshold/(num_classes)))
         else:
             indices = np.random.choice(range(int(len(inputs))), size=int(total_samples), replace=False)
         # print(indices)
@@ -178,12 +179,12 @@ def main(_):
             probs = list(map(lambda x: threshold/(num_classes) if x>=threshold else (num_classes-threshold)/(num_classes), train_labels))
             probs = np.array(probs)
             probs /= np.sum(probs)
-            # print(probs)
             indices = np.random.choice(range(len(train_images)), size=int(total_samples), replace=False, p=probs)
-            # indices = sum([[i]*(num_classes-threshold) for i in indices if train_labels[i]<threshold] \
-            #     + [[i]*threshold for i in indices if train_labels[i]>=threshold],[])
-            #
-            # m*=int((2*(num_classes-threshold)*threshold/(num_classes)))
+        elif oversampling2:
+            indices = sum([[i]*(num_classes-threshold) for i in indices if train_labels[i]<threshold] \
+                + [[i]*threshold for i in indices if train_labels[i]>=threshold],[])
+
+            m*=int((2*(num_classes-threshold)*threshold/(num_classes)))
         else:
             indices = np.random.choice(range(len(train_images)), size=int(total_samples), replace=False)
         # print(indices)
