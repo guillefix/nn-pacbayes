@@ -7,18 +7,18 @@
 #export PYTHONPATH="${PYTHONPATH}:/home_directory/.local/lib/python2.7/site-packages/:/home_directory/.local/lib/python2.7/dist-packages/"
 
 m=50
-dataset=mnist
+#dataset=mnist
 #dataset=EMNIST
 #dataset=boolean
-#dataset=cifar
+dataset=cifar
 boolfun=00100000000000000000000000000000000000000000000000000000000000001111001100110011001100000000000000000000000000000000000000000000
 net=fc
 L=1
 #optimizer=adam
 optimizer=sgd
-prefix=unbalancedt9_mnist_
+#prefix=unbalancedt9_mnist_
 #prefix=unbalanced_boolean_
-#prefix=unbalancedt9_cifar_
+prefix=unbalancedt9_cifar_
 sigmaw=2.0
 sigmab=0.0
 pool=none

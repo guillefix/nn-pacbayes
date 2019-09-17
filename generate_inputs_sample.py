@@ -93,7 +93,7 @@ def main(_):
         assert network == "fc"
         num_classes = 2
         #we ignore the 0 input, because it casues problems when computing the kernel matrix :P
-        if whitening:
+        if centering:
             inputs = np.array([[float(l)*2.0-1 for l in "{0:07b}".format(i)] for i in range(1,2**7)])
         else:
             inputs = np.array([[float(l) for l in "{0:07b}".format(i)] for i in range(1,2**7)])
