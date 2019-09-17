@@ -2,7 +2,6 @@
 
 # set the number of nodes
 #SBATCH --nodes=1
-
 # set max wallclock time
 #SBATCH --time=24:00:00 # set name of job
 #SBATCH -J poolsweep
@@ -51,8 +50,9 @@
 #/jmain01/apps/docker/tensorflow-batch -v 18.07-py3 -c ./meta_script_layer_sweep
 
 #/jmain01/apps/docker/tensorflow-batch -v 18.07-py3 -c $filename
-/jmain01/apps/docker/tensorflow-batch -v 18.07-py3 -c ./meta_script
 
 #/jmain01/apps/docker/tensorflow-batch -v 18.07-py3 -c $(echo ./meta_script $net vars[$SLURM_ARRAY_TASK_ID])
 #/jmain01/apps/docker/tensorflow-batch -v 19.05-py2 -c $(echo ./meta_script $net vars[$SLURM_ARRAY_TASK_ID])
 #/jmain01/apps/docker/tensorflow-batch -v 18.07-py3 -c $(echo ./meta_script_arch_sweep $net vars[$SLURM_ARRAY_TASK_ID])
+
+/jmain01/apps/docker/tensorflow-batch -v 18.07-py3 -c ./meta_script3
