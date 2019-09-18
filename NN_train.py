@@ -67,7 +67,7 @@ def main(_):
     set_session(sess)  # set this TensorFlow session as the default session for Keras
 
     test_accs = []
-    test_sensitivities = []
+    #test_sensitivities = []
     test_sensitivities_base = []
     test_specificities_base = []
     train_accs = []
@@ -96,9 +96,10 @@ def main(_):
                       #loss='binary_crossentropy',
                       loss=binary_crossentropy_from_logits,
                       # loss_weights=[50000],
+                      metrics=['accuracy'])
                       #metrics=['accuracy',sensitivity])
-                      metrics=['accuracy',tf.keras.metrics.SensitivityAtSpecificity(0.99),\
-                                tf.keras.metrics.FalsePositives()])
+                      #metrics=['accuracy',tf.keras.metrics.SensitivityAtSpecificity(0.99),\
+                                #tf.keras.metrics.FalsePositives()])
 
         if network == "fc":
             num_filters = input_dim
@@ -119,8 +120,8 @@ def main(_):
         weights_norm, biases_norm = measure_sigmas(model)
         print(weights_norm,biases_norm)
 
-        train_loss, train_acc,train_sensitivity,train_fps = model.evaluate(train_images, ys)
-        test_loss, test_acc, test_sensitivity,test_fps = model.evaluate(test_images, test_ys)
+        train_loss, train_acc = model.evaluate(train_images, ys)
+        test_loss, test_acc = model.evaluate(test_images, test_ys)
         preds = model.predict(test_images)[:,0]
         # print(preds)
         # print(preds.shape)
@@ -142,7 +143,7 @@ def main(_):
         print('Test specificity base:', test_specificity_base)
         # print('Test false positive rate:', test_false_positive_rate)
         test_accs.append(test_acc)
-        test_sensitivities.append(test_sensitivity)
+        #test_sensitivities.append(test_sensitivity)
         test_sensitivities_base.append(test_sensitivity_base)
         test_specificities_base.append(test_specificity_base)
         train_accs.append(train_acc)
@@ -155,7 +156,7 @@ def main(_):
 
     print("HI")
     test_accs = comm.gather(test_accs, root=0)
-    test_sensitivities = comm.gather(test_sensitivities, root=0)
+    #test_sensitivities = comm.gather(test_sensitivities, root=0)
     test_sensitivities_base = comm.gather(test_sensitivities_base, root=0)
     test_specificities_base = comm.gather(test_specificities_base, root=0)
     train_accs = comm.gather(train_accs, root=0)
@@ -179,7 +180,7 @@ def main(_):
         biases_norm_std = np.std(biases_norm)
 
         test_acc = np.mean(np.array(test_accs))
-        test_sensitivity = np.mean(np.array(test_sensitivities))
+        #test_sensitivity = np.mean(np.array(test_sensitivities))
         test_sensitivity_base = np.mean(np.array(test_sensitivities_base))
         test_specificity_base = np.mean(np.array(test_specificities_base))
         print('Mean test accuracy:', test_acc)
