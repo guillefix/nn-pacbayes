@@ -92,8 +92,7 @@ def main(_):
         #     # m.update_state(y_true,y_pred)
         #     # return m.result()
 
-        #model.compile(optimizer='sgd',#keras.optimizers.SGD(lr=0.01,momentum=0.9,decay=1e-6),#'sgd',#tf.keras.optimizers.SGD(lr=0.01),
-        model.compile(optimizer=optimizer,#keras.optimizers.SGD(lr=0.01,momentum=0.9,decay=1e-6),#'sgd',#tf.keras.optimizers.SGD(lr=0.01),
+        model.compile(optimizer='sgd',#keras.optimizers.SGD(lr=0.01,momentum=0.9,decay=1e-6),#'sgd',#tf.keras.optimizers.SGD(lr=0.01),
                       #loss='binary_crossentropy',
                       loss=binary_crossentropy_from_logits,
                       # loss_weights=[50000],
@@ -184,7 +183,7 @@ def main(_):
         test_sensitivity_base = np.mean(np.array(test_sensitivities_base))
         test_specificity_base = np.mean(np.array(test_specificities_base))
         print('Mean test accuracy:', test_acc)
-        print('Mean test sensitivity:', test_sensitivity)
+        # print('Mean test sensitivity:', test_sensitivity)
         print('Mean test sensitivity:', test_sensitivity_base)
         print('Mean test specificity:', test_specificity_base)
         train_acc = np.mean(np.array(train_accs))
@@ -231,7 +230,6 @@ if __name__ == '__main__':
     define_default_flags(f)
 
     f.DEFINE_integer('number_inits',1,"Number of initializations")
-    f.DEFINE_string('optimizer',"sgd","algorithm for training (sgd/adam)")
     f.DEFINE_float('gamma',1.0,"weight for confusion samples (1.0 weigths them the same as normal samples)")
 
     tf.app.run()
