@@ -2,13 +2,13 @@
 
 #echo $PYTHONPATH
 #export PYTHONPATH="$PYTHONPATH:/usr/local/lib/python3.5/dist-packages:~/.local/lib/"
-export PYTHONPATH="/home_directory/.local/lib/python3.5/site-packages/"
+#export PYTHONPATH="/home_directory/.local/lib/python3.5/site-packages/"
 #export PYTHONPATH="/home_directory/.local/lib/python2.7/site-packages/"
 
 #py=/usr/bin/python3
 #py=~/anaconda3/bin/python3
 #py=/usr/bin/python3.6
-py=python
+py=python3
 #py=python
 
 #echo $n_gpus
