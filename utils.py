@@ -62,7 +62,7 @@ def load_data(FLAGS):
 '''ARCHITECTURE FUNCTIONS'''
 def arch_filename(FLAGS):
     filename=arch_folder
-    for flag in ["network","binarized","number_layers","pooling","intermediate_pooling","intermediate_pooling_type"]:
+    for flag in ["network","binarized","number_layers","pooling","intermediate_pooling","intermediate_pooling_type","init_dist"]:
         filename+=str(FLAGS[flag])+"_"
     filename += "model"
     return filename
@@ -124,6 +124,7 @@ def define_default_flags(f):
     # f.DEFINE_integer('number_inits',1,"Number of initializations")
     f.DEFINE_float('sigmaw', 1.0, "The variance parameter of the weights; their variance will be sigmaw/sqrt(number of inputs to neuron")
     f.DEFINE_float('sigmab', 1.0, "The variance of the biases")
+    f.DEFINE_string('init_dist', "gaussian", "The distribution to use to initialize parameters")
     # f.DEFINE_boolean('compute_bound', False, "Whether to compute the PAC-Bayes bound or just generate the training data")
     #f.DEFINE_boolean('compute_kernel', False, "Whether to compute the kernel or just generate the training data")
     f.DEFINE_boolean('whitening', False, "Whether to perform ZCA whitening and normalization on the training data")

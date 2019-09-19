@@ -59,8 +59,22 @@ def main(_):
         input_dim = image_height*image_width*number_channels
     set_session = keras.backend.set_session
 
-    bias_initializer = keras.initializers.RandomNormal(stddev=sigmab)
-    weight_initializer = keras.initializers.RandomNormal(stddev=sigmaw/np.sqrt(input_dim))
+    def cauchy_init(shape, dtype=None):
+        # return keras.backend.variable((sigmaw/(np.sqrt(np.prod(shape[:-1]))))*np.random.standard_cauchy(shape), dtype=dtype)
+        return (sigmaw/(np.sqrt(np.prod(shape[:-1]))))*np.random.standard_cauchy(shape)
+
+    if init_dist == "gaussian":
+        bias_initializer = keras.initializers.RandomNormal(stddev=sigmab)
+        # weight_initializer = keras.initializers.RandomNormal(stddev=sigmaw/np.sqrt(input_dim))
+        weight_initializer = keras.initializers.VarianceScaling(scale=sigmaw, mode='fan_in', distribution='normal', seed=None)
+    elif init_dist == "cauchy":
+        bias_initializer = cauchy_init
+        weight_initializer  = cauchy_init
+    elif init_dist == "uniform":
+        bias_initializer = keras.initializers.RandomUniform(minval=-np.sqrt(3 * sigmab), maxval=np.sqrt(3 * sigmab), seed=None)
+        weight_initializer = keras.initializers.VarianceScaling(scale=sigmaw, mode='fan_in', distribution='uniform', seed=None)
+    else:
+        raise NotImplementedError
     # bias_initializer = keras.initializers.Zeros()
     # weight_initializer = keras.initializers.glorot_uniform()
 
