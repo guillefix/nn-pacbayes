@@ -54,7 +54,20 @@ def main(_):
 
     arch_json_string = load_model(FLAGS)
     from tensorflow.keras.models import model_from_json
-    model = model_from_json(arch_json_string)
+
+    # from keras.utils.generic_utils import get_custom_objects
+    #
+    # get_custom_objects().update({'cauchy_init': CauchyInit})
+
+    def cauchy_init(shape, dtype=None):
+        # return keras.backend.variable((sigmaw/(np.sqrt(np.prod(shape[:-1]))))*np.random.standard_cauchy(shape), dtype=dtype)
+        return (sigmaw/(np.sqrt(np.prod(shape[:-1]))))*np.random.standard_cauchy(shape)
+
+    class CauchyInit:
+        def __call__(self, shape, dtype=None):
+            return cauchy_init(shape, dtype=dtype)
+
+    model = model_from_json(arch_json_string,custom_objects={'cauchy_init': CauchyInit})
 
     set_session = keras.backend.set_session
 
@@ -67,7 +80,7 @@ def main(_):
     set_session(sess)  # set this TensorFlow session as the default session for Keras
 
     test_accs = []
-    test_sensitivities = []
+    #test_sensitivities = []
     test_sensitivities_base = []
     test_specificities_base = []
     train_accs = []
@@ -80,7 +93,8 @@ def main(_):
 
     for init in range(number_inits//size):
         print(init)
-        model = model_from_json(arch_json_string)
+
+        model = model_from_json(arch_json_string,custom_objects={'cauchy_init': CauchyInit})
 
         # import keras.backend as K
         #
@@ -96,9 +110,10 @@ def main(_):
                       #loss='binary_crossentropy',
                       loss=binary_crossentropy_from_logits,
                       # loss_weights=[50000],
+                      metrics=['accuracy'])
                       #metrics=['accuracy',sensitivity])
-                      metrics=['accuracy',tf.keras.metrics.SensitivityAtSpecificity(0.99),\
-                                tf.keras.metrics.FalsePositives()])
+                      #metrics=['accuracy',tf.keras.metrics.SensitivityAtSpecificity(0.99),\
+                                #tf.keras.metrics.FalsePositives()])
 
         if network == "fc":
             num_filters = input_dim
@@ -119,8 +134,8 @@ def main(_):
         weights_norm, biases_norm = measure_sigmas(model)
         print(weights_norm,biases_norm)
 
-        train_loss, train_acc,train_sensitivity,train_fps = model.evaluate(train_images, ys)
-        test_loss, test_acc, test_sensitivity,test_fps = model.evaluate(test_images, test_ys)
+        train_loss, train_acc = model.evaluate(train_images, ys)
+        test_loss, test_acc = model.evaluate(test_images, test_ys)
         preds = model.predict(test_images)[:,0]
         # print(preds)
         # print(preds.shape)
@@ -138,11 +153,11 @@ def main(_):
 
         print('Test accuracy:', test_acc)
         # print('Test sensitivity (at 99% accuracy):', test_sensitivity)
-        print('Test sensitivity base:', test_sensitivity_base)
-        print('Test specificity base:', test_specificity_base)
+        print('Test sensitivity:', test_sensitivity_base)
+        print('Test specificity:', test_specificity_base)
         # print('Test false positive rate:', test_false_positive_rate)
         test_accs.append(test_acc)
-        test_sensitivities.append(test_sensitivity)
+        #test_sensitivities.append(test_sensitivity)
         test_sensitivities_base.append(test_sensitivity_base)
         test_specificities_base.append(test_specificity_base)
         train_accs.append(train_acc)
@@ -155,7 +170,7 @@ def main(_):
 
     print("HI")
     test_accs = comm.gather(test_accs, root=0)
-    test_sensitivities = comm.gather(test_sensitivities, root=0)
+    #test_sensitivities = comm.gather(test_sensitivities, root=0)
     test_sensitivities_base = comm.gather(test_sensitivities_base, root=0)
     test_specificities_base = comm.gather(test_specificities_base, root=0)
     train_accs = comm.gather(train_accs, root=0)
@@ -179,7 +194,7 @@ def main(_):
         biases_norm_std = np.std(biases_norm)
 
         test_acc = np.mean(np.array(test_accs))
-        test_sensitivity = np.mean(np.array(test_sensitivities))
+        #test_sensitivity = np.mean(np.array(test_sensitivities))
         test_sensitivity_base = np.mean(np.array(test_sensitivities_base))
         test_specificity_base = np.mean(np.array(test_specificities_base))
         print('Mean test accuracy:', test_acc)
@@ -202,7 +217,7 @@ def main(_):
         # if "h" in useful_flags: del useful_flags["h"]
         # if "f" in useful_flags: del useful_flags["f"]
         # if "prefix" in useful_flags: del useful_flags["prefix"]
-        useful_flags = ["dataset", "m", "network", "pooling", "number_layers", "sigmaw", "sigmab", "whitening", "centering", "oversampling", "oversampling2", "channel_normalization", "training", "binarized", "confusion","filter_sizes", "gamma", "intermediate_pooling", "label_corruption", "n_gpus", "n_samples_repeats", "num_filters", "number_inits", "padding"]
+        useful_flags = ["dataset", "m", "network", "pooling", "number_layers", "sigmaw", "sigmab", "init_dist","whitening", "centering", "oversampling", "oversampling2", "channel_normalization", "training", "binarized", "confusion","filter_sizes", "gamma", "intermediate_pooling", "label_corruption", "threshold", "n_gpus", "n_samples_repeats", "num_filters", "number_inits", "padding"]
         with open(prefix+"nn_training_results.txt","a") as file:
             file.write("#")
             for key in sorted(useful_flags):

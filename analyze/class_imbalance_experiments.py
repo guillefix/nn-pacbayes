@@ -8,6 +8,7 @@ dataset="unbalanced_boolean"
 dataset="unbalancedt9_cifar"
 dataset="unbalancedt9_mnist"
 dataset="new_unbalancedt9_EMNIST"
+dataset="init_dist_test"
 # filename=dataset+"_nn_training_results.txt"
 filename=dataset+"nn_training_results.txt"
 # filename="unbalancedt1_emnist_nn_training_results.txt"
@@ -26,7 +27,10 @@ d["test_acc"].unique()
 
 import numpy as np
 d.groupby(["centering","number_layers","sigmab"],as_index=False).count()[["centering","number_layers","sigmab","test_error","test_sensitivity"]]
-d1 = d[d["train_acc"]==1].groupby(["centering","number_layers","sigmab"],as_index=False).mean()[["centering","number_layers","sigmab","test_error","test_acc","train_acc","test_sensitivity"]]
+d1 = d[d["train_acc"]==1].groupby(["threshold","init_dist","centering","number_layers","sigmab"],as_index=False).mean()[["threshold","init_dist","centering","number_layers","sigmab","test_error","test_acc","train_acc","test_sensitivity"]]
+# d1 = d[d["train_acc"]==1].groupby(["init_dist","centering","number_layers","sigmab"],as_index=False).mean()[["init_dist","centering","number_layers","sigmab","test_error","test_acc","train_acc","test_sensitivity"]]
+# d1 = d[d["train_acc"]==1].groupby(["centering","number_layers","sigmab"],as_index=False).mean()[["centering","number_layers","sigmab","test_error","test_acc","train_acc","test_sensitivity"]]
+
 # d1 = d.groupby(["centering","number_layers","sigmab"],as_index=False).mean()[["centering","number_layers","sigmab","test_error","test_acc","train_acc","test_sensitivity"]]
 # # d1 = d[d["train_acc"]==1].groupby(["centering","number_layers","sigmab"],as_index=False).mean()[["centering","number_layers","sigmab","test_error","train_acc"]]
 # d[d["train_acc"]==1][["centering","number_layers","sigmab","test_error","test_acc","train_acc","test_sensitivity"]].groupby(["centering","number_layers","sigmab"],as_index=True).std()[["test_error","test_acc","train_acc","test_sensitivity"]]

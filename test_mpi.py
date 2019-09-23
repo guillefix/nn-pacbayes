@@ -16,7 +16,7 @@ os.environ["CUDA_VISIBLE_DEVICES"]=str(0)
 
 sess = tf.Session(config=config)
 
-import h5py
-h5py.File("test","w")
+#import h5py
+#h5py.File("test","w")
 
 print("hi", rank)
