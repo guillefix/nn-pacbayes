@@ -8,10 +8,11 @@
 
 m=50
 #dataset=mnist
-#dataset=EMNIST
-dataset=$1
+dataset=EMNIST
+#dataset=$1
 #dataset=cifar
 #dataset=calabiyau
+#dataset=boolean
 boolfun=00100000000000000000000000000000000000000000000000000000000000001111001100110011001100000000000000000000000000000000000000000000
 net=fc
 L=1
@@ -19,7 +20,7 @@ L=1
 optimizer=sgd
 #prefix=unbalancedt9_mnist_
 #prefix=unbalanced_boolean_
-prefix=init_dist_test_balanced_
+#prefix=init_dist_test_balanced_
 #prefix=calabiyau_test
 #prefix=unbalancedt1_cifar_
 sigmaw=2.0
@@ -30,6 +31,8 @@ number_inits=10
 export n_procs=5
 if [ "$dataset" == "boolean" ]; then
 t=1
+elif [ "$dataset" == "EMNIST" ]; then
+t=61
 else
 #t=9
 t=5
@@ -39,7 +42,7 @@ prefix=init_dist_test_balanced_${t}_${dataset}
 
 n_gpus=1
 export n_gpus=$n_gpus
-export n_procs=8
+#export n_procs=5
 
 
 #for L in `seq 1 2 6`; do
