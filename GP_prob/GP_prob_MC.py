@@ -30,7 +30,7 @@ def GP_prob(K,X,Y,FLAGS):
                     likelihood=lik)
 
     mean, cov = model._raw_predict(X, full_cov=True)
-    mean *= 1
+    mean *= 1.0
     mean = mean.flatten()
     cov *= cov_mult
     log_norm_ratio = np.sum(np.log((np.linalg.eigh(cov)[0] / np.linalg.eigh(K)[0])))/2
@@ -50,13 +50,17 @@ def GP_prob(K,X,Y,FLAGS):
 
     import sys
     for i in range(len(tasks)):
-        # print(i)
-        # if (i%(len(tasks)/100)) == (len(tasks)/100)-1:
+        # print(i,len(tasks))
+        # if (i%int(len(tasks)/100)) == (int(len(tasks)/100)-1):
         #     print(str(int(100*i/len(tasks)))+"%")
+        #     # print(f)
+        #     # print(Y.T)
+        #     sys.stdout.flush()
         f = sample[:,i]
         PQratio = np.exp(shift-0.5*(np.matmul(f.T, np.matmul(Kinv, f)) - np.matmul((f-mean).T, np.matmul(covinv, (f-mean))) ) + log_norm_ratio)
         if np.prod((f.T>0) == Y.T):
             print(PQratio)
+            sys.stdout.flush()
             tot += PQratio
 
     tots = comm.gather(tot,root=0)

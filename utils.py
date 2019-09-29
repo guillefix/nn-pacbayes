@@ -3,6 +3,7 @@ import tensorflow as tf
 from math import ceil
 import h5py
 import os
+from tensorflow import keras
 
 ROOT_FOLDER = os.path.dirname(os.path.realpath(__file__))+"/"
 data_folder = ROOT_FOLDER+"data/"
@@ -171,7 +172,6 @@ def preprocess_flags(FLAGS):
 def binary_crossentropy_from_logits(y_true,y_pred):
     return tf.keras.backend.binary_crossentropy(y_true, y_pred,from_logits=True)
 
-from tensorflow import keras
 Callback = keras.callbacks.Callback
 import warnings
 class EarlyStoppingByAccuracy(Callback):

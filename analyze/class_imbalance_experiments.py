@@ -7,7 +7,8 @@ dataset="unbalancedt1_emnist"
 dataset="unbalanced_boolean"
 dataset="unbalancedt9_cifar"
 dataset="unbalancedt9_mnist"
-dataset="new_unbalancedt9_EMNIST"
+dataset="new_unbalancedt61_EMNIST"
+dataset="new_unbalancedt1_boolean"
 dataset="init_dist_test"
 # filename=dataset+"_nn_training_results.txt"
 filename=dataset+"nn_training_results.txt"
@@ -17,7 +18,7 @@ filename="imbalanced_boolean_nn_training_results.txt"
 filename="oversampling_test_nn_training_results.txt"
 # filename="unbalanced_boolean_nn_training_results.txt"
 d=pd.read_csv(filename, sep="\t",comment="#")
-# d["train_acc"].plot.hist()
+d["train_acc"].plot.hist()
 
 # d["number_layers"]
 
@@ -35,7 +36,7 @@ d1 = d[d["train_acc"]==1].groupby(["threshold","init_dist","centering","number_l
 # # d1 = d[d["train_acc"]==1].groupby(["centering","number_layers","sigmab"],as_index=False).mean()[["centering","number_layers","sigmab","test_error","train_acc"]]
 # d[d["train_acc"]==1][["centering","number_layers","sigmab","test_error","test_acc","train_acc","test_sensitivity"]].groupby(["centering","number_layers","sigmab"],as_index=True).std()[["test_error","test_acc","train_acc","test_sensitivity"]]
 # d[d["train_acc"]==1][["centering","number_layers","sigmab","test_error","train_acc"]].groupby(["centering","number_layers","sigmab"],as_index=True).std()[["test_error","train_acc"]]
-# d1
+d1
 
 
 d1.groupby(["centering"]).mean()["test_acc"].plot.line()
@@ -64,12 +65,13 @@ for L in range(1,6):
     # plt.savefig("img/acc_sigmab_centering_L"+str(L)+"_"+dataset+".png")
     # plt.savefig("img/sensitivity_sigmab_centering_L"+str(L)+"_"+dataset+".png")
 
-    d1[(~d1["centering"]) & (d1["number_layers"]==L)][["sigmab","test_acc"]].plot.line("sigmab",["test_acc"])
-    # d1[(~d1["centering"]) & (d1["number_layers"]==L)][["sigmab","test_acc","train_acc"]].plot.line("sigmab",["test_acc"],legend=False)
-    # d1[(~d1["centering"]) & (d1["number_layers"]==L)][["sigmab","test_sensitivity","train_acc"]].plot.line("sigmab",["test_sensitivity"],legend=False)
-    plt.xlabel("$\\sigma_b$")
-    plt.ylabel("Accuracy")
-    plt.subplots_adjust(left=0.15, right=0.9, top=0.9, bottom=0.15)
+    # d1[(~d1["centering"]) & (d1["number_layers"]==L)][["sigmab","test_acc"]].plot.line("sigmab",["test_acc"])
+    # # d1[(~d1["centering"]) & (d1["number_layers"]==L)][["sigmab","test_acc","train_acc"]].plot.line("sigmab",["test_acc"],legend=False)
+    # # d1[(~d1["centering"]) & (d1["number_layers"]==L)][["sigmab","test_sensitivity","train_acc"]].plot.line("sigmab",["test_sensitivity"],legend=False)
+    # plt.xlabel("$\\sigma_b$")
+    # plt.ylabel("Accuracy")
+    # plt.subplots_adjust(left=0.15, right=0.9, top=0.9, bottom=0.15)
+
     # plt.savefig("img/acc_sigmab_nocentering_L"+str(L)+"_"+dataset+".png")
     # plt.savefig("img/sensitivity_sigmab_nocentering_L"+str(L)+"_"+dataset+".png")
 
