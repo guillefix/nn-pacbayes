@@ -9,20 +9,25 @@ dataset="unbalancedt9_cifar"
 dataset="unbalancedt9_mnist"
 dataset="init_dist_test"
 dataset="init_dist_test_balanced"
+dataset="new_unbalancedt61_EMNIST"
+dataset="new_unbalancedt1_boolean"
 filename=dataset+"_nn_training_results.txt"
+filename=dataset+"nn_training_results.txt"
 # filename="unbalancedt1_emnist_nn_training_results.txt"
 filename="boolfunnn_training_results.txt"
 filename="imbalanced_boolean_nn_training_results.txt"
 filename="oversampling_test_nn_training_results.txt"
 # filename="unbalanced_boolean_nn_training_results.txt"
 d=pd.read_csv(filename, sep="\t",comment="#")
-# d["train_acc"].plot.hist()
+d["train_acc"].plot.hist()
+# d["test_acc"].plot.hist()
+d["optimizer"]
 
 # d["number_layers"]
 
 import numpy as np
 d.groupby(["centering","number_layers","sigmab"],as_index=False).count()[["centering","number_layers","sigmab","test_error","test_sensitivity"]]
-d1 = d[d["train_acc"]==1].groupby(["threshold","init_dist","centering","number_layers","sigmab"],as_index=False).mean()[["threshold","init_dist","centering","number_layers","sigmab","test_error","test_acc","train_acc","test_sensitivity"]]
+d1 = d[d["train_acc"]==1].groupby(["threshold","init_dist","centering","number_layers","sigmab"],as_index=False).mean()[["threshold","init_dist","centering","number_layers","sigmab","test_error","test_acc","train_acc","test_sensitivity","test_specificity"]]
 # d1 = d[d["train_acc"]==1].groupby(["init_dist","centering","number_layers","sigmab"],as_index=False).mean()[["init_dist","centering","number_layers","sigmab","test_error","test_acc","train_acc","test_sensitivity"]]
 # d1 = d[d["train_acc"]==1].groupby(["centering","number_layers","sigmab"],as_index=False).mean()[["centering","number_layers","sigmab","test_error","test_acc","train_acc","test_sensitivity"]]
 
@@ -65,3 +70,7 @@ for L in range(1,7):
 plt.close()
 d1[(d1["centering"]) & (d1["sigmab"]==0.0)][["number_layers","test_acc"]].plot.line("number_layers","test_acc")
 d1[(~d1["centering"]) & (d1["sigmab"]==2.0)][["number_layers","test_acc"]].plot.line("number_layers","test_acc")
+
+d1[(~d1["centering"]) & (d1["number_layers"]==1)][["sigmab","test_acc"]].plot.line("sigmab","test_acc", legend=False)
+d1[(~d1["centering"]) & (d1["number_layers"]==1)][["sigmab","test_sensitivity"]]
+d1[(~d1["centering"]) & (d1["number_layers"]==1)][["sigmab","test_specificity"]]

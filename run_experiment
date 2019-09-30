@@ -3,7 +3,8 @@
 #echo $PYTHONPATH
 #export PYTHONPATH="$PYTHONPATH:/usr/local/lib/python3.5/dist-packages:~/.local/lib/"
 #export PYTHONPATH="/home_directory/.local/lib/python3.5/site-packages/"
-export PYTHONPATH="/home_directory/.local/lib/python2.7/site-packages/"
+#export PYTHONPATH="/home_directory/.local/lib/python2.7/site-packages/"
+export PYTHONPATH="/home_directory/.local/lib/python3.5/site-packages/:/usr/local/lib/python3.5/dist-packages/"
 
 #py=/usr/bin/python3
 #py=~/anaconda3/bin/python3
@@ -17,10 +18,10 @@ $py generate_NN_arch.py $@
 $py generate_inputs_sample.py $@
 
 #/usr/local/shared/openmpi/4.0.0/bin/mpiexec -n 250 $py compute_kernel_and_bound.py $@
-# mpiexec -n 1 $py compute_kernel.py $@
+mpiexec -n 1 $py compute_kernel.py $@
 # # # /usr/local/shared/openmpi/4.0.0/bin/mpiexec -n 250 $py compute_prob_and_bound.py $@ --num_post_samples 100000 --cov_mult 0.5 --using_MC
 # # mpiexec -n $(nproc) $py compute_prob_and_bound.py $@ --num_post_samples 100000 --cov_mult 0.5 --using_MC
-# mpiexec -n $(nproc) $py compute_prob_and_bound.py $@ --num_post_samples 400000 --cov_mult 1.0 --using_MC
+mpiexec -n $(nproc) $py compute_prob_and_bound.py $@ --num_post_samples 400000 --cov_mult 1.0 --using_MC
 # mpiexec -n 1 $py compute_prob_and_bound.py $@ --using_EP
 #/usr/local/shared/openmpi/4.0.0/bin/mpiexec -n 100 $py sample_funs.py $@ --number_samples 10000
 mpiexec -n ${n_procs} $py NN_train.py $@
