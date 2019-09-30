@@ -7,6 +7,8 @@ dataset="unbalancedt1_emnist"
 dataset="unbalanced_boolean"
 dataset="unbalancedt9_cifar"
 dataset="unbalancedt9_mnist"
+dataset="new_unbalancedt61_EMNIST"
+dataset="new_unbalancedt1_boolean"
 dataset="init_dist_test"
 dataset="init_dist_test_balanced"
 dataset="new_unbalancedt61_EMNIST"
@@ -59,13 +61,19 @@ for L in range(1,7):
     plt.xlabel("$\\sigma_b$")
     plt.ylabel("Accuracy")
     plt.subplots_adjust(left=0.15, right=0.9, top=0.9, bottom=0.15)
-    plt.savefig("img/acc_sigmab_centering_L"+str(L)+"_"+dataset+".png")
-    # d1[(~d1["centering"]) & (d1["number_layers"]==8)][["sigmab","test_acc","train_acc"]].plot.line("sigmab",["test_acc","train_acc"])
-    d1[(~d1["centering"]) & (d1["number_layers"]==L)][["sigmab","test_acc","train_acc"]].plot.line("sigmab",["test_acc"],legend=False)
-    plt.xlabel("$\\sigma_b$")
-    plt.ylabel("Accuracy")
-    plt.subplots_adjust(left=0.15, right=0.9, top=0.9, bottom=0.15)
-    plt.savefig("img/acc_sigmab_nocentering_L"+str(L)+"_"+dataset+".png")
+    # plt.savefig("img/acc_sigmab_centering_L"+str(L)+"_"+dataset+".png")
+    # plt.savefig("img/sensitivity_sigmab_centering_L"+str(L)+"_"+dataset+".png")
+
+    # d1[(~d1["centering"]) & (d1["number_layers"]==L)][["sigmab","test_acc"]].plot.line("sigmab",["test_acc"])
+    # # d1[(~d1["centering"]) & (d1["number_layers"]==L)][["sigmab","test_acc","train_acc"]].plot.line("sigmab",["test_acc"],legend=False)
+    # # d1[(~d1["centering"]) & (d1["number_layers"]==L)][["sigmab","test_sensitivity","train_acc"]].plot.line("sigmab",["test_sensitivity"],legend=False)
+    # plt.xlabel("$\\sigma_b$")
+    # plt.ylabel("Accuracy")
+    # plt.subplots_adjust(left=0.15, right=0.9, top=0.9, bottom=0.15)
+
+    # plt.savefig("img/acc_sigmab_nocentering_L"+str(L)+"_"+dataset+".png")
+    # plt.savefig("img/sensitivity_sigmab_nocentering_L"+str(L)+"_"+dataset+".png")
+
 #%%
 plt.close()
 d1[(d1["centering"]) & (d1["sigmab"]==0.0)][["number_layers","test_acc"]].plot.line("number_layers","test_acc")

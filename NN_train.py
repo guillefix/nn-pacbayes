@@ -63,11 +63,19 @@ def main(_):
         # return keras.backend.variable((sigmaw/(np.sqrt(np.prod(shape[:-1]))))*np.random.standard_cauchy(shape), dtype=dtype)
         return (sigmaw/(np.sqrt(np.prod(shape[:-1]))))*np.random.standard_cauchy(shape)
 
+    def shifted_init(shape, dtype=None):
+        return sigmab*np.random.standard_normal(shape)-0.5
+
     class CauchyInit:
         def __call__(self, shape, dtype=None):
             return cauchy_init(shape, dtype=dtype)
 
-    model = model_from_json(arch_json_string,custom_objects={'cauchy_init': CauchyInit})
+    class ShiftedInit:
+        def __call__(self, shape, dtype=None):
+            return shifted_init(shape, dtype=dtype)
+
+    custom_objects = {'cauchy_init': CauchyInit, 'shifted_init':ShiftedInit}
+    model = model_from_json(arch_json_string,custom_objects=custom_objects)
 
     set_session = keras.backend.set_session
 
@@ -94,7 +102,7 @@ def main(_):
     for init in range(number_inits//size):
         print(init)
 
-        model = model_from_json(arch_json_string,custom_objects={'cauchy_init': CauchyInit})
+        model = model_from_json(arch_json_string,custom_objects=custom_objects)
 
         # import keras.backend as K
         #
