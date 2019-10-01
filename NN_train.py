@@ -54,7 +54,28 @@ def main(_):
 
     arch_json_string = load_model(FLAGS)
     from tensorflow.keras.models import model_from_json
-    model = model_from_json(arch_json_string)
+
+    # from keras.utils.generic_utils import get_custom_objects
+    #
+    # get_custom_objects().update({'cauchy_init': CauchyInit})
+
+    def cauchy_init(shape, dtype=None):
+        # return keras.backend.variable((sigmaw/(np.sqrt(np.prod(shape[:-1]))))*np.random.standard_cauchy(shape), dtype=dtype)
+        return (sigmaw/(np.sqrt(np.prod(shape[:-1]))))*np.random.standard_cauchy(shape)
+
+    def shifted_init(shape, dtype=None):
+        return sigmab*np.random.standard_normal(shape)-0.5
+
+    class CauchyInit:
+        def __call__(self, shape, dtype=None):
+            return cauchy_init(shape, dtype=dtype)
+
+    class ShiftedInit:
+        def __call__(self, shape, dtype=None):
+            return shifted_init(shape, dtype=dtype)
+
+    custom_objects = {'cauchy_init': CauchyInit, 'shifted_init':ShiftedInit}
+    model = model_from_json(arch_json_string,custom_objects=custom_objects)
 
     set_session = keras.backend.set_session
 
@@ -80,7 +101,8 @@ def main(_):
 
     for init in range(number_inits//size):
         print(init)
-        model = model_from_json(arch_json_string)
+
+        model = model_from_json(arch_json_string,custom_objects=custom_objects)
 
         # import keras.backend as K
         #
@@ -139,8 +161,8 @@ def main(_):
 
         print('Test accuracy:', test_acc)
         # print('Test sensitivity (at 99% accuracy):', test_sensitivity)
-        print('Test sensitivity base:', test_sensitivity_base)
-        print('Test specificity base:', test_specificity_base)
+        print('Test sensitivity:', test_sensitivity_base)
+        print('Test specificity:', test_specificity_base)
         # print('Test false positive rate:', test_false_positive_rate)
         test_accs.append(test_acc)
         #test_sensitivities.append(test_sensitivity)
@@ -203,7 +225,7 @@ def main(_):
         # if "h" in useful_flags: del useful_flags["h"]
         # if "f" in useful_flags: del useful_flags["f"]
         # if "prefix" in useful_flags: del useful_flags["prefix"]
-        useful_flags = ["dataset", "m", "network", "pooling", "number_layers", "sigmaw", "sigmab", "whitening", "centering", "oversampling", "oversampling2", "channel_normalization", "training", "binarized", "confusion","filter_sizes", "gamma", "intermediate_pooling", "label_corruption", "n_gpus", "n_samples_repeats", "num_filters", "number_inits", "padding"]
+        useful_flags = ["dataset", "m", "network", "pooling", "number_layers", "sigmaw", "sigmab", "init_dist","whitening", "centering", "oversampling", "oversampling2", "channel_normalization", "training", "binarized", "confusion","filter_sizes", "gamma", "intermediate_pooling", "label_corruption", "threshold", "n_gpus", "n_samples_repeats", "num_filters", "number_inits", "padding"]
         with open(prefix+"nn_training_results.txt","a") as file:
             file.write("#")
             for key in sorted(useful_flags):

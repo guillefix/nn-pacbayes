@@ -59,8 +59,30 @@ def main(_):
         input_dim = image_height*image_width*number_channels
     set_session = keras.backend.set_session
 
-    bias_initializer = keras.initializers.RandomNormal(stddev=sigmab)
-    weight_initializer = keras.initializers.RandomNormal(stddev=sigmaw/np.sqrt(input_dim))
+    def cauchy_init_wrapper(sigma):
+        def cauchy_init(shape, dtype=None):
+            # return keras.backend.variable((sigmaw/(np.sqrt(np.prod(shape[:-1]))))*np.random.standard_cauchy(shape), dtype=dtype)
+            return (sigma/(np.sqrt(np.prod(shape[:-1]))))*np.random.standard_cauchy(shape)
+        return cauchy_init
+
+    def shifted_init(shape, dtype=None):
+        return sigmab*np.random.standard_normal(shape)-0.5
+
+    if init_dist == "gaussian":
+        bias_initializer = keras.initializers.RandomNormal(stddev=sigmab)
+        # weight_initializer = keras.initializers.RandomNormal(stddev=sigmaw/np.sqrt(input_dim))
+        weight_initializer = keras.initializers.VarianceScaling(scale=sigmaw, mode='fan_in', distribution='normal', seed=None)
+        bias_initializer_last_layer = shifted_init
+    elif init_dist == "cauchy":
+        bias_initializer = cauchy_init(sigmab)
+        weight_initializer  = cauchy_init(sigmaw)
+        bias_initializer_last_layer = bias_initializer
+    elif init_dist == "uniform":
+        bias_initializer = keras.initializers.RandomUniform(minval=-np.sqrt(3 * sigmab), maxval=np.sqrt(3 * sigmab), seed=None)
+        weight_initializer = keras.initializers.VarianceScaling(scale=sigmaw, mode='fan_in', distribution='uniform', seed=None)
+        bias_initializer_last_layer = bias_initializer
+    else:
+        raise NotImplementedError
     # bias_initializer = keras.initializers.Zeros()
     # weight_initializer = keras.initializers.glorot_uniform()
 
@@ -117,6 +139,7 @@ def main(_):
                     kernel_initializer=weight_initializer,
                     bias_initializer=bias_initializer,)
             ]
+                # + [keras.layers.Lambda(lambda x: x-1/np.sqrt(2*np.pi))]
             + [
                 keras.layers.Dense(input_dim, activation=tf.nn.relu,#)
                     kernel_initializer=weight_initializer,
@@ -127,10 +150,11 @@ def main(_):
                     # bias_regularizer=keras.regularizers.l2(0.1))
                     for i in range(number_layers-1)
                 ]
+                # + [keras.layers.Lambda(lambda x: x-1/np.sqrt(2*np.pi))]
                 + [
                     keras.layers.Dense(1,#activation=tf.nn.sigmoid,
                     kernel_initializer=weight_initializer,
-                    bias_initializer=bias_initializer,)
+                    bias_initializer=bias_initializer_last_layer,)
                     # kernel_regularizer=keras.regularizers.l2(0.01*input_dim/(2*sigmaw**2)),
                     # bias_regularizer=keras.regularizers.l2(1/(2*sigmab**2)))
                     # kernel_regularizer=keras.regularizers.l2(0.05),

@@ -10,7 +10,7 @@ kernel_folder = "kernels/"
 
 FLAGS = {}
 FLAGS['m'] = 50
-FLAGS['number_inits'] = 24
+FLAGS['number_inits'] = 1
 FLAGS['label_corruption'] =  0.0
 FLAGS['confusion'] = 0.0
 FLAGS['dataset'] =  "mnist"
@@ -23,13 +23,16 @@ FLAGS['intermediate_pooling_type'] =  "max"
 FLAGS['sigmaw'] =  2.0
 FLAGS['sigmab'] =  0.0
 FLAGS['network'] =  "fc"
-FLAGS['prefix'] =  "test_"
+FLAGS['prefix'] =  "new_comp_sweep_"
 FLAGS['whitening'] =  False
 FLAGS['centering'] =  False
 FLAGS['channel_normalization'] =  False
 FLAGS['random_labels'] =  True
 FLAGS['training'] =  True
 FLAGS['no_training'] =  False
+FLAGS['threshold'] =  -1
+FLAGS['oversampling'] =  False
+FLAGS['oversampling2'] =  False
 
 from mpi4py import MPI
 comm = MPI.COMM_WORLD
@@ -58,25 +61,27 @@ Y = np.array(ys2)
 print("Loading kernel")
 from os import path
 # FLAGS["m"] = m+500
-filename=kernel_folder
-for flag in ["network","dataset","m","confusion","label_corruption","binarized","whitening","random_labels","number_layers","sigmaw","sigmab"]:
-    filename+=str(FLAGS[flag])+"_"
-filename += "kernel.npy"
-if path.exists(filename):
-    K = load_kernel(FLAGS)
-else:
-    if rank == 0:
-        from fc_kernel import kernel_matrix
-        K = kernel_matrix(X,number_layers=number_layers,sigmaw=sigmaw,sigmab=sigmab, n_gpus=n_gpus)
-        np.save(open(filename,"wb"),K)
-    K = load_kernel(FLAGS)
+# filename=kernel_folder
+# for flag in ["network","dataset","m","confusion","label_corruption","binarized","whitening","random_labels","number_layers","sigmaw","sigmab"]:
+#     filename+=str(FLAGS[flag])+"_"
+# filename += "kernel.npy"
+# if path.exists(filename):
+#     K = load_kernel(FLAGS)
+# try:
+K = load_kernel(FLAGS)
+# except:
+#     if rank == 0:
+#         from fc_kernel import kernel_matrix
+#         K = kernel_matrix(X,number_layers=number_layers,sigmaw=sigmaw,sigmab=sigmab, n_gpus=n_gpus)
+#         np.save(open(filename,"wb"),K)
+#     K = load_kernel(FLAGS)
 
 print("Loaded kernel")
 #%%
 
 import GPy
 
-from custom_kernel_matrix.custom_kernel_matrix import CustomMatrix
+from GP_prob.custom_kernel_matrix.custom_kernel_matrix import CustomMatrix
 # link_fun = GPy.likelihoods.link_functions.Heaviside()
 # lik = GPy.likelihoods.Bernoulli(gp_link=link_fun)
 lik = GPy.likelihoods.Bernoulli()
@@ -91,11 +96,13 @@ model = GPy.core.GP(X=X,
                 likelihood=lik)
 #%%
 
+Y
+
 mean, cov = model._raw_predict(X, full_cov=True)
 mean *= 1
 mean = mean.flatten()
-cov /= 3
-num_post_samples = int(1e5/2)
+# cov /= 3
+num_post_samples = int(1e6/2)
 # sample = model.posterior_samples_f(X, size=num_post_samples)
 
 # np.prod((sample[:,0,np.random.randint(num_post_samples)].T>0) == Y.T)
@@ -144,7 +151,7 @@ if rank == 0:
 
     #%%
 
-    from GP_prob_gpy import GP_prob
+    from GP_prob.GP_prob_gpy import GP_prob
     logPU = GP_prob(K,X,Y)
     print(logPU)
 

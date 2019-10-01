@@ -155,7 +155,7 @@ def main(_):
 
     ##get random training sample##
 
-    np.random.seed(42069)
+    np.random.seed(4206)
 
     #for datasets that are not images, like the boolean one
     if dataset == "boolean" or dataset == "calabiyau":
