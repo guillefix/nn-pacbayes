@@ -366,5 +366,5 @@ if __name__ == '__main__':
 
     define_default_flags(f)
 
-    tf.app.run()
+    tf.compat.v1.app.run()
     import gc; gc.collect()
