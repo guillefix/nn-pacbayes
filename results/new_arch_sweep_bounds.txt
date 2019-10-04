@@ -1,0 +1,2 @@
+#dataset	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound
+mnist	cnn	100	0.0	0.0	4	1.414	0.0	True	none	0000	False	True	1	0.43627675164723523
