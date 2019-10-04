@@ -37,11 +37,11 @@ class DeepKernel(gpflow.kernels.Kernel):
         self.recurse_kern = recurse_kern
         self.skip_freq = skip_freq
 
-        inferred_data_format = "NC" + "DHW"[4-len(input_shape):]
-        if inferred_data_format != data_format:
-            raise ValueError(("Inferred and supplied data formats "
-                              "inconsistent: {} vs {}")
-                             .format(data_format, inferred_data_format))
+        #inferred_data_format = "NC" + "DHW"[4-len(input_shape):]
+        #if inferred_data_format != data_format:
+        #    raise ValueError(("Inferred and supplied data formats "
+        #                      "inconsistent: {} vs {}")
+        #                     .format(data_format, inferred_data_format))
         self.data_format = data_format
 
         if not isinstance(padding, list):
@@ -84,13 +84,20 @@ class DeepKernel(gpflow.kernels.Kernel):
                 tf.reshape(tf.square(X2), [N2] + self.input_shape),
                 tf.reshape(X[:, None, :] * X2, [N*N2] + self.input_shape)]
             cross_start = N + N2
-        var_z_list = [tf.reduce_mean(z, axis=1, keepdims=True)
-                      for z in var_z_list]
+        # I think this is averaging the channel dimension, which needs to be done for the first iteration (i.e. on the inputs).
+        if self.data_format == "NCHW":
+            var_z_list = [tf.reduce_mean(z, axis=1, keepdims=True)
+                          for z in var_z_list]
+        elif self.data_format == "NHWC":
+            var_z_list = [tf.reduce_mean(z, axis=-1, keepdims=True)
+                          for z in var_z_list]
         var_z_previous = None
 
         for i in range(self.n_layers):
             # Do the convolution for all the co/variances at once
             var_z = tf.concat(var_z_list, axis=0)
+
+            # this is if we have residual connections I think:
             if (i > 0 and ((isinstance(self.skip_freq, list) and i in self.skip_freq) or
                            (self.skip_freq > 0 and i % self.skip_freq == 0))):
                 var_z = var_z + var_z_previous
@@ -98,6 +105,8 @@ class DeepKernel(gpflow.kernels.Kernel):
             elif i == 0:
                 # initialize var_z_previous
                 var_z_previous = var_z
+
+            ##CONVOLVE THE THINGS
             var_a_all = self.lin_step(i, var_z)
 
             # Disentangle the output of the convolution and compute the next
@@ -142,11 +151,12 @@ class DeepKernel(gpflow.kernels.Kernel):
             a = tf.nn.convolution(
                 x, f, padding=self.padding[i], strides=self.strides[i],
                 data_format=self.data_format)
-            # a = tf.nn.conv2d(
-            #     x, f,
-            #     strides=[1]+self.strides[i]+[1],
-            #     padding=self.padding[i],
-            #     data_format='NCHW')
+            #a = tf.nn.conv2d(
+            #    x, f,
+            #    #strides=[1]+self.strides[i]+[1],
+            #    strides=self.strides[i],
+            #    padding=self.padding[i],
+            #    data_format=self.data_format)
         return a + self.var_bias
 
 

@@ -75,23 +75,41 @@ def compute_big_Kdiag(sess, kern, n_max, X, n_gpus=1):
     N = X.shape[0]
     slices = list(slice(j, j+n_max) for j in range(0, N, n_max))
     K_ops = []
-    for i in range(n_gpus):
-        with tf.device("gpu:{}".format(i)):
+    if n_gpus>0:
+        for i in range(n_gpus):
+            with tf.device("gpu:{}".format(i)):
+                X_ph = tf.placeholder(settings.float_type, [None, X.shape[1]], "X_ph")
+                Kdiag = kern.Kdiag(X_ph)
+                K_ops.append((X_ph, Kdiag))
+    else:
+        with tf.device("cpu:{}".format(0)):
             X_ph = tf.placeholder(settings.float_type, [None, X.shape[1]], "X_ph")
             Kdiag = kern.Kdiag(X_ph)
             K_ops.append((X_ph, Kdiag))
 
     out = np.zeros([N], dtype=settings.float_type)
-    for j in tqdm.trange(0, len(slices), n_gpus):
-        feed_dict = {}
-        ops = []
-        for (X_ph, Kdiag), j_s in zip(K_ops, slices[j:j+n_gpus]):
-            feed_dict[X_ph] = X[j_s]
-            ops.append(Kdiag)
-        results = sess.run(ops, feed_dict=feed_dict)
+    if n_gpus>0:
+        for j in tqdm.trange(0, len(slices), n_gpus):
+            feed_dict = {}
+            ops = []
+            for (X_ph, Kdiag), j_s in zip(K_ops, slices[j:j+n_gpus]):
+                feed_dict[X_ph] = X[j_s]
+                ops.append(Kdiag)
+            results = sess.run(ops, feed_dict=feed_dict)
 
-        for r, j_s in zip(results, slices[j:j+n_gpus]):
-            out[j_s] = r
+            for r, j_s in zip(results, slices[j:j+n_gpus]):
+                out[j_s] = r
+    else:
+        for j in tqdm.trange(0, len(slices), 1):
+            feed_dict = {}
+            ops = []
+            for (X_ph, Kdiag), j_s in zip(K_ops, slices[j:j+1]):
+                feed_dict[X_ph] = X[j_s]
+                ops.append(Kdiag)
+            results = sess.run(ops, feed_dict=feed_dict)
+
+            for r, j_s in zip(results, slices[j:j+1]):
+                out[j_s] = r
     return out
 
 
@@ -116,8 +134,19 @@ def compute_big_K(sess, kern, n_max, X, X2=None, n_gpus=1):
 
     # Make the required kernel ops and placeholders for each GPU
     K_ops = []
-    for i in range(n_gpus):
-        with tf.device("gpu:{}".format(i)):
+    if n_gpus>0:
+        for i in range(n_gpus):
+            with tf.device("gpu:{}".format(i)):
+                X_ph = tf.placeholder(settings.float_type, [None, X.shape[1]], "X_ph")
+                X2_ph = tf.placeholder(settings.float_type, X_ph.shape, "X2_ph")
+                K_cross = kern.K(X_ph, X2_ph)
+                if diag_symm:
+                    K_symm = kern.K(X_ph, None)
+                else:
+                    K_symm = None
+                K_ops.append((X_ph, X2_ph, K_cross, K_symm))
+    else:
+        with tf.device("cpu:{}".format(0)):
             X_ph = tf.placeholder(settings.float_type, [None, X.shape[1]], "X_ph")
             X2_ph = tf.placeholder(settings.float_type, X_ph.shape, "X2_ph")
             K_cross = kern.K(X_ph, X2_ph)
@@ -126,14 +155,19 @@ def compute_big_K(sess, kern, n_max, X, X2=None, n_gpus=1):
             else:
                 K_symm = None
             K_ops.append((X_ph, X2_ph, K_cross, K_symm))
+    
 
     # Execute on all GPUs concurrently
     out = np.zeros((N, N2), dtype=settings.float_type)
-    for j in tqdm.trange(0, len(slices), n_gpus):
+    if n_gpus>0:
+        n_devices = n_gpus
+    else:
+        n_devices = 1
+    for j in tqdm.trange(0, len(slices), n_devices):
         feed_dict = {}
         ops = []
         for (X_ph, X2_ph, K_cross, K_symm), (j_s, i_s) in (
-                zip(K_ops, slices[j:j+n_gpus])):
+                zip(K_ops, slices[j:j+n_devices])):
             if j_s == i_s and diag_symm:
                 feed_dict[X_ph] = X[j_s]
                 ops.append(K_symm)
@@ -146,7 +180,7 @@ def compute_big_K(sess, kern, n_max, X, X2=None, n_gpus=1):
                 ops.append(K_cross)
         results = sess.run(ops, feed_dict=feed_dict)
 
-        for r, (j_s, i_s) in zip(results, slices[j:j+n_gpus]):
+        for r, (j_s, i_s) in zip(results, slices[j:j+n_devices]):
             out[j_s, i_s] = r
             if j_s != i_s and diag_symm:
                 out[i_s, j_s] = r.T

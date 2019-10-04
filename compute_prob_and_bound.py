@@ -19,7 +19,8 @@ def main(_):
     size = comm.Get_size()
     print(rank)
 
-    os.environ["CUDA_VISIBLE_DEVICES"]=str((rank+1)%n_gpus)
+    if n_gpus>0:
+        os.environ["CUDA_VISIBLE_DEVICES"]=str((rank+1)%n_gpus)
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
 

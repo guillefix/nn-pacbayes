@@ -1,32 +1,29 @@
 #!/bin/bash
 
 #export PYTHONPATH="/home_directory/.local/lib/python3.5/site-packages/:/usr/local/lib/python3.5/dist-packages/"
-export PYTHONPATH=""
+#export PYTHONPATH=""
 
-#m=10000
+m=100
 #dataset=cifar
-dataset=cifar
-#net=cnn
-L=4
-prefix=msweep_
-sigmaw=2.0
-sigmab=0.1
-
-n_gpus=1
-#n_gpus=1
+#dataset=KMNIST
+dataset=mnist
+prefix=new_arch_sweep_
+sigmaw=1.414
+sigmab=0.0
+n_gpus=0
 export n_gpus=$n_gpus
 
+L=2
 c=0
+#pool=avg
+pool=none
 
-net=$1
-pool=avg
-m=$2
-
-#for c in 0.7 0.8 0.9 1 2 3 4 5; do
+for net in fc; do 
 #for net in vgg19 vgg16 resnet50 resnet101 resnet152 resnetv2_50 resnetv2_101 resnetv2_152 resnext50 resnext101 densenet121 densenet169 densenet201 mobilenetv2 nasnet; do 
-#net=$1
-#sigmaw=$2
-echo $sigmaw
-./script2 --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --compute_bound --pooling $pool --n_samples_repeats 2.0 --number_inits 1 --use_empirical_K 
-	# ./$py NN_train.py --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training -sigmaw $sigmaw -sigmab $sigmab --confusion $c --ngpus $n_gpus --compute_bound --pooling $pool --n_samples_repeats 2.0 --use_empirical_K
-#done
+    echo $net
+    #./run_experiment --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --label_corruption $c --n_gpus $n_gpus --pooling $pool --n_samples_repeats 1.0 --number_inits 1 #--use_empirical_K 
+    #addqueue -n 25 -m 10 -s './run_experiment --prefix '${prefix}' --m '${m}' --dataset '${dataset}' --network '${net}' --number_layers '${L}' --training --sigmaw '${sigmaw}' --sigmab '${sigmab}' --label_corruption '${c}' --n_gpus '${n_gpus}' --compute_bound --pooling '${pool}' --n_samples_repeats 0.025 --number_inits 1 --use_empirical_K '
+    addqueue -n 250 -m 5 -s './run_experiment2 --prefix '${prefix}' --m '${m}' --dataset '${dataset}' --network '${net}' --number_layers '${L}' --training --sigmaw '${sigmaw}' --sigmab '${sigmab}' --label_corruption '${c}' --n_gpus '${n_gpus}' --compute_bound --pooling '${pool}' --n_samples_repeats 2.0 --number_inits 1 --use_empirical_K '
+    #addqueue -n 1 -m 5 -s './run_experiment2 --prefix '${prefix}' --m '${m}' --dataset '${dataset}' --network '${net}' --number_layers '${L}' --training --sigmaw '${sigmaw}' --sigmab '${sigmab}' --label_corruption '${c}' --n_gpus '${n_gpus}' --compute_bound --pooling '${pool}' --n_samples_repeats 2.0 --number_inits 1 --use_empirical_K '
+    #./run_experiment2 --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --label_corruption $c --n_gpus $n_gpus --compute_bound --pooling $pool --n_samples_repeats 2.0 --number_inits 1 --use_empirical_K 
+done

@@ -59,8 +59,16 @@ def kernel_matrix(X,number_layers,sigmaw,sigmab,n_gpus = 1):
     # X = train_images
     with tf.compat.v1.Session() as sess:
         K_ops = []
-        for i in range(n_gpus):
-            with tf.device("gpu:{}".format(i)):
+        if n_gpus>0:
+            for i in range(n_gpus):
+                with tf.device("gpu:{}".format(i)):
+                    X1 = tf.compat.v1.placeholder(np.float64, [n_max, X.shape[1]], "X1")
+                    X2 = tf.compat.v1.placeholder(np.float64, X1.shape, "X2")
+                    K_cross = kern(X1, X2,number_layers,sigmaw,sigmab)
+                    K_symm = kern(X1, None,number_layers,sigmaw,sigmab)
+                    K_ops.append((X1, X2, K_cross, K_symm))
+        else:
+            with tf.device("cpu:{}".format(0)):
                 X1 = tf.compat.v1.placeholder(np.float64, [n_max, X.shape[1]], "X1")
                 X2 = tf.compat.v1.placeholder(np.float64, X1.shape, "X2")
                 K_cross = kern(X1, X2,number_layers,sigmaw,sigmab)
@@ -69,11 +77,15 @@ def kernel_matrix(X,number_layers,sigmaw,sigmab,n_gpus = 1):
 
         out = np.zeros((m, m), dtype=np.float64)
         # for j in tqdm.trange(0, len(slices), n_gpus):
-        for j in range(0, len(slices), n_gpus):
+        if n_gpus>0:
+            n_devices = n_gpus
+        else:
+            n_devices = 1
+        for j in range(0, len(slices), n_devices):
             feed_dict = {}
             ops = []
             for (X1, X2, K_cross, K_symm), (j_s, i_s) in (
-                    zip(K_ops, slices[j:j+n_gpus])):
+                    zip(K_ops, slices[j:j+n_devices])):
                 print((j_s, i_s))
                 if j_s == i_s:
                     feed_dict[X1] = X[j_s]
@@ -83,7 +95,7 @@ def kernel_matrix(X,number_layers,sigmaw,sigmab,n_gpus = 1):
                     feed_dict[X2] = X[i_s]
                     ops.append(K_cross)
             results = sess.run(ops, feed_dict=feed_dict)
-            for r, (j_s, i_s) in zip(results, slices[j:j+n_gpus]):
+            for r, (j_s, i_s) in zip(results, slices[j:j+n_devices]):
                 out[j_s, i_s] = r
                 if j_s != i_s:
                     out[i_s, j_s] = r.T

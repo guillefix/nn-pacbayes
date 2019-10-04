@@ -8,6 +8,7 @@ import os,sys
 #tf.enable_eager_execution()
 import h5py
 import pickle
+from tensorflow.keras import backend as K
 
 
 arch_folder = "archs/"
@@ -35,7 +36,7 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
     #num_gpus = n_gpus
     #print("num_gpus",num_gpus)
 
-    save_freq = 500
+    save_freq = 5000
     try:
         chkpt = pickle.load(open("checkpoint.p","rb"))
         print("getting checkopoint of "+str(chkpt)+" functions")
@@ -99,37 +100,53 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
         # new_weights = [k_eval(lecun_normal()(w.shape)) for w in initial_weights]
         model.set_weights(new_weights)
 
-    fs = []
+    #fs = []
+    covs = []
+    last_layer = model.layers[-1].input
+    print(last_layer.shape)
+    func = K.function(model.input,last_layer)
     for index in tasks:
         print("sample for kernel", index)
-        sys.stdout.flush()
-        reset_weights(model)
+
+        model = model_from_json(arch_json_string) # this resets the weights (makes sense as the json string only has architecture)
+        last_layer = model.layers[-1].input
+        func = K.function(model.input,last_layer)
+
+        #reset_weights(model)
+
         #model.save_weights("sampled_nets/"+str(index)+"_"+json_string_filename+".h5")
         #outputs = model.predict(data,batch_size=data.shape[0])
         #outputs = model.predict(data,steps=1)
-        outputs = model.predict(data)
-        #keras.backend.clear_session()
+        #print(func(data).shape)
+        X = func(data)
+        #print("X,data",X,data.max())
+        covs.append((sigmaw**2/X.shape[1])*np.matmul(X,X.T)+(sigmab**2)*np.eye(X.shape[0]))
+        #outputs = model.predict(data)
+        #print(outputs)
+        keras.backend.clear_session()
         # print(outputs)
-        fs.append(outputs)
-        if index % save_freq == save_freq-1:
-            fs_tmp = comm.gather(fs,root=0)
-            if rank == 0:
-                fs_tmp = sum(fs_tmp, [])
-                fs_tmp += fs_init
-                pickle.dump(fs_tmp,open("fs.p","wb"))
-                pickle.dump(len(fs_tmp),open("checkpoint.p","wb"))
+        #fs.append(outputs)
+        #if index % save_freq == save_freq-1:
+        #    fs_tmp = comm.gather(fs,root=0)
+        #    if rank == 0:
+        #        fs_tmp = sum(fs_tmp, [])
+        #        fs_tmp += fs_init
+        #        pickle.dump(fs_tmp,open("fs.p","wb"))
+        #        pickle.dump(len(fs_tmp),open("checkpoint.p","wb"))
+        sys.stdout.flush()
 
     print("--- %s seconds ---" % (time.time() - start_time))
 
-    fs = comm.gather(fs,root=0)
+    #fs = comm.gather(fs,root=0)
+    covs = comm.gather(covs,root=0)
 
     if rank == 0:
-        fs = sum(fs, [])
-        fs += fs_init
-        fs = np.array(fs)
-        fs = np.squeeze(fs)
-        # print(fs.shape)
-        # print(fs)
-        return np.cov(fs.T)
+        #fs = sum(fs, [])
+        covs = sum(covs, [])
+        #fs += fs_init
+        #fs = np.array(fs)
+        #fs = np.squeeze(fs)
+        #return np.cov(fs.T)
+        return np.mean(covs,axis=0)
     else:
         return None
