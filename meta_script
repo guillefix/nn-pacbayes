@@ -12,13 +12,19 @@ dataset=mnist
 #dataset=$1
 #dataset=cifar
 #dataset=calabiyau
+#dataset=boolean
 boolfun=00100000000000000000000000000000000000000000000000000000000000001111001100110011001100000000000000000000000000000000000000000000
 net=fc
 L=1
 #optimizer=adam
 optimizer=sgd
+#prefix=unbalancedt9_mnist_
+#prefix=unbalanced_boolean_
+#prefix=init_dist_test_balanced_
+#prefix=calabiyau_test
+#prefix=unbalancedt1_cifar_
 sigmaw=2.0
-sigmab=0.0
+sigmab=1.0
 pool=none
 c=0.0
 number_inits=10
@@ -29,18 +35,14 @@ elif [ "$dataset" == "EMNIST" ]; then
 t=61
 else
 t=9
+#t=5
 fi
 #prefix=new_unbalancedt${t}_${dataset}
-#prefix=init_dist_test_balanced_${t}_${dataset}
-#prefix=unbalancedt9_mnist_
-#prefix=unbalanced_boolean_
-prefix=testing_bshift_
-#prefix=calabiyau_test
-#prefix=unbalancedt1_cifar_
+prefix=test_${t}_${dataset}
 
 n_gpus=1
 export n_gpus=$n_gpus
-export n_procs=8
+#export n_procs=5
 
 
 #for L in `seq 1 2 6`; do
@@ -50,7 +52,7 @@ export n_procs=8
 #for sigmab in 0.0 0.5 1.0; do
 #echo $sigmab
 
-for rep in `seq 1 5`; do
+for rep in `seq 1 1`; do
 echo $rep
 
   #./run_experiment --prefix $prefix --m $m --centering --threshold $t --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 2.0 --boolfun_comp 35.0 --oversampling #--use_empirical_K --intermediate_pooling 1111 --intermediate_pooling_type none

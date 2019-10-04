@@ -1,6 +1,6 @@
 import numpy as np
 import tensorflow as tf
-from gpflow import settings
+#from gpflow import settings
 import sys
 import os
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -22,15 +22,17 @@ from .save_kernels import compute_big_K,mnist_1hot_all
 def kernel_matrix(X,X2=None,image_size=28,number_channels=1,filter_sizes=[[5, 5], [2, 2], [5, 5], [2, 2]],padding=["VALID", "SAME", "VALID", "SAME"],strides=[[1, 1]] * 4, sigmaw=1.0,sigmab=1.0, n_gpus=1):
     with tf.device("cpu:0"):
         kern = dkern.DeepKernel(
-            [number_channels, image_size, image_size],
+            #[number_channels, image_size, image_size],
+            ([number_channels, image_size, image_size] if n_gpus>0 else [image_size,image_size,number_channels]),
             filter_sizes=filter_sizes,
             recurse_kern=dkern.ExReLU(multiply_by_sqrt2=True),
             var_weight=sigmaw**2,
             var_bias=sigmab**2,
             padding=padding,
             strides=strides,
-            data_format="NCHW",
-            skip_freq=-1,
+            #data_format="NCHW",
+            data_format=("NCHW" if n_gpus>0 else "NHWC"), #but don't need to change inputs dkern transposes the inputs itself apparently :P
+            skip_freq=-1, # no residual connections
             )
 
     # kern

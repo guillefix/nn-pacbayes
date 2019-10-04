@@ -19,7 +19,8 @@ def main(_):
     size = comm.Get_size()
     print(rank)
 
-    os.environ["CUDA_VISIBLE_DEVICES"]=str((rank+1)%n_gpus)
+    if n_gpus>0:
+        os.environ["CUDA_VISIBLE_DEVICES"]=str((rank+1)%n_gpus)
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
 
@@ -88,4 +89,4 @@ if __name__ == '__main__':
     f.DEFINE_integer('num_post_samples', int(1e5), "Number of approximate EP posterior samples in importance-sampling-based Monte Carlo estimation of marginal likelihood")
     f.DEFINE_float('cov_mult', 1.0, "Factor by which to multiply the variance of the approximate posterior, to focus the importance sampling more in the non-zero likelihood region, at the risk of biasing away from true posterior.")
 
-    tf.app.run()
+    tf.compat.v1.app.run()

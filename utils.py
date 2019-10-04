@@ -128,6 +128,7 @@ def define_default_flags(f):
     f.DEFINE_string('init_dist', "gaussian", "The distribution to use to initialize parameters")
     # f.DEFINE_boolean('compute_bound', False, "Whether to compute the PAC-Bayes bound or just generate the training data")
     #f.DEFINE_boolean('compute_kernel', False, "Whether to compute the kernel or just generate the training data")
+    f.DEFINE_boolean('use_shifted_init', False, "Whether to use a distribution of the last layer bias term which has non-zero mean; may be useful for learning class-imbalanced data")
     f.DEFINE_boolean('whitening', False, "Whether to perform ZCA whitening and normalization on the training data")
     f.DEFINE_boolean('centering', False, "Whether to substract the mean of the data")
     f.DEFINE_boolean('channel_normalization', False, "Whether to normalize the channel of the images")
