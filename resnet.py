@@ -40,8 +40,9 @@ from keras_applications.imagenet_utils import _obtain_input_shape
 def _bn_relu(x, bn_name=None, relu_name=None):
     """Helper to build a BN -> relu block
     """
-    norm = BatchNormalization(axis=CHANNEL_AXIS, name=bn_name)(x)
-    return Activation("relu", name=relu_name)(norm)
+    #norm = BatchNormalization(axis=CHANNEL_AXIS, name=bn_name)(x)
+    #return Activation("relu", name=relu_name)(norm)
+    return Activation("relu", name=relu_name)(x)
 
 
 def _conv_bn_relu(**conv_params):

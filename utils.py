@@ -163,7 +163,7 @@ def preprocess_flags(FLAGS):
     FLAGS["pooling_in_layer"] = [x=="1" for x in intermediate_pooling]
     FLAGS["strides"]=[[1, 1]] * 10
     FLAGS["strides"]= FLAGS["strides"][:number_layers]
-    FLAGS["num_filters"] = 100
+    FLAGS["num_filters"] = 512
     if m is not None: FLAGS["total_samples"] = ceil(m*(1.0+confusion))
     FLAGS["training"] = not FLAGS["no_training"]
 

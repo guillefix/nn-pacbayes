@@ -87,6 +87,7 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
     # k_eval = lambda placeholder: placeholder.eval(session=keras.backend.get_session())
     initial_weights = model.get_weights()
 
+    from scipy.stats import truncnorm
     def reset_weights(model):
         def initialize_var(shape):
             if len(shape) == 1:
@@ -95,7 +96,9 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
             else:
                 #return tf.random.normal(shape,stddev=1.0/np.sqrt(np.prod(shape[:-1]))).eval(session=sess)
                 #return np.random.normal(0,1.0/np.sqrt(np.prod(shape[:-1])),shape)
-                return np.random.normal(0,sigmaw/np.sqrt(shape[-2]),shape) #assumes NHWC so that we divide by number of channels as in GP limit
+                #return np.random.normal(0,sigmaw/np.sqrt(shape[-2]),shape) #assumes NHWC so that we divide by number of channels as in GP limit
+                return (sigmaw/np.sqrt(np.prod(shape[:-1])))*truncnorm.rvs(-np.sqrt(2),np.sqrt(2),size=shape) #assumes NHWC so that we divide by number of channels as in GP limit
+                # seems like tensorflow documentation is wrong, and they actually truncate to sqrt(2) times the standard deviation, not 2 times as they claim
         new_weights = [initialize_var(w.shape) for w in initial_weights]
         # new_weights = [k_eval(lecun_normal()(w.shape)) for w in initial_weights]
         model.set_weights(new_weights)
@@ -108,22 +111,29 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
     for index in tasks:
         print("sample for kernel", index)
 
-        model = model_from_json(arch_json_string) # this resets the weights (makes sense as the json string only has architecture)
-        last_layer = model.layers[-1].input
-        func = K.function(model.input,last_layer)
+        #model = model_from_json(arch_json_string) # this resets the weights (makes sense as the json string only has architecture)
+        #last_layer = model.layers[-1].input
+        #func = K.function(model.input,last_layer)
 
-        #reset_weights(model)
+        #model = model_from_json(arch_json_string) # this resets the weights (makes sense as the json string only has architecture)
+        #initial_weights = model.get_weights()
+        reset_weights(model)
+        #last_layer = model.layers[-1].input
+        #func = K.function(model.input,last_layer)
 
         #model.save_weights("sampled_nets/"+str(index)+"_"+json_string_filename+".h5")
         #outputs = model.predict(data,batch_size=data.shape[0])
         #outputs = model.predict(data,steps=1)
         #print(func(data).shape)
-        X = func(data)
+        #X = func(data)
+        X = np.squeeze(func(data))
         #print("X,data",X,data.max())
         covs.append((sigmaw**2/X.shape[1])*np.matmul(X,X.T)+(sigmab**2)*np.eye(X.shape[0]))
         #outputs = model.predict(data)
         #print(outputs)
-        keras.backend.clear_session()
+
+        #keras.backend.clear_session()
+
         # print(outputs)
         #fs.append(outputs)
         #if index % save_freq == save_freq-1:

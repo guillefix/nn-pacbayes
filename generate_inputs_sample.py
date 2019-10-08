@@ -72,7 +72,9 @@ def main(_):
     elif dataset == "KMNIST":
         d = torchvision.datasets.KMNIST("./datasets",download=True,
                 transform=transforms.Compose(
-                    [transforms.Resize(image_size)] if image_size is not None else []
+                    [transforms.ToPILImage()]+
+                    ([transforms.Resize(image_size)] if image_size is not None else [])+
+                    [transforms.ToTensor()]
                 ),
             )
         mm = ceil(d.data.shape[0]*5/6)
@@ -143,12 +145,21 @@ def main(_):
         threshold=ceil(num_classes/2)
 
     ##adding channel dimenions for image datasets without them
+    print("AAAAAAAAAAAAA", train_images.shape)
     if dataset in ["mnist","mnist-fashion","KMNIST","EMNIST"]:
         train_images = np.expand_dims(train_images,-1)
         test_images = np.expand_dims(test_images,-1)
         if network not in ["cnn","fc"]:
             train_images = np.tile(train_images,(1,1,1,3))
             test_images = np.tile(test_images,(1,1,1,3))
+            print(train_images.shape)
+            train_images = np.stack([d.transform(image) for image in train_images])
+            train_images = np.transpose(train_images,(0,2,3,1)) # this is because the pytorch transform changes it to NCHW for some reason :P
+            test_images = np.stack([d.transform(image) for image in test_images])
+            test_images = np.transpose(test_images,(0,2,3,1))
+            print(train_images.shape)
+    else:
+        if network not in ["cnn","fc"]:
             train_images = np.stack([d.transform(image) for image in train_images])
             train_images = np.transpose(train_images,(0,2,3,1))
             test_images = np.stack([d.transform(image) for image in test_images])
@@ -156,6 +167,7 @@ def main(_):
 
     if network != "fc":
         image_size = train_images.shape[1]
+        assert train_images.shape[1] == train_images.shape[2]
         number_channels = train_images.shape[-1]
 
     ##get random training sample##
@@ -229,6 +241,7 @@ def main(_):
                 train_labels = np.take(train_labels,indices)
                 print(len([x for x in train_labels if x<threshold])/len(train_images))
         elif network == "resnet50" or network == "resnet101" or network == "renset152":
+        #elif network == "resnet101" or network == "renset152":
             train_images = (train_images[indices,:,:,:]).astype(np.float32) #NHWC
             train_images = keras_applications.resnet.preprocess_input(train_images, backend=tf.keras.backend)
             if training:
