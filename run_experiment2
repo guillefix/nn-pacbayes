@@ -29,7 +29,8 @@ py=python3
 #/users/guillefix/anaconda3/bin/mpiexec -n 1 $py compute_prob_and_bound.py $@ --using_EP
 
 # # # /usr/local/shared/openmpi/4.0.0/bin/mpiexec -n 250 $py compute_prob_and_bound.py $@ --num_post_samples 100000 --cov_mult 0.5 --using_MC
-mpiexec -n $(nproc) $py compute_prob_and_bound.py $@ --num_post_samples 1600000 --cov_mult 0.7 --using_MC
+#mpiexec -n $(nproc) $py compute_prob_and_bound.py $@ --num_post_samples 1600000 --cov_mult 0.7 --using_MC
+mpiexec -n $(nproc) $py compute_prob_and_bound.py $@ --num_post_samples 1600000 --cov_mult 0.3 --using_MC
 #mpiexec -n $(nproc) $py compute_prob_and_bound.py $@ --num_post_samples 800000 --cov_mult 1.0 --using_MC
 #mpiexec -n 1 $py compute_prob_and_bound.py $@ --using_EP
 #/usr/local/shared/openmpi/4.0.0/bin/mpiexec -n 100 $py sample_funs.py $@ --number_samples 10000

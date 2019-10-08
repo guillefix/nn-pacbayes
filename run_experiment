@@ -24,7 +24,7 @@ $py generate_inputs_sample.py $@
 #mpiexec -n 1 $py compute_kernel.py $@
 
 #/users/guillefix/anaconda3/bin/mpiexec -n 25 $py compute_kernel.py $@
-mpiexec -n 25 $py compute_kernel.py $@
+mpiexec -n 2 $py compute_kernel.py $@
 #/users/guillefix/anaconda3/bin/mpiexec -n 250 $py compute_prob_and_bound.py $@ --num_post_samples 8000000 --cov_mult 0.5 --using_MC
 
 # # # /usr/local/shared/openmpi/4.0.0/bin/mpiexec -n 250 $py compute_prob_and_bound.py $@ --num_post_samples 100000 --cov_mult 0.5 --using_MC

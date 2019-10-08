@@ -42,7 +42,7 @@ def main(_):
     number_channels = train_images.shape[-1]
     input_dim = flat_train_images.shape[1]
 
-    print("compute kernel and bound", network, dataset)
+    print("compute kernel", network, dataset)
 
     # COMPUTE KERNEL
     if use_empirical_K:

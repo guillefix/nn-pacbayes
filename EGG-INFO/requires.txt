@@ -1,0 +1,13 @@
+keras
+
+[h5py]
+h5py
+
+[tests]
+pytest
+pytest-pep8
+pytest-xdist
+pytest-cov
+
+[visualize]
+pydot>=1.2.0

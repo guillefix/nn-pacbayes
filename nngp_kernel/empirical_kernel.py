@@ -101,7 +101,7 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
         model.set_weights(new_weights)
 
     #fs = []
-    covs = []
+    covs = np.zeros((len(data),len(data)))
     last_layer = model.layers[-1].input
     print(last_layer.shape)
     func = K.function(model.input,last_layer)
@@ -119,8 +119,9 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
         #outputs = model.predict(data,steps=1)
         #print(func(data).shape)
         X = func(data)
+        X = np.squeeze(X)
         #print("X,data",X,data.max())
-        covs.append((sigmaw**2/X.shape[1])*np.matmul(X,X.T)+(sigmab**2)*np.eye(X.shape[0]))
+        covs += (sigmaw**2/X.shape[1])*np.matmul(X,X.T)+(sigmab**2)*np.eye(X.shape[0])
         #outputs = model.predict(data)
         #print(outputs)
         keras.backend.clear_session()
@@ -138,11 +139,11 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
     print("--- %s seconds ---" % (time.time() - start_time))
 
     #fs = comm.gather(fs,root=0)
-    covs = comm.gather(covs,root=0)
+    covs = comm.gather(covs/len(tasks),root=0)
 
     if rank == 0:
         #fs = sum(fs, [])
-        covs = sum(covs, [])
+        #covs = sum(covs, [])
         #fs += fs_init
         #fs = np.array(fs)
         #fs = np.squeeze(fs)
