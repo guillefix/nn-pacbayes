@@ -6,14 +6,14 @@
 #export PYTHONPATH="/home_directory/.local/lib/python3.5/site-packages/:/usr/local/lib/python3.5/dist-packages/"
 #export PYTHONPATH="~/.local/lib/python3.5/site-packages/"
 #export PYTHONPATH="/home_directory/.local/lib/python2.7/site-packages/"
-#export PYTHONPATH="/home_directory/.local/lib/python3.5/site-packages/:/usr/local/lib/python3.5/dist-packages/"
+export PYTHONPATH="/home_directory/.local/lib/python3.5/site-packages/:/usr/local/lib/python3.5/dist-packages/"
 
 #py=/usr/bin/python3
 #py=~/anaconda3/bin/python3
 #py=/usr/bin/python3.6
-py=python3
+#py=python3
 #py=python
-#py=/users/guillefix/anaconda3/envs/venv/bin/python
+py=/users/guillefix/anaconda3/envs/venv/bin/python
 
 #echo $n_gpus
 
@@ -23,8 +23,8 @@ $py generate_inputs_sample.py $@
 #/usr/local/shared/openmpi/4.0.0/bin/mpiexec -n 250 $py compute_kernel_and_bound.py $@
 #mpiexec -n 1 $py compute_kernel.py $@
 
-#/users/guillefix/anaconda3/bin/mpiexec -n 25 $py compute_kernel.py $@
-mpiexec -n 2 $py compute_kernel.py $@
+/users/guillefix/anaconda3/bin/mpiexec -n 25 $py compute_kernel.py $@
+#mpiexec -n 25 $py compute_kernel.py $@
 #/users/guillefix/anaconda3/bin/mpiexec -n 250 $py compute_prob_and_bound.py $@ --num_post_samples 8000000 --cov_mult 0.5 --using_MC
 
 # # # /usr/local/shared/openmpi/4.0.0/bin/mpiexec -n 250 $py compute_prob_and_bound.py $@ --num_post_samples 100000 --cov_mult 0.5 --using_MC

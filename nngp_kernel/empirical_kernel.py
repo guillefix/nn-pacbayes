@@ -85,9 +85,23 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
     # from keras.initializers import lecun_normal  # Or your initializer of choice
 
     # k_eval = lambda placeholder: placeholder.eval(session=keras.backend.get_session())
-    initial_weights = model.get_weights()
+    # initial_weights = model.get_weights()
 
+    def get_all_layers(model):
+        layers = []
+        for layer in model.layers:
+            if isinstance(layer,tf.python.keras.engine.training.Model):
+                layers += get_all_layers(layer)
+            else:
+                layers += [layer]
+        return layers
+
+    def is_normalization_layer(l):
+        return isinstance(l,tf.python.keras.layers.normalization.BatchNormalization) or isinstance(l,tf.python.keras.layers.normalization.LayerNormalization)
+
+    from scipy.stats import truncnorm
     def reset_weights(model):
+        initial_weights = model.get_weights()
         def initialize_var(shape):
             if len(shape) == 1:
                 #return tf.random.normal(shape,stddev=sigmab).eval(session=sess)
@@ -95,10 +109,17 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
             else:
                 #return tf.random.normal(shape,stddev=1.0/np.sqrt(np.prod(shape[:-1]))).eval(session=sess)
                 #return np.random.normal(0,1.0/np.sqrt(np.prod(shape[:-1])),shape)
-                return np.random.normal(0,sigmaw/np.sqrt(shape[-2]),shape) #assumes NHWC so that we divide by number of channels as in GP limit
-        new_weights = [initialize_var(w.shape) for w in initial_weights]
-        # new_weights = [k_eval(lecun_normal()(w.shape)) for w in initial_weights]
-        model.set_weights(new_weights)
+                #return np.random.normal(0,sigmaw/np.sqrt(shape[-2]),shape) #assumes NHWC so that we divide by number of channels as in GP limit
+                return (sigmaw/np.sqrt(np.prod(shape[:-1])))*truncnorm.rvs(-np.sqrt(2),np.sqrt(2),size=shape) #assumes NHWC so that we divide by number of channels as in GP limit
+        for l in get_all_layers(model):
+            if is_normalization_layer(l):
+                # new_weights += l.get_weights()
+                pass
+            else:
+                new_weights = []
+                for w in l.get_weights():
+                    new_weights.append(initialize_var(w.shape))
+                l.set_weights(new_weights)
 
     #fs = []
     covs = np.zeros((len(data),len(data)))
@@ -108,23 +129,29 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
     for index in tasks:
         print("sample for kernel", index)
 
-        model = model_from_json(arch_json_string) # this resets the weights (makes sense as the json string only has architecture)
-        last_layer = model.layers[-1].input
-        func = K.function(model.input,last_layer)
+        #model = model_from_json(arch_json_string) # this resets the weights (makes sense as the json string only has architecture)
+        #last_layer = model.layers[-1].input
+        #func = K.function(model.input,last_layer)
 
-        #reset_weights(model)
+        #model = model_from_json(arch_json_string) # this resets the weights (makes sense as the json string only has architecture)
+        #initial_weights = model.get_weights()
+        reset_weights(model)
+        #last_layer = model.layers[-1].input
+        #func = K.function(model.input,last_layer)
 
         #model.save_weights("sampled_nets/"+str(index)+"_"+json_string_filename+".h5")
         #outputs = model.predict(data,batch_size=data.shape[0])
         #outputs = model.predict(data,steps=1)
         #print(func(data).shape)
-        X = func(data)
-        X = np.squeeze(X)
+        #X = func(data)
+        X = np.squeeze(func(data))
         #print("X,data",X,data.max())
         covs += (sigmaw**2/X.shape[1])*np.matmul(X,X.T)+(sigmab**2)*np.eye(X.shape[0])
         #outputs = model.predict(data)
         #print(outputs)
-        keras.backend.clear_session()
+
+        #keras.backend.clear_session()
+
         # print(outputs)
         #fs.append(outputs)
         #if index % save_freq == save_freq-1:

@@ -24,7 +24,8 @@ def main(_):
     size = comm.Get_size()
 
     import os
-    os.environ["CUDA_VISIBLE_DEVICES"]=str(rank)
+    if n_gpus>0:
+        os.environ["CUDA_VISIBLE_DEVICES"]=str(rank)
 
     from tensorflow import keras
 
@@ -43,10 +44,13 @@ def main(_):
     train_images,_,ys,test_images,test_ys = load_data(FLAGS)
     input_dim = train_images.shape[1]
     num_channels = train_images.shape[-1]
+    print(train_images.shape, ys.shape)
 
 
-    sample_weights = np.ones(len(ys))
+
+    sample_weights = None
     if gamma != 1.0:
+        sample_weights = np.ones(len(ys))
         if not oversampling2:
             sample_weights[m:] = gamma
         else:
@@ -132,7 +136,7 @@ def main(_):
 
         # model.fit(train_images, ys, verbose=2, epochs=500)
         # print(ys)
-        model.fit(train_images, ys, verbose=0,\
+        model.fit(train_images, ys, verbose=1,\
         sample_weight=sample_weights, validation_data=(train_images, ys), epochs=MAX_TRAIN_EPOCHS,callbacks=callbacks)
         #print([w.shape for w in model.get_weights()])
         #print(np.concatenate([w.flatten() for w in model.get_weights()]).shape)
