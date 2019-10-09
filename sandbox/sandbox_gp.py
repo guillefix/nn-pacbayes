@@ -64,10 +64,16 @@ model.layers[0].layers[2].kernel_initializer
 np.unique([str(type(l)) for l in get_all_layers(model)])
 np.unique([str(l.kernel_initializer) for l in get_all_layers(model) if hasattr(l,"kernel_initializer")])
 
+weights2 = sum([l.get_weights() for l in get_all_layers(model)],[])
+
+for i,w in enumerate(weights):
+    if np.all(w != weights2[i]):
+        print("fail")
+        break
 
 weights = model.get_weights()
 
-model.layers[0].layers[6].get_weights()
+model.layers[0].layers[3].get_weights()[0]
 
 tf.python.keras.layers.normalization.
 

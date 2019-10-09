@@ -37,9 +37,9 @@ def save_data(train_images,ys,test_images,test_ys,FLAGS):
     h5f = h5py.File(filename,"w")
     h5f.create_dataset('train_images', data=train_images)
 
+    ys = [y[0] for y in ys]
+    h5f.create_dataset('ys', data=ys)
     if FLAGS["training"]:
-        ys = [y[0] for y in ys]
-        h5f.create_dataset('ys', data=ys)
         h5f.create_dataset('test_images', data=test_images)
         h5f.create_dataset('test_ys', data=test_ys)
 
@@ -49,10 +49,12 @@ def load_data(FLAGS):
     filename = data_filename(FLAGS)
     h5f = h5py.File(filename,'r')
     train_images = h5f['train_images'][:]
+    ys = h5f['ys'][:]
     if FLAGS["training"]:
-        ys = h5f['ys'][:]
         test_images = h5f['test_images'][:]
         test_ys = h5f['test_ys'][:]
+    else:
+        test_images = test_ys = []
     h5f.close()
     data = train_images
     tp_order = np.concatenate([[0,len(data.shape)-1], np.arange(1, len(data.shape)-1)])

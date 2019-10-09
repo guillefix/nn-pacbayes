@@ -50,6 +50,9 @@ def main(_):
     if using_EP:
         from GP_prob.GP_prob_gpy import GP_prob
         logPU = GP_prob(K,X,Y)
+    if using_Laplace:
+        from GP_prob.GP_prob_gpy import GP_prob
+        logPU = GP_prob(K,X,Y,"Laplace")
     elif using_MC:
         from GP_prob.GP_prob_MC import GP_prob
         logPU = GP_prob(K,X,Y,FLAGS)
@@ -85,8 +88,10 @@ if __name__ == '__main__':
 
     define_default_flags(f)
     f.DEFINE_boolean('using_EP', False, "Whether to use Expectation Propagation method for computing probability")
+    f.DEFINE_boolean('using_Laplace', False, "Whether to use Laplace method for computing probability")
     f.DEFINE_boolean('using_MC', False, "Whether to use Monte Carlo method for computing probability")
     f.DEFINE_integer('num_post_samples', int(1e5), "Number of approximate EP posterior samples in importance-sampling-based Monte Carlo estimation of marginal likelihood")
     f.DEFINE_float('cov_mult', 1.0, "Factor by which to multiply the variance of the approximate posterior, to focus the importance sampling more in the non-zero likelihood region, at the risk of biasing away from true posterior.")
+    f.DEFINE_float('mean_mult', 1.0, "Factor by which to multiply the mean of the approximate posterior, to focus the importance sampling more in the non-zero likelihood region, at the risk of biasing away from true posterior.")
 
     tf.compat.v1.app.run()
