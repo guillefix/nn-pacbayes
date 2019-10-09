@@ -68,7 +68,7 @@ def main(_):
         print(d)
         mm = int(ceil(d.data.shape[0]*5/6))
         (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
-        
+
     elif dataset == "KMNIST":
         d = torchvision.datasets.KMNIST("./datasets",download=True,
                 transform=transforms.Compose(
@@ -128,7 +128,7 @@ def main(_):
             #             funs[comp].append(fun)
             # pickle.dump(funs,open("funs_per_complexity.p","wb"))
 
-        labels=np.array([[int(xx)*2.0-1] for xx in list(fun)])
+        labels=np.array([[int(xx)*2.0-1] for xx in list(fun)[1:]]) #start from 1 because we ignored the 0th input
     elif dataset == "calabiyau":
         assert network == "fc"
         num_classes = 2
@@ -145,7 +145,6 @@ def main(_):
         threshold=ceil(num_classes/2)
 
     ##adding channel dimenions for image datasets without them
-    print("AAAAAAAAAAAAA", train_images.shape)
     if dataset in ["mnist","mnist-fashion","KMNIST","EMNIST"]:
         train_images = np.expand_dims(train_images,-1)
         test_images = np.expand_dims(test_images,-1)
@@ -397,35 +396,37 @@ def main(_):
         return label>=threshold
 
     # %%
-    if training:
-        def process_labels(label,label_corruption,threshold,zero_one=False,binarized=True):
-            if binarized:
-                if zero_one:
-                    if np.random.rand() < label_corruption:
-                        return np.random.choice([0,1])
-                    else:
-                        return float(binarize(label,threshold))
+    def process_labels(label,label_corruption,threshold,zero_one=False,binarized=True):
+        if binarized:
+            if zero_one:
+                if np.random.rand() < label_corruption:
+                    return np.random.choice([0,1])
                 else:
-                    if np.random.rand() < label_corruption:
-                        return np.random.choice([-1.0,1.0])
-                    else:
-                        return float(binarize(label,threshold))*2.0-1
+                    return float(binarize(label,threshold))
             else:
                 if np.random.rand() < label_corruption:
-                    return np.random.choice(range(num_classes))
+                    return np.random.choice([-1.0,1.0])
                 else:
-                    return float(label)
-
-        if random_labels:
-    	    ys = [[process_labels(label,label_corruption,threshold,zero_one=True,binarized=binarized)] for label in train_labels[:m]] + [[process_labels(label,1.0,threshold,zero_one=True,binarized=binarized)] for label in train_labels[m:]]
+                    return float(binarize(label,threshold))*2.0-1
         else:
-    	    ys = [[process_labels(label,label_corruption,threshold,zero_one=True,binarized=binarized)] for label in train_labels[:m]] + [[float(not binarize(label,threshold))] for label in train_labels[m:]]
+            if np.random.rand() < label_corruption:
+                return np.random.choice(range(num_classes))
+            else:
+                return float(label)
 
+    if random_labels:
+	    ys = [[process_labels(label,label_corruption,threshold,zero_one=True,binarized=binarized)] for label in train_labels[:m]] + [[process_labels(label,1.0,threshold,zero_one=True,binarized=binarized)] for label in train_labels[m:]]
+    else:
+	    ys = [[process_labels(label,label_corruption,threshold,zero_one=True,binarized=binarized)] for label in train_labels[:m]] + [[float(not binarize(label,threshold))] for label in train_labels[m:]]
+
+    if training:
         test_ys = np.array([process_labels(label,label_corruption,threshold,zero_one=True,binarized=binarized) for label in test_labels])
 
-    '''SAVING DATA SAMPLES'''
-
-    save_data(train_images,ys,test_images,test_ys,FLAGS)
+        '''SAVING DATA SAMPLES'''
+        save_data(train_images,ys,test_images,test_ys,FLAGS)
+    else:
+        test_images = test_ys = []
+        save_data(train_images,ys,test_images,test_ys,FLAGS)
 
 
 if __name__ == '__main__':
