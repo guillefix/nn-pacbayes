@@ -52,7 +52,9 @@ def main(_):
         logPU = GP_prob(K,X,Y)
     if using_Laplace:
         from GP_prob.GP_prob_gpy import GP_prob
-        logPU = GP_prob(K,X,Y,"Laplace")
+        # from GP_prob.GP_prob_numpy import GP_prob
+        logPU = GP_prob(K,X,Y,method="Laplace")
+        # logPU = GP_prob(K,np.squeeze(Y))
     elif using_MC:
         from GP_prob.GP_prob_MC import GP_prob
         logPU = GP_prob(K,X,Y,FLAGS)
@@ -74,10 +76,14 @@ def main(_):
             for key in useful_flags:
                 file.write("{}\t".format(key))
             file.write("bound")
+            file.write("\t")
+            file.write("logP")
             file.write("\n")
             for key in useful_flags:
                 file.write("{}\t".format(FLAGS[key]))
             file.write("{}".format(bound))
+            file.write("\t")
+            file.write("{}".format(logPU))
             file.write("\n")
 
 if __name__ == '__main__':
