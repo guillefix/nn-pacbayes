@@ -178,19 +178,32 @@ def binary_crossentropy_from_logits(y_true,y_pred):
 Callback = keras.callbacks.Callback
 import warnings
 class EarlyStoppingByAccuracy(Callback):
-    def __init__(self, monitor='val_acc', value=0.98, verbose=0):
+    def __init__(self, monitor='val_acc', value=0.98, wait_epochs=0, verbose=0):
         super(Callback, self).__init__()
         self.monitor = monitor
         self.value = value
         self.verbose = verbose
+        self.wait_epochs = wait_epochs
+        self.first_time = True
+        self.epoch_after_first_time = 0
     def on_epoch_end(self, epoch, logs={}):
         current = logs.get(self.monitor)
         if current is None:
             warnings.warn("Early stopping requires %s available!" % self.monitor, RuntimeWarning)
         if current >= self.value:
-            if self.verbose > 0:
-                print("Epoch %05d: early stopping THR" % epoch)
-            self.model.stop_training = True
+            if self.first_time:
+                self.first_time = False
+                self.first_time_epoch = epoch
+                if self.wait_epochs == 0:
+                    if self.verbose > 0:
+                        print("Epoch %05d: early stopping THR" % epoch)
+                    self.model.stop_training = True
+            else:
+                if epoch - self.first_time_epoch >= self.wait_epochs:
+                    if self.verbose > 0:
+                        print("Epoch %05d: early stopping THR" % epoch)
+                    self.model.stop_training = True
+
 
 # FLAGS['m'] = 1000
 # FLAGS['number_inits'] = 1

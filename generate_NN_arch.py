@@ -167,7 +167,10 @@ def main(_):
                 ])
 
     elif network == "resnet":
-        from keras_contrib.applications.resnet import ResNet
+        #from keras_contrib.applications.resnet import ResNet
+        import sys
+        sys.path += keras_contrib.__path__ + [keras_contrib.__path__[0]+"/applications/"]
+        from resnet import ResNet
         import keras
 
         n_blocks = 3

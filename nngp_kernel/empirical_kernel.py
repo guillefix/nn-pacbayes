@@ -100,32 +100,39 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
         return isinstance(l,tf.python.keras.layers.normalization.BatchNormalization) or isinstance(l,tf.python.keras.layers.normalization.LayerNormalization)
 
     from scipy.stats import truncnorm
-    def reset_weights(model):
-        initial_weights = model.get_weights()
-        def initialize_var(shape):
-            if len(shape) == 1:
-                #return tf.random.normal(shape,stddev=sigmab).eval(session=sess)
-                return np.random.normal(0,sigmab,shape)
+    def reset_weights(model, weights, are_norm):
+        #initial_weights = model.get_weights()
+        def initialize_var(w, is_norm):
+            if is_norm:
+                return w
             else:
-                #return tf.random.normal(shape,stddev=1.0/np.sqrt(np.prod(shape[:-1]))).eval(session=sess)
-                #return np.random.normal(0,1.0/np.sqrt(np.prod(shape[:-1])),shape)
-                #return np.random.normal(0,sigmaw/np.sqrt(shape[-2]),shape) #assumes NHWC so that we divide by number of channels as in GP limit
-                return (sigmaw/np.sqrt(np.prod(shape[:-1])))*truncnorm.rvs(-np.sqrt(2),np.sqrt(2),size=shape) #assumes NHWC so that we divide by number of channels as in GP limit
-        for l in get_all_layers(model):
-            if is_normalization_layer(l):
-                # new_weights += l.get_weights()
-                pass
-            else:
-                new_weights = []
-                for w in l.get_weights():
-                    new_weights.append(initialize_var(w.shape))
-                l.set_weights(new_weights)
+                shape = w.shape
+                if len(shape) == 1:
+                    #return tf.random.normal(shape,stddev=sigmab).eval(session=sess)
+                    return np.random.normal(0,sigmab,shape)
+                else:
+                    #return tf.random.normal(shape,stddev=1.0/np.sqrt(np.prod(shape[:-1]))).eval(session=sess)
+                    #return np.random.normal(0,1.0/np.sqrt(np.prod(shape[:-1])),shape)
+                    #return np.random.normal(0,sigmaw/np.sqrt(shape[-2]),shape) #assumes NHWC so that we divide by number of channels as in GP limit
+                    return (sigmaw/np.sqrt(np.prod(shape[:-1])))*truncnorm.rvs(-np.sqrt(2),np.sqrt(2),size=shape) #assumes NHWC so that we divide by number of channels as in GP limit
+
+        new_weights = [initialize_var(w,are_norm[i]) for i,w in enumerate(weights)]
+        model.set_weights(new_weights)
+        #[l.set_weights([initialize_var(w.shape) for w in l.get_weights()]) for l in layers]
+        #for l in layers:
+        #    #if is_normalization_layer(l):
+        #    #    # new_weights += l.get_weights()
+        #    #    pass
+        #    #else:
+        #    new_weights = [initialize_var(w.shape) for w in l.get_weights()]
+        #    l.set_weights(new_weights)
 
     #fs = []
     covs = np.zeros((len(data),len(data)))
     last_layer = model.layers[-1].input
     print(last_layer.shape)
     func = K.function(model.input,last_layer)
+    local_index = 0
     for index in tasks:
         print("sample for kernel", index)
 
@@ -135,7 +142,12 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
 
         #model = model_from_json(arch_json_string) # this resets the weights (makes sense as the json string only has architecture)
         #initial_weights = model.get_weights()
-        reset_weights(model)
+        if local_index == 1:
+            layers = get_all_layers(model) 
+            are_norm = [is_normalization_layer(l) for l in layers for w in l.get_weights()]
+            initial_weights = model.get_weights()
+        if local_index>0:
+            reset_weights(model, initial_weights, are_norm)
         #last_layer = model.layers[-1].input
         #func = K.function(model.input,last_layer)
 
@@ -146,7 +158,7 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
         #X = func(data)
         X = np.squeeze(func(data))
         #print("X,data",X,data.max())
-        covs += (sigmaw**2/X.shape[1])*np.matmul(X,X.T)+(sigmab**2)*np.eye(X.shape[0])
+        covs += (sigmaw**2/X.shape[1])*np.matmul(X,X.T)+(sigmab**2)*np.ones((X.shape[0],X.shape[0]))
         #outputs = model.predict(data)
         #print(outputs)
 
@@ -162,6 +174,7 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
         #        pickle.dump(fs_tmp,open("fs.p","wb"))
         #        pickle.dump(len(fs_tmp),open("checkpoint.p","wb"))
         sys.stdout.flush()
+        local_index += 1
 
     print("--- %s seconds ---" % (time.time() - start_time))
 
