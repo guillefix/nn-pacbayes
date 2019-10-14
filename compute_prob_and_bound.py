@@ -48,13 +48,18 @@ def main(_):
 
     #finding log marginal likelihood of data
     if using_EP:
-        from GP_prob.GP_prob_gpy import GP_prob
-        logPU = GP_prob(K,X,Y)
+        from GP_prob.GP_prob_gpy2 import GP_prob
+        logPU = GP_prob(K,X,Y, method="EP", using_exactPB=using_exactPB)
     if using_Laplace:
-        from GP_prob.GP_prob_gpy import GP_prob
+        from GP_prob.GP_prob_gpy2 import GP_prob
         # from GP_prob.GP_prob_numpy import GP_prob
-        logPU = GP_prob(K,X,Y,method="Laplace")
+        logPU = GP_prob(K,X,Y,method="Laplace", using_exactPB=using_exactPB)
         # logPU = GP_prob(K,np.squeeze(Y))
+    if using_Laplace2:
+        # from GP_prob.GP_prob_gpy import GP_prob
+        from GP_prob.GP_prob_numpy import GP_prob
+        # logPU = GP_prob(K,X,Y,method="Laplace")
+        logPU = GP_prob(K,np.squeeze(Y))
     elif using_MC:
         from GP_prob.GP_prob_MC import GP_prob
         logPU = GP_prob(K,X,Y,FLAGS)
@@ -95,6 +100,8 @@ if __name__ == '__main__':
     define_default_flags(f)
     f.DEFINE_boolean('using_EP', False, "Whether to use Expectation Propagation method for computing probability")
     f.DEFINE_boolean('using_Laplace', False, "Whether to use Laplace method for computing probability")
+    f.DEFINE_boolean('using_Laplace2', False, "Whether my numpy implementation of Laplace method for computing probability")
+    f.DEFINE_boolean('using_exactPB', False, "Whether using exact PAC-Bayes on approximate posterior rather than approximate PAC-Bayes on exact postierior")
     f.DEFINE_boolean('using_MC', False, "Whether to use Monte Carlo method for computing probability")
     f.DEFINE_integer('num_post_samples', int(1e5), "Number of approximate EP posterior samples in importance-sampling-based Monte Carlo estimation of marginal likelihood")
     f.DEFINE_float('cov_mult', 1.0, "Factor by which to multiply the variance of the approximate posterior, to focus the importance sampling more in the non-zero likelihood region, at the risk of biasing away from true posterior.")

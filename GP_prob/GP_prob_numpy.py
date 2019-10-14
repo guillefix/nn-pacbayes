@@ -4,13 +4,14 @@ import scipy.linalg as la
 def pi(y,f):
     return 1/(1+np.exp(-y*f))
 
-def GP_prob(K,ys,tolerance=0.01):
+#Laplace approximation
+def GP_prob(K,ys,tolerance=0.001):
     N = len(ys)
     #ys = np.array([int(x)*2-1 for x in fun])
 
     #fs_new = np.zeros(2**n)
-    fs_new = np.zeros(len(ys))
-    # fs_new = ys
+    # fs_new = np.zeros(len(ys))
+    fs_new = ys
 
     fs = fs_new
     #     print(fs)
@@ -35,6 +36,7 @@ def GP_prob(K,ys,tolerance=0.01):
 
     # while np.linalg.norm(fs-fs_new) > 0.01:
     while abs(objective_old - objective_new) > tolerance:
+        print(objective_new)
         objective_old = objective_new
         fs = fs_new
     #         print(fs)
