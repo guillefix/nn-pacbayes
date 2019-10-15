@@ -7,8 +7,8 @@
 #export PYTHONPATH="${PYTHONPATH}:/home_directory/.local/lib/python2.7/site-packages/:/home_directory/.local/lib/python2.7/dist-packages/"
 
 m=50
-#dataset=mnist
-dataset=EMNIST
+dataset=mnist
+#dataset=EMNIST
 #dataset=$1
 #dataset=cifar
 #dataset=calabiyau
