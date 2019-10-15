@@ -8,6 +8,7 @@ import os,sys
 #tf.enable_eager_execution()
 import h5py
 import pickle
+from tensorflow.keras import backend as K
 
 
 arch_folder = "archs/"
@@ -35,7 +36,7 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
     #num_gpus = n_gpus
     #print("num_gpus",num_gpus)
 
-    save_freq = 500
+    save_freq = 5000
     try:
         chkpt = pickle.load(open("checkpoint.p","rb"))
         print("getting checkopoint of "+str(chkpt)+" functions")
@@ -84,52 +85,109 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
     # from keras.initializers import lecun_normal  # Or your initializer of choice
 
     # k_eval = lambda placeholder: placeholder.eval(session=keras.backend.get_session())
-    initial_weights = model.get_weights()
+    # initial_weights = model.get_weights()
 
-    def reset_weights(model):
-        def initialize_var(shape):
-            if len(shape) == 1:
-                #return tf.random.normal(shape,stddev=sigmab).eval(session=sess)
-                return np.random.normal(0,sigmab,shape)
+    def get_all_layers(model):
+        layers = []
+        for layer in model.layers:
+            if isinstance(layer,tf.python.keras.engine.training.Model):
+                layers += get_all_layers(layer)
             else:
-                #return tf.random.normal(shape,stddev=1.0/np.sqrt(np.prod(shape[:-1]))).eval(session=sess)
-                #return np.random.normal(0,1.0/np.sqrt(np.prod(shape[:-1])),shape)
-                return np.random.normal(0,sigmaw/np.sqrt(shape[-2]),shape) #assumes NHWC so that we divide by number of channels as in GP limit
-        new_weights = [initialize_var(w.shape) for w in initial_weights]
-        # new_weights = [k_eval(lecun_normal()(w.shape)) for w in initial_weights]
-        model.set_weights(new_weights)
+                layers += [layer]
+        return layers
 
-    fs = []
+    def is_normalization_layer(l):
+        return isinstance(l,tf.python.keras.layers.normalization.BatchNormalization) or isinstance(l,tf.python.keras.layers.normalization.LayerNormalization)
+
+    from scipy.stats import truncnorm
+    def reset_weights(model, weights, are_norm):
+        #initial_weights = model.get_weights()
+        def initialize_var(w, is_norm):
+            if is_norm:
+                return w
+            else:
+                shape = w.shape
+                if len(shape) == 1:
+                    #return tf.random.normal(shape,stddev=sigmab).eval(session=sess)
+                    return np.random.normal(0,sigmab,shape)
+                else:
+                    #return tf.random.normal(shape,stddev=1.0/np.sqrt(np.prod(shape[:-1]))).eval(session=sess)
+                    #return np.random.normal(0,1.0/np.sqrt(np.prod(shape[:-1])),shape)
+                    #return np.random.normal(0,sigmaw/np.sqrt(shape[-2]),shape) #assumes NHWC so that we divide by number of channels as in GP limit
+                    return (sigmaw/np.sqrt(np.prod(shape[:-1])))*truncnorm.rvs(-np.sqrt(2),np.sqrt(2),size=shape) #assumes NHWC so that we divide by number of channels as in GP limit
+
+        new_weights = [initialize_var(w,are_norm[i]) for i,w in enumerate(weights)]
+        model.set_weights(new_weights)
+        #[l.set_weights([initialize_var(w.shape) for w in l.get_weights()]) for l in layers]
+        #for l in layers:
+        #    #if is_normalization_layer(l):
+        #    #    # new_weights += l.get_weights()
+        #    #    pass
+        #    #else:
+        #    new_weights = [initialize_var(w.shape) for w in l.get_weights()]
+        #    l.set_weights(new_weights)
+
+    #fs = []
+    covs = np.zeros((len(data),len(data)))
+    last_layer = model.layers[-1].input
+    print(last_layer.shape)
+    func = K.function(model.input,last_layer)
+    local_index = 0
     for index in tasks:
         print("sample for kernel", index)
-        sys.stdout.flush()
-        reset_weights(model)
+
+        #model = model_from_json(arch_json_string) # this resets the weights (makes sense as the json string only has architecture)
+        #last_layer = model.layers[-1].input
+        #func = K.function(model.input,last_layer)
+
+        #model = model_from_json(arch_json_string) # this resets the weights (makes sense as the json string only has architecture)
+        #initial_weights = model.get_weights()
+        if local_index == 1:
+            layers = get_all_layers(model) 
+            are_norm = [is_normalization_layer(l) for l in layers for w in l.get_weights()]
+            initial_weights = model.get_weights()
+        if local_index>0:
+            reset_weights(model, initial_weights, are_norm)
+        #last_layer = model.layers[-1].input
+        #func = K.function(model.input,last_layer)
+
         #model.save_weights("sampled_nets/"+str(index)+"_"+json_string_filename+".h5")
         #outputs = model.predict(data,batch_size=data.shape[0])
         #outputs = model.predict(data,steps=1)
-        outputs = model.predict(data)
+        #print(func(data).shape)
+        #X = func(data)
+        X = np.squeeze(func(data))
+        #print("X,data",X,data.max())
+        covs += (sigmaw**2/X.shape[1])*np.matmul(X,X.T)+(sigmab**2)*np.ones((X.shape[0],X.shape[0]))
+        #outputs = model.predict(data)
+        #print(outputs)
+
         #keras.backend.clear_session()
+
         # print(outputs)
-        fs.append(outputs)
-        if index % save_freq == save_freq-1:
-            fs_tmp = comm.gather(fs,root=0)
-            if rank == 0:
-                fs_tmp = sum(fs_tmp, [])
-                fs_tmp += fs_init
-                pickle.dump(fs_tmp,open("fs.p","wb"))
-                pickle.dump(len(fs_tmp),open("checkpoint.p","wb"))
+        #fs.append(outputs)
+        #if index % save_freq == save_freq-1:
+        #    fs_tmp = comm.gather(fs,root=0)
+        #    if rank == 0:
+        #        fs_tmp = sum(fs_tmp, [])
+        #        fs_tmp += fs_init
+        #        pickle.dump(fs_tmp,open("fs.p","wb"))
+        #        pickle.dump(len(fs_tmp),open("checkpoint.p","wb"))
+        sys.stdout.flush()
+        local_index += 1
 
     print("--- %s seconds ---" % (time.time() - start_time))
 
-    fs = comm.gather(fs,root=0)
+    #fs = comm.gather(fs,root=0)
+    covs = comm.gather(covs/len(tasks),root=0)
 
     if rank == 0:
-        fs = sum(fs, [])
-        fs += fs_init
-        fs = np.array(fs)
-        fs = np.squeeze(fs)
-        # print(fs.shape)
-        # print(fs)
-        return np.cov(fs.T)
+        #fs = sum(fs, [])
+        #covs = sum(covs, [])
+        #fs += fs_init
+        #fs = np.array(fs)
+        #fs = np.squeeze(fs)
+        #return np.cov(fs.T)
+        return np.mean(covs,axis=0)
     else:
         return None

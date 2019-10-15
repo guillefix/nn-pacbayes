@@ -18,7 +18,8 @@ def main(_):
     size = comm.Get_size()
 
     import os
-    os.environ["CUDA_VISIBLE_DEVICES"]=str((rank+1)%n_gpus)
+    if n_gpus>0:
+        os.environ["CUDA_VISIBLE_DEVICES"]=str((rank+1)%n_gpus)
 
     from tensorflow import keras
     # import keras
@@ -71,8 +72,11 @@ def main(_):
     if init_dist == "gaussian":
         bias_initializer = keras.initializers.RandomNormal(stddev=sigmab)
         # weight_initializer = keras.initializers.RandomNormal(stddev=sigmaw/np.sqrt(input_dim))
-        weight_initializer = keras.initializers.VarianceScaling(scale=sigmaw, mode='fan_in', distribution='normal', seed=None)
-        bias_initializer_last_layer = shifted_init
+        weight_initializer = keras.initializers.VarianceScaling(scale=sigmaw**2, mode='fan_in', distribution='normal', seed=None)
+        if use_shifted_init:
+            bias_initializer_last_layer = shifted_init
+        else:
+            bias_initializer_last_layer = bias_initializer
     elif init_dist == "cauchy":
         bias_initializer = cauchy_init(sigmab)
         weight_initializer  = cauchy_init(sigmaw)
@@ -111,6 +115,7 @@ def main(_):
         model = keras.Sequential(
             sum([
                 [keras.layers.Conv2D(input_shape=(image_height,image_width,number_channels), filters=num_filters, kernel_size=filter_size, padding=padding, strides=strides, activation=tf.nn.relu,
+                data_format='channels_last',
                 kernel_initializer=weight_initializer,
                 bias_initializer=bias_initializer,)] +
                  (intermediate_pooling_layer if have_pooling else [])
@@ -126,7 +131,7 @@ def main(_):
                 # keras.layers.Dense(1,activation=tf.nn.sigmoid,)
                 keras.layers.Dense(1,#activation=tf.nn.sigmoid,)
                 kernel_initializer=weight_initializer,
-                bias_initializer=bias_initializer,)
+                bias_initializer=bias_initializer_last_layer,)
                 # kernel_regularizer=keras.regularizers.l2(0.01*input_dim/(2*sigmaw**2)),
                 # bias_regularizer=keras.regularizers.l2(1/(2*sigmab**2)))
                 # kernel_regularizer=keras.regularizers.l2(0.05),
@@ -162,7 +167,10 @@ def main(_):
                 ])
 
     elif network == "resnet":
-        from keras_contrib.applications.resnet import ResNet
+        #from keras_contrib.applications.resnet import ResNet
+        import sys
+        sys.path += keras_contrib.__path__ + [keras_contrib.__path__[0]+"/applications/"]
+        from resnet import ResNet
         import keras
 
         n_blocks = 3
@@ -260,7 +268,9 @@ def main(_):
             model1 = keras.applications.xception.Xception(include_top=False, weights=None, input_tensor=None, input_shape=(image_height,image_width,number_channels), pooling=pooling, classes=2)
 
         model.add(model1)
-        model.add(keras.layers.Dense(1))
+        model.add(keras.layers.Dense(1,
+                    kernel_initializer=weight_initializer,
+                    bias_initializer=bias_initializer_last_layer,))
 
     json_string = model.to_json()
 

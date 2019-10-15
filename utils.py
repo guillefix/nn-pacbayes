@@ -37,9 +37,9 @@ def save_data(train_images,ys,test_images,test_ys,FLAGS):
     h5f = h5py.File(filename,"w")
     h5f.create_dataset('train_images', data=train_images)
 
+    ys = [y[0] for y in ys]
+    h5f.create_dataset('ys', data=ys)
     if FLAGS["training"]:
-        ys = [y[0] for y in ys]
-        h5f.create_dataset('ys', data=ys)
         h5f.create_dataset('test_images', data=test_images)
         h5f.create_dataset('test_ys', data=test_ys)
 
@@ -49,10 +49,12 @@ def load_data(FLAGS):
     filename = data_filename(FLAGS)
     h5f = h5py.File(filename,'r')
     train_images = h5f['train_images'][:]
+    ys = h5f['ys'][:]
     if FLAGS["training"]:
-        ys = h5f['ys'][:]
         test_images = h5f['test_images'][:]
         test_ys = h5f['test_ys'][:]
+    else:
+        test_images = test_ys = []
     h5f.close()
     data = train_images
     tp_order = np.concatenate([[0,len(data.shape)-1], np.arange(1, len(data.shape)-1)])
@@ -128,6 +130,7 @@ def define_default_flags(f):
     f.DEFINE_string('init_dist', "gaussian", "The distribution to use to initialize parameters")
     # f.DEFINE_boolean('compute_bound', False, "Whether to compute the PAC-Bayes bound or just generate the training data")
     #f.DEFINE_boolean('compute_kernel', False, "Whether to compute the kernel or just generate the training data")
+    f.DEFINE_boolean('use_shifted_init', False, "Whether to use a distribution of the last layer bias term which has non-zero mean; may be useful for learning class-imbalanced data")
     f.DEFINE_boolean('whitening', False, "Whether to perform ZCA whitening and normalization on the training data")
     f.DEFINE_boolean('centering', False, "Whether to substract the mean of the data")
     f.DEFINE_boolean('channel_normalization', False, "Whether to normalize the channel of the images")
@@ -162,7 +165,7 @@ def preprocess_flags(FLAGS):
     FLAGS["pooling_in_layer"] = [x=="1" for x in intermediate_pooling]
     FLAGS["strides"]=[[1, 1]] * 10
     FLAGS["strides"]= FLAGS["strides"][:number_layers]
-    FLAGS["num_filters"] = 100
+    FLAGS["num_filters"] = 512
     if m is not None: FLAGS["total_samples"] = ceil(m*(1.0+confusion))
     FLAGS["training"] = not FLAGS["no_training"]
 
@@ -175,19 +178,32 @@ def binary_crossentropy_from_logits(y_true,y_pred):
 Callback = keras.callbacks.Callback
 import warnings
 class EarlyStoppingByAccuracy(Callback):
-    def __init__(self, monitor='val_acc', value=0.98, verbose=0):
+    def __init__(self, monitor='val_acc', value=0.98, wait_epochs=0, verbose=0):
         super(Callback, self).__init__()
         self.monitor = monitor
         self.value = value
         self.verbose = verbose
+        self.wait_epochs = wait_epochs
+        self.first_time = True
+        self.epoch_after_first_time = 0
     def on_epoch_end(self, epoch, logs={}):
         current = logs.get(self.monitor)
         if current is None:
             warnings.warn("Early stopping requires %s available!" % self.monitor, RuntimeWarning)
         if current >= self.value:
-            if self.verbose > 0:
-                print("Epoch %05d: early stopping THR" % epoch)
-            self.model.stop_training = True
+            if self.first_time:
+                self.first_time = False
+                self.first_time_epoch = epoch
+                if self.wait_epochs == 0:
+                    if self.verbose > 0:
+                        print("Epoch %05d: early stopping THR" % epoch)
+                    self.model.stop_training = True
+            else:
+                if epoch - self.first_time_epoch >= self.wait_epochs:
+                    if self.verbose > 0:
+                        print("Epoch %05d: early stopping THR" % epoch)
+                    self.model.stop_training = True
+
 
 # FLAGS['m'] = 1000
 # FLAGS['number_inits'] = 1

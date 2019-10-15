@@ -19,7 +19,8 @@ def main(_):
     size = comm.Get_size()
     print(rank)
 
-    os.environ["CUDA_VISIBLE_DEVICES"]=str((rank+1)%n_gpus)
+    if n_gpus>0:
+        os.environ["CUDA_VISIBLE_DEVICES"]=str((rank+1)%n_gpus)
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
 
@@ -47,8 +48,18 @@ def main(_):
 
     #finding log marginal likelihood of data
     if using_EP:
-        from GP_prob.GP_prob_gpy import GP_prob
-        logPU = GP_prob(K,X,Y)
+        from GP_prob.GP_prob_gpy2 import GP_prob
+        logPU = GP_prob(K,X,Y, method="EP", using_exactPB=using_exactPB)
+    if using_Laplace:
+        from GP_prob.GP_prob_gpy2 import GP_prob
+        # from GP_prob.GP_prob_numpy import GP_prob
+        logPU = GP_prob(K,X,Y,method="Laplace", using_exactPB=using_exactPB)
+        # logPU = GP_prob(K,np.squeeze(Y))
+    if using_Laplace2:
+        # from GP_prob.GP_prob_gpy import GP_prob
+        from GP_prob.GP_prob_numpy import GP_prob
+        # logPU = GP_prob(K,X,Y,method="Laplace")
+        logPU = GP_prob(K,np.squeeze(Y))
     elif using_MC:
         from GP_prob.GP_prob_MC import GP_prob
         logPU = GP_prob(K,X,Y,FLAGS)
@@ -64,16 +75,20 @@ def main(_):
         bound = (bound - 0.5*rho)/(1-rho) #to correct for the confusion changing the training data distribution (in training set, but not in test set)!
         print("Bound: ", bound)
         print("Accuracy bound: ", 1-bound)
-        useful_flags = ["dataset", "network", "m","label_corruption","confusion", "number_layers", "sigmaw", "sigmab", "binarized", "pooling", "intermediate_pooling", "whitening", "training", "n_gpus"]
+        useful_flags = ["dataset","boolfun_comp","boolfun", "network", "m","label_corruption","confusion", "number_layers", "sigmaw", "sigmab", "binarized", "pooling", "intermediate_pooling", "whitening", "training", "n_gpus"]
         with open(results_folder+prefix+"bounds.txt","a") as file:
             file.write("#")
             for key in useful_flags:
                 file.write("{}\t".format(key))
             file.write("bound")
+            file.write("\t")
+            file.write("logP")
             file.write("\n")
             for key in useful_flags:
                 file.write("{}\t".format(FLAGS[key]))
             file.write("{}".format(bound))
+            file.write("\t")
+            file.write("{}".format(logPU))
             file.write("\n")
 
 if __name__ == '__main__':
@@ -84,8 +99,12 @@ if __name__ == '__main__':
 
     define_default_flags(f)
     f.DEFINE_boolean('using_EP', False, "Whether to use Expectation Propagation method for computing probability")
+    f.DEFINE_boolean('using_Laplace', False, "Whether to use Laplace method for computing probability")
+    f.DEFINE_boolean('using_Laplace2', False, "Whether my numpy implementation of Laplace method for computing probability")
+    f.DEFINE_boolean('using_exactPB', False, "Whether using exact PAC-Bayes on approximate posterior rather than approximate PAC-Bayes on exact postierior")
     f.DEFINE_boolean('using_MC', False, "Whether to use Monte Carlo method for computing probability")
     f.DEFINE_integer('num_post_samples', int(1e5), "Number of approximate EP posterior samples in importance-sampling-based Monte Carlo estimation of marginal likelihood")
     f.DEFINE_float('cov_mult', 1.0, "Factor by which to multiply the variance of the approximate posterior, to focus the importance sampling more in the non-zero likelihood region, at the risk of biasing away from true posterior.")
+    f.DEFINE_float('mean_mult', 1.0, "Factor by which to multiply the mean of the approximate posterior, to focus the importance sampling more in the non-zero likelihood region, at the risk of biasing away from true posterior.")
 
-    tf.app.run()
+    tf.compat.v1.app.run()

@@ -9,28 +9,36 @@ arch_folder = "archs/"
 kernel_folder = "kernels/"
 
 FLAGS = {}
-FLAGS['m'] = 50
+FLAGS['m'] = 127
+# FLAGS['m'] = 50
 FLAGS['number_inits'] = 1
 FLAGS['label_corruption'] =  0.0
 FLAGS['confusion'] = 0.0
-FLAGS['dataset'] =  "mnist"
+FLAGS['dataset'] =  "boolean"
+FLAGS['boolfun_comp'] =  "17.5"
+# FLAGS['dataset'] =  "mnist"
 # FLAGS['dataset'] =  "EMNIST"
 FLAGS['binarized'] =  True
-FLAGS['number_layers'] =  1
+# FLAGS['number_layers'] =  1
+FLAGS['number_layers'] =  2
 FLAGS['pooling'] =  "none"
 FLAGS['intermediate_pooling'] =  "0000"
 FLAGS['intermediate_pooling_type'] =  "max"
+# FLAGS['intermediate_pooling_type'] =  "none"
 FLAGS['sigmaw'] =  2.0
 FLAGS['sigmab'] =  0.0
 FLAGS['network'] =  "fc"
+# FLAGS['prefix'] =  "new_comp_sweep_"
 FLAGS['prefix'] =  "new_comp_sweep_"
 FLAGS['whitening'] =  False
 FLAGS['centering'] =  False
 FLAGS['channel_normalization'] =  False
 FLAGS['random_labels'] =  True
 FLAGS['training'] =  True
-FLAGS['no_training'] =  False
-FLAGS['threshold'] =  -1
+# FLAGS['no_training'] =  False
+FLAGS['no_training'] =  True
+# FLAGS['threshold'] =  -1
+FLAGS['threshold'] =  1
 FLAGS['oversampling'] =  False
 FLAGS['oversampling2'] =  False
 
@@ -77,6 +85,61 @@ K = load_kernel(FLAGS)
 #     K = load_kernel(FLAGS)
 
 print("Loaded kernel")
+#%%
+
+Kinv = np.linalg.inv(K)
+
+det = np.linalg.eigh(K)[0]
+n = len(X)
+normalization = (np.sqrt(np.power(2*np.pi,n) * det))
+lognorm = 0.5*(len(X)*np.log(2*np.pi)+np.sum(np.log(det)))
+
+def logPtilde(f):
+    return -0.5*(np.matmul(f.T, np.matmul(Kinv, f))) - lognorm
+
+def logProposal(f2,f1):
+    return -0.5*(np.matmul(f.T, np.matmul(np.eye(n), f)))/sigma**2 - lognorm
+
+def newProposal(f1):
+    #return np.random.multivariate_normal(f1,sigma*np.eye(n))
+    return np.random.multivariate_normal(f1,sigma*K)
+
+def hasZeroLikelihood(f):
+    return np.all(np.sign(f) != Y*2-1)
+
+def alpha(logPf2,logPf1):
+    if hasZeroLikelihood(f2):
+        return 0
+    else:
+
+        logRatio = logPf2-logPf1
+        return min(1,np.exp(logRatio))
+
+sigma=0.05
+import scipy
+# V=np.power(n,n/2)*np.power(np.pi,n/2)/scipy.special.gamma(n/2+1)/np.power(2,n)
+logV = (n/2)*np.log(n)+(n/2)*np.log(np.pi)-np.log(scipy.special.gamma(n/2+1))-n*np.log(2)
+f1 = np.squeeze(Y*2-1)
+tot = 0
+N = 10000
+accepted = 0
+for i in range(N):
+    f2 = newProposal(f1)
+    logPf2 = logPtilde(f2)
+    logPf = logPf1 = logPtilde(f1)
+    if np.random.rand() <= alpha(logPf2,logPf1):
+        f1 = f2
+        logPf = logPf2
+        accepted += 1
+    if np.linalg.norm(f1) <= np.sqrt(n):
+        tot += np.exp(-logPf)
+        # print(i)
+        # print(i,",".join([str(x) for x in f1]))
+
+
+logV - np.log(tot/N)
+
+
 #%%
 
 import GPy
@@ -145,8 +208,8 @@ if rank == 0:
     tot = sum(tots)
     PU = tot/num_post_samples
 
-    # logPU = np.log(PU) - shift
-    logPU = np.log(PU)
+    logPU = np.log(PU) - shift
+    # logPU = np.log(PU)
     print(logPU)
 
     #%%
@@ -158,16 +221,28 @@ if rank == 0:
 ####
 #%%
 
-# exact_samples = np.random.multivariate_normal(np.zeros(m),K,int(1e7))>0
-#
-# count = 0
+import cupy as np
+# import numpy as np
+
+Kcu = np.array(K)
+Ycu = np.array(Y)
+
+PU = 0
+for i in range(100):
+    N = 1e6
+    # exact_samples = np.random.multivariate_normal(np.zeros(m),K,int(N))>0
+    exact_samples = np.random.multivariate_normal(np.zeros(m),Kcu,int(N))>0
+
+    count = 0
+    PU += np.sum(np.prod(exact_samples == Ycu.T,1))/N
+    # PU += np.sum(np.prod(exact_samples == Y.T,1))/N
 # for i in range(len(exact_samples)):
 #     # print(sum(exact_samples[i,:]))
 #     if np.prod(exact_samples[i,:] == Y.T):
 #         count += 1
-#
+
 # PU = count/1e7
-# PU
+PU/100
 # np.log(PU)
 # m.likelihood.log_predictive_density(X,sample[:,:,0])
 #

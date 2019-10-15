@@ -1,6 +1,6 @@
 #!/bin/bash -l
 echo =========================================================   
-echo Job submitted  date = Mon Oct 14 12:20:09 BST 2019      
+echo Job submitted  date = Wed Oct  2 15:58:52 BST 2019      
 date_start=`date +%s`
 echo $SLURM_JOB_NUM_NODES nodes \( $SMP processes per node \)        
 echo $SLURM_JOB_NUM_NODES hosts used: $SLURM_JOB_NODELIST      
@@ -17,7 +17,7 @@ export MV2_SMP_USE_CMA=0
 
 #which mpirun
 export OMP_NUM_THEADS=1
- nice -n 10 /users/guillefix/nn-pacbayes/./run_experiment --prefix test_1_boolean --m 127 --dataset boolean --network fc --number_layers 2 --training --sigmaw 100.0 --sigmab 0.0 --label_corruption 0.0 --n_gpus 0 --no_training --pooling none --n_samples_repeats 0.25 --number_inits 1 --boolfun 11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111001000 1
+ nice -n 10 /users/guillefix/nn-pacbayes/./meta_script_comp_sweep 
 # If we've been checkpointed
 #if [ -n "${DMTCP_CHECKPOINT_DIR}" ]; then
   if [ -d "${DMTCP_CHECKPOINT_DIR}" ]; then

@@ -6,9 +6,8 @@ GP_prob_folder = os.path.join(ROOT_DIR, 'GP_prob')
 sys.path.append(GP_prob_folder)
 from custom_kernel_matrix.custom_kernel_matrix import CustomMatrix
 
-# import numpy as np
 
-def GP_prob(K,X,Y,parallel_updates=True,method="EP"):
+def GP_prob(K,X,Y,parallel_updates=True,method="EP", using_exactPB=False):
     #lik = GPy.likelihoods.Bernoulli()
     #m = GPy.models.GPClassification(X=X,
     #                Y=Y,
@@ -33,7 +32,22 @@ def GP_prob(K,X,Y,parallel_updates=True,method="EP"):
                     likelihood=lik)
     # m.likelihood = lik
     #m.inference_method = GPy.inference.latent_function_inference.PEP(alpha = 0.5)
-    return m.log_likelihood()
+    if using_exactPB:
+        import numpy as np
+        mean, cov = m._raw_predict(X, full_cov=True)
+        alpha = np.linalg.solve(K,mean)
+        # m.log_likelihood()
+        # B = m.inference_method.B
+        n = X.shape[0]
+        # return m.log_likelihood()
+        # KL = 0.5*np.log(np.linalg.det(B)) + 0.5*np.trace(np.linalg.inv(B)) + 0.5*np.matmul(alpha.T,np.matmul(K,alpha)) -n/2
+        covi = np.linalg.inv(cov)
+        coviK = np.matmul(covi,K)
+        KL = 0.5*np.log(np.linalg.det(coviK)) + 0.5*np.trace(np.linalg.inv(coviK)) + 0.5*np.matmul(alpha.T,np.matmul(K,alpha)) - n/2
+        return -KL[0,0]
+    else:
+        return m.log_likelihood()
+    # return -KL[0,0]
 
 '''PLAYGROUND'''
 

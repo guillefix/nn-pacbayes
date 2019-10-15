@@ -30,7 +30,7 @@ def GP_prob(K,X,Y,FLAGS):
                     likelihood=lik)
 
     mean, cov = model._raw_predict(X, full_cov=True)
-    mean *= 1.0
+    mean *= mean_mult
     mean = mean.flatten()
     cov *= cov_mult
     log_norm_ratio = np.sum(np.log((np.linalg.eigh(cov)[0] / np.linalg.eigh(K)[0])))/2
@@ -66,7 +66,7 @@ def GP_prob(K,X,Y,FLAGS):
     tots = comm.gather(tot,root=0)
     if rank == 0:
         tot = sum(tots)
-        logPU = np.log(tot) - np.log(num_post_samples)
+        logPU = np.log(tot) - shift - np.log(num_post_samples)
         return logPU
     else:
         return None
