@@ -75,7 +75,7 @@ def main(_):
         bound = (bound - 0.5*rho)/(1-rho) #to correct for the confusion changing the training data distribution (in training set, but not in test set)!
         print("Bound: ", bound)
         print("Accuracy bound: ", 1-bound)
-        useful_flags = ["dataset", "network", "m","label_corruption","confusion", "number_layers", "sigmaw", "sigmab", "binarized", "pooling", "intermediate_pooling", "whitening", "training", "n_gpus"]
+        useful_flags = ["dataset","boolfun_comp","boolfun", "network", "m","label_corruption","confusion", "number_layers", "sigmaw", "sigmab", "binarized", "pooling", "intermediate_pooling", "whitening", "training", "n_gpus"]
         with open(results_folder+prefix+"bounds.txt","a") as file:
             file.write("#")
             for key in useful_flags:

@@ -1,6 +1,6 @@
 #!/bin/bash -l
 echo =========================================================   
-echo Job submitted  date = Mon Oct 14 19:11:43 BST 2019      
+echo Job submitted  date = Mon Oct 14 19:50:53 BST 2019      
 date_start=`date +%s`
 echo $SLURM_JOB_NUM_NODES nodes \( $SMP processes per node \)        
 echo $SLURM_JOB_NUM_NODES hosts used: $SLURM_JOB_NODELIST      
@@ -17,7 +17,7 @@ export MV2_SMP_USE_CMA=0
 
 #which mpirun
 export OMP_NUM_THEADS=1
- nice -n 10 /usr/bin/cut -f1 /users/guillefix/nn-pacbayes/unique_prob_set_1e7_2_7_40_40_1_1.000000_0.000000_relu_fun_samples.txt | parallel --jobs 250 -I{} ./meta_script {}
+ nice -n 10 /usr/bin/awk "{print $1}" /users/guillefix/nn-pacbayes/unique_prob_set_1e7_2_7_40_40_1_1.000000_0.000000_relu_fun_samples.txt | parallel --jobs 100 -I{} ./meta_script {}
 # If we've been checkpointed
 #if [ -n "${DMTCP_CHECKPOINT_DIR}" ]; then
   if [ -d "${DMTCP_CHECKPOINT_DIR}" ]; then
