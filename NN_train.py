@@ -25,7 +25,7 @@ def main(_):
 
     import os
     if n_gpus>0:
-        os.environ["CUDA_VISIBLE_DEVICES"]=str(rank)
+        os.environ["CUDA_VISIBLE_DEVICES"]=str(rank%n_gpus)
 
     from tensorflow import keras
 

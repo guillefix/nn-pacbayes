@@ -20,7 +20,7 @@ def main(_):
     print(rank)
 
     if n_gpus>0:
-        os.environ["CUDA_VISIBLE_DEVICES"]=str((rank+1)%n_gpus)
+        os.environ["CUDA_VISIBLE_DEVICES"]=str((rank)%n_gpus)
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
 
