@@ -25,12 +25,12 @@ def main(_):
 
     import os
     if n_gpus>0:
-        os.environ["CUDA_VISIBLE_DEVICES"]=str(rank)
+        os.environ["CUDA_VISIBLE_DEVICES"]=str(rank%n_gpus)
 
     from tensorflow import keras
 
     callbacks = [
-            EarlyStoppingByAccuracy(monitor='val_acc', value=1.0, verbose=1),
+            EarlyStoppingByAccuracy(monitor='val_acc', value=1.0, verbose=1, wait_epochs=32),
             #missinglink_callback,
             # EarlyStopping(monitor='val_loss', patience=2, verbose=0),
             # ModelCheckpoint(kfold_weights_path, monitor='val_loss', save_best_only=True, verbose=0),

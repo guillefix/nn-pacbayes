@@ -19,7 +19,7 @@ def main(_):
 
     import os
     if n_gpus>0:
-        os.environ["CUDA_VISIBLE_DEVICES"]=str((rank+1)%n_gpus)
+        os.environ["CUDA_VISIBLE_DEVICES"]=str((rank)%n_gpus)
 
     from tensorflow import keras
     # import keras
@@ -168,9 +168,9 @@ def main(_):
 
     elif network == "resnet":
         #from keras_contrib.applications.resnet import ResNet
-        import sys
-        sys.path += keras_contrib.__path__ + [keras_contrib.__path__[0]+"/applications/"]
-        from resnet import ResNet
+        #import sys
+        #sys.path += keras_contrib.__path__ + [keras_contrib.__path__[0]+"/applications/"]
+        from .resnet import ResNet
         import keras
 
         n_blocks = 3
