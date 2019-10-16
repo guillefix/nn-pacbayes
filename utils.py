@@ -199,7 +199,7 @@ class EarlyStoppingByAccuracy(Callback):
                         print("Epoch %05d: early stopping THR" % epoch)
                     self.model.stop_training = True
             else:
-                if epoch - self.first_time_epoch >= self.wait_epochs:
+                if (epoch - self.first_time_epoch) >= self.wait_epochs:
                     if self.verbose > 0:
                         print("Epoch %05d: early stopping THR" % epoch)
                     self.model.stop_training = True

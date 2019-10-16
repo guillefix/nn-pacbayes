@@ -22,7 +22,7 @@ def main(_):
     print(rank)
 
     if n_gpus>0:
-        os.environ["CUDA_VISIBLE_DEVICES"]=str((rank+1)%n_gpus)
+        os.environ["CUDA_VISIBLE_DEVICES"]=str((rank)%n_gpus)
     config = tf.ConfigProto()
     #config.gpu_options.per_process_gpu_memory_fraction = 0.1
     config.gpu_options.allow_growth = True
