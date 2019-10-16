@@ -201,6 +201,9 @@ def main(_):
         flat_train_images = train_inputs
 
     else:
+        flat_train_images = np.array([train_image.flatten() for train_image in train_images])
+        if training:
+            flat_test_images = np.array([test_image.flatten() for test_image in test_images])
 
         if oversampling:
             probs = list(map(lambda x: threshold/(num_classes) if x>=threshold else (num_classes-threshold)/(num_classes), train_labels))
@@ -232,6 +235,7 @@ def main(_):
                 test_images = keras_applications.vgg19.preprocess_input(test_images, backend=tf.keras.backend)
                 train_labels = np.take(train_labels,indices)
                 print(len([x for x in train_labels if x<threshold])/len(train_images))
+
         elif network == "vgg16":
             train_images = (train_images[indices,:,:,:]).astype(np.float32) #NHWC
             train_images = keras_applications.vgg16.preprocess_input(train_images, backend=tf.keras.backend)
@@ -239,14 +243,19 @@ def main(_):
                 test_images = keras_applications.vgg16.preprocess_input(test_images, backend=tf.keras.backend)
                 train_labels = np.take(train_labels,indices)
                 print(len([x for x in train_labels if x<threshold])/len(train_images))
-        elif network == "resnet50" or network == "resnet101" or network == "renset152":
-        #elif network == "resnet101" or network == "renset152":
+                
+        #elif network == "resnet50" or network == "resnet101" or network == "renset152":
+        elif network == "resnet101" or network == "renset152":
             train_images = (train_images[indices,:,:,:]).astype(np.float32) #NHWC
             train_images = keras_applications.resnet.preprocess_input(train_images, backend=tf.keras.backend)
+            train_images = train_images/255.0
+            print(train_images)
             if training:
                 test_images = keras_applications.resnet.preprocess_input(test_images, backend=tf.keras.backend)
                 train_labels = np.take(train_labels,indices)
+                test_images = test_images/255.0
                 print(len([x for x in train_labels if x<threshold])/len(train_images))
+                
         elif network in ["resnet_v2_50","resnetv2_101", "resnetv2_152"]:
             train_images = (train_images[indices,:,:,:]).astype(np.float32) #NHWC
             train_images = keras_applications.resnet_v2.preprocess_input(train_images, backend=tf.keras.backend)
@@ -254,6 +263,7 @@ def main(_):
                 test_images = keras_applications.resnet_v2.preprocess_input(test_images, backend=tf.keras.backend)
                 train_labels = np.take(train_labels,indices)
                 print(len([x for x in train_labels if x<threshold])/len(train_images))
+
         else:
 
             train_images = (train_images[indices,:,:,:]/255.0).astype(np.float32) #NHWC
@@ -263,20 +273,6 @@ def main(_):
                 print(len([x for x in train_labels if x<threshold])/len(train_images))
 
 
-            #flattened images, as the kernel function takes flattened vectors (row major for NCHW images)
-            tp_order = np.concatenate([[0,len(train_images.shape)-1], np.arange(1, len(train_images.shape)-1)])
-            if n_gpus>0:
-                flat_train_images = np.transpose(train_images, tp_order)  # NHWC -> NCHW
-            else:
-                flat_train_images = train_images
-            flat_train_images = np.array([train_image.flatten() for train_image in flat_train_images])
-            if training:
-                if n_gpus>0:
-                    flat_test_images = np.transpose(test_images, tp_order)  # NHWC -> NCHW
-                else:
-                    flat_test_images = test_images
-                flat_test_images = np.array([test_image.flatten() for test_image in flat_test_images])
-
             if channel_normalization:
                 #flatten to compute SVD matrix
                 print("channel normalizing")
@@ -284,12 +280,6 @@ def main(_):
                 flat_x = flat_train_images
 
                 #normalize each channel (3 colors for e.g.)
-                #to do this we reshape the tensor to NHWC form if it was changed
-                if n_gpus>0:
-                    x = flat_x.reshape((x.shape[0], x.shape[3], x.shape[1],x.shape[2]))
-                    tp_order = np.concatenate([[0], np.arange(2, len(train_images.shape)), [1]])
-                    train_images =  np.transpose(x, tp_order)
-                    x = train_images
                 x_mean = np.mean(x, axis=(0,1,2))
                 x_std = np.std(x, axis=(0,1,2))
                 x = (x - x_mean) / x_std
@@ -297,24 +287,16 @@ def main(_):
 
                 #test images
                 if training:
-                    test_images = flat_test_images.reshape((test_images.shape[0], test_images.shape[3], test_images.shape[1],test_images.shape[2]))
-                    test_images =  np.transpose(test_images, tp_order)
+                    #test_images = flat_test_images.reshape((test_images.shape[0], test_images.shape[1], test_images.shape[2], test_images.shape[3]))
+                    #test_images = flat_test_images.reshape((test_images.shape[0], test_images.shape[3], test_images.shape[1],test_images.shape[2]))
+                    #test_images =  np.transpose(test_images, tp_order)
                     # test_images = flat_test_images.reshape((test_images.shape[0], test_images.shape[1], test_images.shape[2],test_images.shape[3]))
                     test_images = (test_images - x_mean) / x_std
 
 
                 #flatten again after normalizing
-                tp_order = np.concatenate([[0,len(train_images.shape)-1], np.arange(1, len(train_images.shape)-1)])
-                if n_gpus>0:
-                    flat_train_images = np.transpose(train_images, tp_order)  # NHWC -> NCHW
-                else:
-                    flat_train_images = train_images
                 flat_train_images = np.array([train_image.flatten() for train_image in flat_train_images])
                 if training:
-                    if n_gpus>0:
-                        flat_test_images = np.transpose(test_images, tp_order)  # NHWC -> NCHW
-                    else:
-                        flat_test_images = test_images
                     flat_test_images = np.array([test_image.flatten() for test_image in flat_test_images])
 
 
@@ -325,17 +307,17 @@ def main(_):
                 flat_x = flat_train_images
                 flat_x -= flat_x.mean(axis=0)
 
-                x = flat_x.reshape((x.shape[0], x.shape[3], x.shape[1],x.shape[2]))
-                tp_order = np.concatenate([[0], np.arange(2, len(train_images.shape)), [1]])
-                train_images =  np.transpose(x, tp_order)
+                x = flat_x.reshape((x.shape[0], x.shape[1], x.shape[2], x.shape[3]))
+                #x = flat_x.reshape((x.shape[0], x.shape[3], x.shape[1],x.shape[2]))
+                #tp_order = np.concatenate([[0], np.arange(2, len(train_images.shape)), [1]])
+                #train_images =  np.transpose(x, tp_order)
 
                 #test images
                 if training:
                     flat_test_images -= flat_test_images.mean(axis=0)
-                    test_images = flat_test_images.reshape((test_images.shape[0], test_images.shape[3], test_images.shape[1],test_images.shape[2]))
-                    test_images =  np.transpose(test_images, tp_order)
-                    # test_images = flat_test_images.reshape((test_images.shape[0], test_images.shape[1], test_images.shape[2],test_images.shape[3]))
-                    # test_images = (test_images - x_mean) / x_std
+                    test_images = flat_test_images.reshape((test_images.shape[0], test_images.shape[1], test_images.shape[2],test_images.shape[3]))
+                    #test_images = flat_test_images.reshape((test_images.shape[0], test_images.shape[3], test_images.shape[1],test_images.shape[2]))
+                    #test_images =  np.transpose(test_images, tp_order)
 
             #WHITENING using training_images
             if whitening:
@@ -354,32 +336,25 @@ def main(_):
 
                 #normalize each channel (3 colors for e.g.)
                 #to do this we reshape the tensor to NHWC form
-                x = flat_x.reshape((x.shape[0], x.shape[3], x.shape[1],x.shape[2]))
-                tp_order = np.concatenate([[0], np.arange(2, len(train_images.shape)), [1]])
-                train_images =  np.transpose(x, tp_order)
-                # x = train_images
-                # x_mean = np.mean(x, axis=(0,1,2))
-                # x_std = np.std(x, axis=(0,1,2))
-                # x = (x - x_mean) / x_std
-                # train_images = x
+                train_images = flat_x.reshape((x.shape[0], x.shape[3], x.shape[1],x.shape[2]))
 
                 #test images
                 if training:
                     flat_test_images -= flat_test_images.mean(axis=0)
                     flat_test_images = np.matmul(flat_test_images, Q.T)
-                    test_images = flat_test_images.reshape((test_images.shape[0], test_images.shape[3], test_images.shape[1],test_images.shape[2]))
-                    test_images =  np.transpose(test_images, tp_order)
-                    # test_images = flat_test_images.reshape((test_images.shape[0], test_images.shape[1], test_images.shape[2],test_images.shape[3]))
-                    # test_images = (test_images - x_mean) / x_std
+                    test_images = flat_test_images.reshape((test_images.shape[0], test_images.shape[1], test_images.shape[2],test_images.shape[3]))
+                    #test_images = flat_test_images.reshape((test_images.shape[0], test_images.shape[3], test_images.shape[1],test_images.shape[2]))
+                    #test_images =  np.transpose(test_images, tp_order)
 
-
-                #flatten again after normalizing
-                # tp_order = np.concatenate([[0,len(train_images.shape)-1], np.arange(1, len(train_images.shape)-1)])
-                # flat_train_images = np.transpose(train_images, tp_order)  # NHWC -> NCHW
-                # flat_train_images = np.array([train_image.flatten() for train_image in flat_train_images])
-                # if training:
-                #     flat_test_images = np.transpose(test_images, tp_order)  # NHWC -> NCHW
-                #     flat_test_images = np.array([test_image.flatten() for test_image in flat_test_images])
+        #flattened images, as the kernel function takes flattened vectors (row major for NCHW images)
+        tp_order = np.concatenate([[0,len(train_images.shape)-1], np.arange(1, len(train_images.shape)-1)])
+        if n_gpus>0:
+            flat_train_images = np.transpose(train_images, tp_order)  # NHWC -> NCHW
+            flat_train_images = np.array([train_image.flatten() for train_image in flat_train_images])
+        if training:
+            if n_gpus>0:
+                flat_test_images = np.transpose(test_images, tp_order)  # NHWC -> NCHW
+                flat_test_images = np.array([test_image.flatten() for test_image in flat_test_images])
 
 
     if network == "fc":
@@ -437,5 +412,6 @@ if __name__ == '__main__':
 
     define_default_flags(f)
 
-    tf.compat.v1.app.run()
+    #tf.compat.v1.app.run()
+    tf.app.run()
     import gc; gc.collect()
