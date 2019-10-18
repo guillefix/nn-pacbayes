@@ -56,6 +56,7 @@ def main(_):
         print(d)
         mm = int(ceil(d.data.shape[0]*5/6))
         (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
+        print(train_images)
 
     elif dataset == "mnist-fashion":
         num_classes = 10
@@ -157,7 +158,7 @@ def main(_):
             test_images = np.stack([d.transform(image) for image in test_images])
             test_images = np.transpose(test_images,(0,2,3,1))
             print(train_images.shape)
-    else:
+    else: #otherwise just perform the dataset transforms appropriate for the given architecture
         if network not in ["cnn","fc"]:
             train_images = np.stack([d.transform(image) for image in train_images])
             train_images = np.transpose(train_images,(0,2,3,1))
@@ -170,6 +171,7 @@ def main(_):
         number_channels = train_images.shape[-1]
 
     ##get random training sample##
+    # and perform some more processing
 
     np.random.seed(4206)
 
@@ -200,7 +202,15 @@ def main(_):
 
         flat_train_images = train_inputs
 
+    #for image datasets
     else:
+        #data processing functions assume the images have values in range [0,255]
+        max_val = max(np.max(train_images),np.max(test_images))
+        train_images  = train_images.astype(np.float32)*255.0/max_val
+        test_images = test_images.astype(np.float32)*255.0/max_val
+        print(np.min(train_images), np.max(train_images))
+        print(train_images.shape)
+
         flat_train_images = np.array([train_image.flatten() for train_image in train_images])
         if training:
             flat_test_images = np.array([test_image.flatten() for test_image in test_images])
@@ -231,6 +241,8 @@ def main(_):
         elif network == "vgg19":
             train_images = (train_images[indices,:,:,:]).astype(np.float32) #NHWC
             train_images = keras_applications.vgg19.preprocess_input(train_images, backend=tf.keras.backend)
+            #train_images /= 255.0
+            #print(train_images)
             if training:
                 test_images = keras_applications.vgg19.preprocess_input(test_images, backend=tf.keras.backend)
                 train_labels = np.take(train_labels,indices)
@@ -248,12 +260,12 @@ def main(_):
         elif network == "resnet101" or network == "renset152":
             train_images = (train_images[indices,:,:,:]).astype(np.float32) #NHWC
             train_images = keras_applications.resnet.preprocess_input(train_images, backend=tf.keras.backend)
-            train_images = train_images/255.0
-            print(train_images)
+            #train_images = train_images/255.0
+            #print(train_images)
             if training:
                 test_images = keras_applications.resnet.preprocess_input(test_images, backend=tf.keras.backend)
                 train_labels = np.take(train_labels,indices)
-                test_images = test_images/255.0
+                #test_images = test_images/255.0
                 print(len([x for x in train_labels if x<threshold])/len(train_images))
                 
         elif network in ["resnet_v2_50","resnetv2_101", "resnetv2_152"]:
@@ -265,8 +277,9 @@ def main(_):
                 print(len([x for x in train_labels if x<threshold])/len(train_images))
 
         else:
+        #if True:
 
-            train_images = (train_images[indices,:,:,:]/255.0).astype(np.float32) #NHWC
+            train_images = (train_images[indices,:,:,:]/255.0) #NHWC
             if training:
                 test_images = test_images/255.0
                 train_labels = np.take(train_labels,indices)
@@ -393,6 +406,8 @@ def main(_):
 	    ys = [[process_labels(label,label_corruption,threshold,zero_one=True,binarized=binarized)] for label in train_labels[:m]] + [[process_labels(label,1.0,threshold,zero_one=True,binarized=binarized)] for label in train_labels[m:]]
     else:
 	    ys = [[process_labels(label,label_corruption,threshold,zero_one=True,binarized=binarized)] for label in train_labels[:m]] + [[float(not binarize(label,threshold))] for label in train_labels[m:]]
+
+    print(ys)
 
     if training:
         test_ys = np.array([process_labels(label,label_corruption,threshold,zero_one=True,binarized=binarized) for label in test_labels])

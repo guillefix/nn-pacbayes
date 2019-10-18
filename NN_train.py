@@ -118,7 +118,8 @@ def main(_):
         #     # m.update_state(y_true,y_pred)
         #     # return m.result()
 
-        model.compile(optimizer='sgd',#keras.optimizers.SGD(lr=0.01,momentum=0.9,decay=1e-6),#'sgd',#tf.keras.optimizers.SGD(lr=0.01),
+        model.compile(optimizer=optimizer,#keras.optimizers.SGD(lr=0.01,momentum=0.9,decay=1e-6),#'sgd',#tf.keras.optimizers.SGD(lr=0.01),
+        #model.compile(keras.optimizers.SGD(lr=1e-5),#'sgd',#tf.keras.optimizers.SGD(lr=0.01),
                       #loss='binary_crossentropy',
                       loss=binary_crossentropy_from_logits,
                       # loss_weights=[50000],
@@ -155,7 +156,8 @@ def main(_):
         def sigmoid(x):
             return np.exp(x)/(1+np.exp(x))
         print(test_ys)
-        for th in np.linspace(0,1,1000):
+        #for th in np.linspace(0,1,1000):
+        for th in np.linspace(0,1,5): # as I'm not exploring unbalanced datasets right now
             test_sensitivity_base = sum([(sigmoid(preds[i])>th)==x for i,x in enumerate(test_ys) if x==1])/(len([x for x in test_ys if x==1]))
             test_specificity_base = sum([(sigmoid(preds[i])>th)==x for i,x in enumerate(test_ys) if x==0])/(len([x for x in test_ys if x==0]))
             if test_specificity_base>0.99:
@@ -258,6 +260,7 @@ if __name__ == '__main__':
 
     f.DEFINE_integer('number_inits',1,"Number of initializations")
     f.DEFINE_float('gamma',1.0,"weight for confusion samples (1.0 weigths them the same as normal samples)")
+    f.DEFINE_string('optimizer',"sgd","Which optimizer to use (keras optimizers available)")
 
     tf.app.run()
     import gc; gc.collect()

@@ -190,7 +190,7 @@ def main(_):
             initial_pooling=None,
             #initial_pooling='max',
             #final_pooling=None,
-            final_pooling=pooling,
+            final_pooling=pooling if pooling is not None else "none",
             activation=None)
             # activation='sigmoid')
     else:
