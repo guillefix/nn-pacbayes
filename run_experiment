@@ -41,4 +41,4 @@ py=/usr/bin/python3
 #mpiexec -n $(nproc) $py compute_prob_and_bound.py $@ --num_post_samples 800000 --cov_mult 1.0 --using_MC
 #mpiexec -n 1 $py compute_prob_and_bound.py $@ --using_EP
 #/usr/local/shared/openmpi/4.0.0/bin/mpiexec -n 100 $py sample_funs.py $@ --number_samples 10000
-#mpiexec -n ${n_procs} $py NN_train.py $@
+mpiexec -n ${n_procs} $py NN_train.py $@

@@ -331,3 +331,9 @@ boolean	fc	127	0.0	0.0	2	100.0	0.0	True	none	00	False	False	0	0.2654311326449755
 boolean	fc	127	0.0	0.0	2	100.0	0.0	True	none	00	False	False	0	0.2732388135947851	-22.913137127462754
 #dataset	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound	logP
 boolean	fc	127	0.0	0.0	2	100.0	0.0	True	none	00	False	False	0	0.25757045166211556	-20.204220765948488
+#dataset	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound	logP
+boolean	fc	127	0.0	0.0	2	100.0	0.0	True	none	00	False	False	0	0.27917676321159324	-23.95504365663257
+#dataset	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound	logP
+boolean	fc	127	0.0	0.0	2	100.0	0.0	True	none	00	False	False	0	0.2666266266070165	-21.762895895038
+#dataset	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound	logP
+boolean	fc	127	0.0	0.0	2	100.0	0.0	True	none	00	False	False	0	0.25208753726597966	-19.269759729865683

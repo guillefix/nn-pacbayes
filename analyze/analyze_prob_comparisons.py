@@ -6,14 +6,17 @@ results_folder = "results/"
 
 prefix = "GP_vs_prob_"
 prefix = "GPMC_vs_prob_"
+prefix = "GPEP2_logPs_"
 bounds = pd.read_csv(results_folder+prefix+"bounds.txt",comment="#", header='infer',sep="\t")
 
-d1 = pd.read_csv("GPMC_logPs.txt",comment="#", header=None,sep="\t")
-logPs = d1[1]
-funs = d1[0]
+# d1 = pd.read_csv("GPMC_logPs.txt",comment="#", header=None,sep="\t")
+# logPs = d1[1]
+# funs = d1[0]
 
 # bounds["prob"]
 bounds["logP"]
+logPs = bounds["logP"]
+funs = bounds["boolfun"]
 
 
 # d = pd.read_csv("../unique_prob_set_1e7_7_40_40_1_relu.txt", delim_whitespace=True, header=None)
