@@ -121,7 +121,7 @@ def define_default_flags(f):
     f.DEFINE_boolean('binarized', True, "Whether to convert classification labels to binary")
     f.DEFINE_boolean('oversampling', False, "Whether to oversample the minority class from the data distribution (a standard technique when dealing with class imbalance)")
     f.DEFINE_boolean('oversampling2', False, "Whether to oversample the minority class from the empirical distribution out of an original samplo of size m (a standard technique when dealing with class imbalance)")
-    f.DEFINE_string('pooling', "none", "The pooling type to use (none/avg/max)")
+    f.DEFINE_string('pooling', None, "The pooling type to use (none/avg/max)")
     f.DEFINE_string('intermediate_pooling', "0000", "Whether individual layers have a local maxpooling after them; 1 is maxpool; 0 no maxpool")
     f.DEFINE_string('intermediate_pooling_type', "max", "The type of pooling at intermediate layers (avg/max)")
     # f.DEFINE_integer('number_inits',1,"Number of initializations")
@@ -170,6 +170,7 @@ def preprocess_flags(FLAGS):
     FLAGS["num_filters"] = 512
     if m is not None: FLAGS["total_samples"] = ceil(m*(1.0+confusion))
     FLAGS["training"] = not FLAGS["no_training"]
+    if FLAGS["pooling"] == "none": FLAGS["pooling"] = None
 
     return FLAGS
 

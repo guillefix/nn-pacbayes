@@ -59,6 +59,7 @@ def main(_):
         print(d)
         mm = int(ceil(d.data.shape[0]*5/6))
         (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
+        print(train_images)
 
     elif dataset == "mnist-fashion":
         num_classes = 10
@@ -76,7 +77,7 @@ def main(_):
         d = torchvision.datasets.KMNIST("./datasets",download=True,
                 transform=transforms.Compose(
                     [transforms.ToPILImage()]+
-                    ([transforms.Resize((image_width,image_height))] if image_size is not None else [])+
+                    ([transforms.Resize(image_size)] if image_size is not None else [])+
                     [transforms.ToTensor()]
                 ),
             )
@@ -158,19 +159,15 @@ def main(_):
             assert train_images.dtype == "uint8" #otherwise ToPILImage wants the input to be NCHW. wtff
             # plt.imshow(train_images[0])
             # plt.show()
-            print(train_images.shape)
-            # train_images = np.transpose(train_images,(0,3,1,2)) # this is because the pytorch transform needs it in NCHW
-            train_images = np.stack([d.transform(image) for image in train_images],0)
-            train_images = np.transpose(train_images,(0,2,3,1))
-            # plt.imshow(train_images[0])
-            # plt.show()
-            # test_images = np.transpose(test_images,(0,3,1,2))
+            # print(train_images.shape)
+            assert train_images.dtype == "uint8" #otherwise ToPILImage wants the input to be NCHW. wtff
+            train_images = np.stack([d.transform(image) for image in train_images])
+            train_images = np.transpose(train_images,(0,2,3,1)) # this is because the pytorch transform changes it to NCHW for some reason :P
             if training:
-                test_images = np.stack([d.transform(image) for image in test_images],0)
+                test_images = np.stack([d.transform(image) for image in test_images])
                 test_images = np.transpose(test_images,(0,2,3,1))
             print(train_images.shape)
-            print("hi")
-    else:
+    else: #otherwise just perform the dataset transforms appropriate for the given architecture
         if network not in ["cnn","fc"]:
             # train_images = np.transpose(train_images,(0,3,1,2))
             train_images = np.stack([d.transform(image) for image in train_images])
@@ -185,8 +182,9 @@ def main(_):
         number_channels = train_images.shape[-1]
 
     ##get random training sample##
+    # and perform some more processing
 
-    np.random.seed(4206)
+    np.random.seed(42069)
 
     #for datasets that are not images, like the boolean one
     if dataset == "boolean" or dataset == "calabiyau":
@@ -215,7 +213,9 @@ def main(_):
 
         flat_train_images = train_inputs
 
+    #for image datasets
     else:
+        #data processing functions assume the images have values in range [0,255]
         max_val = max(np.max(train_images),np.max(test_images))
         train_images  = train_images.astype(np.float32)*255.0/max_val
         test_images = test_images.astype(np.float32)*255.0/max_val
@@ -286,8 +286,9 @@ def main(_):
                 print(len([x for x in train_labels if x<threshold])/len(train_images))
 
         else:
-
+        # if True:
             train_images = (train_images[indices,:,:,:]/255.0).astype(np.float32) #NHWC
+            # train_images = (train_images[indices,:,:,:]/255.0) #NHWC
             if training:
                 test_images = test_images/255.0
                 train_labels = np.take(train_labels,indices)
@@ -308,10 +309,6 @@ def main(_):
 
                 #test images
                 if training:
-                    #test_images = flat_test_images.reshape((test_images.shape[0], test_images.shape[1], test_images.shape[2], test_images.shape[3]))
-                    #test_images = flat_test_images.reshape((test_images.shape[0], test_images.shape[3], test_images.shape[1],test_images.shape[2]))
-                    #test_images =  np.transpose(test_images, tp_order)
-                    # test_images = flat_test_images.reshape((test_images.shape[0], test_images.shape[1], test_images.shape[2],test_images.shape[3]))
                     test_images = (test_images - x_mean) / x_std
 
 
@@ -329,16 +326,11 @@ def main(_):
                 flat_x -= flat_x.mean(axis=0)
 
                 x = flat_x.reshape((x.shape[0], x.shape[1], x.shape[2], x.shape[3]))
-                #x = flat_x.reshape((x.shape[0], x.shape[3], x.shape[1],x.shape[2]))
-                #tp_order = np.concatenate([[0], np.arange(2, len(train_images.shape)), [1]])
-                #train_images =  np.transpose(x, tp_order)
 
                 #test images
                 if training:
                     flat_test_images -= flat_test_images.mean(axis=0)
                     test_images = flat_test_images.reshape((test_images.shape[0], test_images.shape[1], test_images.shape[2],test_images.shape[3]))
-                    #test_images = flat_test_images.reshape((test_images.shape[0], test_images.shape[3], test_images.shape[1],test_images.shape[2]))
-                    #test_images =  np.transpose(test_images, tp_order)
 
             #WHITENING using training_images
             if whitening:
@@ -414,6 +406,8 @@ def main(_):
 	    ys = [[process_labels(label,label_corruption,threshold,zero_one=True,binarized=binarized)] for label in train_labels[:m]] + [[process_labels(label,1.0,threshold,zero_one=True,binarized=binarized)] for label in train_labels[m:]]
     else:
 	    ys = [[process_labels(label,label_corruption,threshold,zero_one=True,binarized=binarized)] for label in train_labels[:m]] + [[float(not binarize(label,threshold))] for label in train_labels[m:]]
+
+    print(ys)
 
     if training:
         test_ys = np.array([process_labels(label,label_corruption,threshold,zero_one=True,binarized=binarized) for label in test_labels])
