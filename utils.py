@@ -158,13 +158,15 @@ def preprocess_flags(FLAGS):
     intermediate_pooling = FLAGS["intermediate_pooling"]
     confusion = FLAGS["confusion"]
     m = FLAGS["m"]
-    FLAGS["filter_sizes"] = [[5,5],[2,2]]*10
-    FLAGS["filter_sizes"] = FLAGS["filter_sizes"][:number_layers]
-    FLAGS["padding"]=["VALID", "SAME"]*10
-    FLAGS["padding"]= FLAGS["padding"][:number_layers]
+    # FLAGS["filter_sizes"] = [[5,5],[2,2]]*10
+    FLAGS["filter_sizes"] = [[5,5],[2,2]]*(number_layers//2) + [[5,5]]*(number_layers%2)
+    # FLAGS["filter_sizes"] = FLAGS["filter_sizes"][:number_layers]
+    FLAGS["padding"] = ["VALID", "SAME"]*(number_layers//2) + ["VALID"]*(number_layers%2)
+    # FLAGS["padding"]=["VALID", "SAME"]*10
+    # FLAGS["padding"]= FLAGS["padding"][:number_layers]
     FLAGS["pooling_in_layer"] = [x=="1" for x in intermediate_pooling]
-    FLAGS["strides"]=[[1, 1]] * 10
-    FLAGS["strides"]= FLAGS["strides"][:number_layers]
+    FLAGS["strides"]=[[1, 1]] * number_layers
+    # FLAGS["strides"]= FLAGS["strides"][:number_layers]
     FLAGS["num_filters"] = 512
     if m is not None: FLAGS["total_samples"] = ceil(m*(1.0+confusion))
     FLAGS["training"] = not FLAGS["no_training"]
