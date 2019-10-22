@@ -59,7 +59,7 @@ def main(_):
         print(d)
         mm = int(ceil(d.data.shape[0]*5/6))
         (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
-        print(train_images)
+        #print(train_images)
 
     elif dataset == "mnist-fashion":
         num_classes = 10
@@ -406,8 +406,6 @@ def main(_):
 	    ys = [[process_labels(label,label_corruption,threshold,zero_one=True,binarized=binarized)] for label in train_labels[:m]] + [[process_labels(label,1.0,threshold,zero_one=True,binarized=binarized)] for label in train_labels[m:]]
     else:
 	    ys = [[process_labels(label,label_corruption,threshold,zero_one=True,binarized=binarized)] for label in train_labels[:m]] + [[float(not binarize(label,threshold))] for label in train_labels[m:]]
-
-    print(ys)
 
     if training:
         test_ys = np.array([process_labels(label,label_corruption,threshold,zero_one=True,binarized=binarized) for label in test_labels])

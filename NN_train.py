@@ -30,7 +30,7 @@ def main(_):
     from tensorflow import keras
 
     callbacks = [
-            EarlyStoppingByAccuracy(monitor='val_acc', value=1.0, verbose=1, wait_epochs=32),
+            EarlyStoppingByAccuracy(monitor='val_acc', value=1.0, verbose=1, wait_epochs=epochs_after_fit),
             #missinglink_callback,
             # EarlyStopping(monitor='val_loss', patience=2, verbose=0),
             # ModelCheckpoint(kfold_weights_path, monitor='val_loss', save_best_only=True, verbose=0),
@@ -122,7 +122,7 @@ def main(_):
         #model.compile(keras.optimizers.SGD(lr=1e-5),#'sgd',#tf.keras.optimizers.SGD(lr=0.01),
                       #loss='binary_crossentropy',
                       #loss=binary_crossentropy_from_logits,
-                      loss='mse',
+                      loss=binary_crossentropy_from_logits if loss=="ce" else loss,
                       # loss_weights=[50000],
                       metrics=['accuracy'])
                       #metrics=['accuracy',sensitivity])
@@ -136,12 +136,8 @@ def main(_):
         weights_norm, biases_norm = measure_sigmas(model)
         print(weights_norm,biases_norm)
 
-        # model.fit(train_images, ys, verbose=2, epochs=500)
-        # print(ys)
         model.fit(train_images, ys, verbose=0,\
         sample_weight=sample_weights, validation_data=(train_images, ys), epochs=MAX_TRAIN_EPOCHS,callbacks=callbacks, batch_size=batch_size)
-        #print([w.shape for w in model.get_weights()])
-        #print(np.concatenate([w.flatten() for w in model.get_weights()]).shape)
 
         '''GET DATA: weights, and errors'''
         weights, biases = get_rescaled_weights(model)
@@ -260,9 +256,11 @@ if __name__ == '__main__':
     define_default_flags(f)
 
     f.DEFINE_integer('number_inits',1,"Number of initializations")
+    f.DEFINE_integer('epochs_after_fit',1,"Number of epochs to wait after it first reacehs 100% accuracy")
     f.DEFINE_integer('batch_size',1,"batch_size")
     f.DEFINE_float('gamma',1.0,"weight for confusion samples (1.0 weigths them the same as normal samples)")
     f.DEFINE_string('optimizer',"sgd","Which optimizer to use (keras optimizers available)")
+    f.DEFINE_string('loss',"ce","Which loss to use (ce/mse/etc)")
 
     tf.app.run()
     import gc; gc.collect()

@@ -26,12 +26,13 @@ $py generate_inputs_sample.py $@
 #mpiexec -n 1 $py compute_kernel.py $@
 
 #/users/guillefix/anaconda3/bin/mpiexec -n 25 $py compute_kernel.py $@
-#mpiexec -n 1 $py compute_kernel.py $@
+mpiexec -n 1 $py compute_kernel.py $@
 #/users/guillefix/anaconda3/bin/mpiexec -n 250 $py compute_prob_and_bound.py $@ --num_post_samples 8000000 --cov_mult 0.5 --using_MC
 #mpiexec -n $(nproc) $py compute_prob_and_bound.py $@ --num_post_samples 1600000 --cov_mult 1.0 --mean_mult 1.0 --using_MC
 #mpiexec -n 1 $py compute_prob_and_bound.py $@ --using_EP --using_exactPB
 #/users/guillefix/anaconda3/bin/mpiexec -n 1 $py compute_prob_and_bound.py $@ --using_EP --using_exactPB
 #mpiexec -n 1 $py compute_prob_and_bound.py $@ --using_Laplace --using_exactPB
+mpiexec -n 1 $py compute_prob_and_bound.py $@ --using_regression
 #mpiexec -n 25 $py compute_kernel.py $@
 #/users/guillefix/anaconda3/bin/mpiexec -n 400 $py compute_prob_and_bound.py $@ --num_post_samples 80000000 --cov_mult 0.7 --using_MC
 #mpiexec -n 1 $py compute_prob_and_bound.py $@ --using_EP
