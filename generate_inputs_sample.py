@@ -77,7 +77,7 @@ def main(_):
         d = torchvision.datasets.KMNIST("./datasets",download=True,
                 transform=transforms.Compose(
                     [transforms.ToPILImage()]+
-                    ([transforms.Resize(image_size)] if image_size is not None else [])+
+                    ([transforms.Resize((image_size,image_size))] if image_size is not None else [])+
                     [transforms.ToTensor()]
                 ),
             )

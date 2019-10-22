@@ -259,7 +259,7 @@ if __name__ == '__main__':
     define_default_flags(f)
 
     f.DEFINE_integer('number_inits',1,"Number of initializations")
-    f.DEFINE_integer('batch_size',1,"batch_size")
+    f.DEFINE_integer('batch_size',32,"batch_size")
     f.DEFINE_float('gamma',1.0,"weight for confusion samples (1.0 weigths them the same as normal samples)")
     f.DEFINE_string('optimizer',"sgd","Which optimizer to use (keras optimizers available)")
 
