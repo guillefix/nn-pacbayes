@@ -139,7 +139,7 @@ def main(_):
         # model.fit(train_images, ys, verbose=2, epochs=500)
         # print(ys)
         model.fit(train_images, ys, verbose=0,\
-        sample_weight=sample_weights, validation_data=(train_images, ys), epochs=MAX_TRAIN_EPOCHS,callbacks=callbacks)
+        sample_weight=sample_weights, validation_data=(train_images, ys), epochs=MAX_TRAIN_EPOCHS,callbacks=callbacks, batch_size=batch_size)
         #print([w.shape for w in model.get_weights()])
         #print(np.concatenate([w.flatten() for w in model.get_weights()]).shape)
 
@@ -260,6 +260,7 @@ if __name__ == '__main__':
     define_default_flags(f)
 
     f.DEFINE_integer('number_inits',1,"Number of initializations")
+    f.DEFINE_integer('batch_size',1,"batch_size")
     f.DEFINE_float('gamma',1.0,"weight for confusion samples (1.0 weigths them the same as normal samples)")
     f.DEFINE_string('optimizer',"sgd","Which optimizer to use (keras optimizers available)")
 
