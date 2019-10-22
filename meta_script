@@ -1,11 +1,5 @@
 #!/bin/bash
 
-#export PYTHONPATH="/home_directory/.local/lib/python3.5/site-packages/:/usr/local/lib/python3.5/dist-packages/"
-#export PYTHONPATH=""
-#export PYTHONPATH="${PYTHONPATH}:/home_directory/.local/lib/python3.5/site-packages/:/usr/local/lib/python3.5/dist-packages/"
-#export PYTHONPATH="${PYTHONPATH}:/home_directory/.local/lib/python3.5/site-packages/"
-#export PYTHONPATH="${PYTHONPATH}:/home_directory/.local/lib/python2.7/site-packages/:/home_directory/.local/lib/python2.7/dist-packages/"
-
 m=50
 dataset=mnist
 #dataset=EMNIST
@@ -14,24 +8,21 @@ dataset=mnist
 #dataset=calabiyau
 dataset=boolean
 boolfun=00001110110011111001111111001111000000000000000000000000000000000000000001001100000000001101110100000000000000000000000000000000
-boolfun=00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000
-boolfun=$1
-boolfun_comp=21.0
+#boolfun=00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000
+#boolfun=$1
+boolfun_comp=84.0
 net=fc
 L=2
 #optimizer=adam
 optimizer=sgd
-#prefix=unbalancedt9_mnist_
-#prefix=unbalanced_boolean_
-#prefix=init_dist_test_balanced_
-#prefix=calabiyau_test
-#prefix=unbalancedt1_cifar_
-#sigmaw=1.41
-sigmaw=100.0
+loss=mse
+sigmaw=1.41
+#sigmaw=100.0
 sigmab=0.0
 pool=none
 c=0.0
 number_inits=10
+epochs_after_fit=1
 export n_procs=5
 if [ "$dataset" == "boolean" ]; then
 t=1
@@ -43,97 +34,18 @@ t=9
 fi
 #prefix=new_unbalancedt${t}_${dataset}
 #prefix=test_${t}_${dataset}
-prefix=GPEP2_logPs_
+#prefix=GPEP2_logPs_
+prefix=test_boolean_again_
 
 n_gpus=0
 export n_gpus=$n_gpus
 #export n_procs=5
 
 
-#for L in `seq 1 2 6`; do
-#echo $L
-#
-##for sigmab in 0.0 0.5 1.0 2.0 3.0 4.0 5.0 6.0; do
-#for sigmab in 0.0 0.5 1.0; do
-#echo $sigmab
-
 for rep in `seq 1 1`; do
 echo $rep
 
-    #addqueue -n 400 -m 1 -s './run_experiment --prefix '${prefix}' --m '${m}' --dataset '${dataset}' --network '${net}' --number_layers '${L}' --training --sigmaw '${sigmaw}' --sigmab '${sigmab}' --label_corruption '${c}' --n_gpus '${n_gpus}' --no_training --pooling '${pool}' --n_samples_repeats 0.25 --number_inits 1 --boolfun_comp '${boolfun_comp}' --boolfun '${boolfun}
-    #addqueue -n 400 -m 1 -s './run_experiment --prefix '${prefix}' --m '${m}' --dataset '${dataset}' --network '${net}' --number_layers '${L}' --training --sigmaw '${sigmaw}' --sigmab '${sigmab}' --label_corruption '${c}' --n_gpus '${n_gpus}' --no_training --pooling '${pool}' --n_samples_repeats 0.25 --number_inits 1 --boolfun '${boolfun}
-  ./run_experiment --prefix $prefix --no_training --m $m --threshold $t --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 2.0 --boolfun_comp $boolfun_comp --boolfun $boolfun #--use_empirical_K --intermediate_pooling 1111 --intermediate_pooling_type none
+  ./run_experiment --prefix $prefix --m $m --threshold $t --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 2.0 --boolfun_comp $boolfun_comp --boolfun $boolfun --epochs_after_fit $epochs_after_fit -loss $loss #--use_empirical_K --intermediate_pooling 1111 --intermediate_pooling_type none
 
-  #./run_experiment --prefix $prefix --m $m --centering --threshold $t --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 2.0 --boolfun_comp 35.0 --oversampling #--use_empirical_K --intermediate_pooling 1111 --intermediate_pooling_type none
-  #./run_experiment --prefix $prefix --m $m --centering --threshold $t --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 2.0 --boolfun_comp 35.0 --oversampling2 #--use_empirical_K --intermediate_pooling 1111 --intermediate_pooling_type none
-  #./run_experiment --prefix $prefix --m $m --centering --threshold $t --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 2.0 --boolfun_comp 35.0 #--use_empirical_K --intermediate_pooling 1111 --intermediate_pooling_type none
-  #./run_experiment --prefix $prefix --m $m --centering --threshold $t --dataset $dataset --network $net --number_layers $L --training --sigmaw 1.0 --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 2.0 --boolfun_comp 35.0 --init_dist uniform #--use_empirical_K --intermediate_pooling 1111 --intermediate_pooling_type none
-
-  #./run_experiment --prefix $prefix --m $m --threshold $t --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 2.0 --boolfun_comp 35.0 #--use_empirical_K --intermediate_pooling 1111 --intermediate_pooling_type none
- #./run_experiment --prefix $prefix --m $m --threshold $t --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 2.0 --boolfun_comp 35.0 --oversampling #--use_empirical_K --intermediate_pooling 1111 --intermediate_pooling_type none
- #./run_experiment --prefix $prefix --m $m --threshold $t --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 2.0 --boolfun_comp 35.0 --oversampling2 #--use_empirical_K --intermediate_pooling 1111 --intermediate_pooling_type none
-  #./run_experiment --prefix $prefix --m $m --centering --threshold $t --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 2.0 --boolfun_comp 35.0 --init_dist gaussian #--use_empirical_K --intermediate_pooling 1111 --intermediate_pooling_type none
 
 done
-#done
-#done
-
-  #unblanced MNIST t=1
-  # 93.5 uncentered L=1 b=0 (bound: 51.2) (MC bound: 68.8)
-  # 91.7 uncentered L=2 b=0 (bound: 53.2) (MC bound: 69.8)
-  # 91.7 uncentered L=4 b=0 (MC bound: 70.1)
-  # 90.5 uncentered L=6 b=0 (bound: 56.3)
-  # 91.9 uncentered L=2 b=1
-  # 92.4 uncentered L=2 b=4
-  # 91.7 uncentered L=2 b=6
-  # 93.2 uncentered L=1 b=0.1
-  # 92.5 uncentered L=1 b=0.5
-  # 91.8 uncentered L=1 b=1 (bound: 56.3)
-  # 92.5 uncentered L=1 b=4
-  # 92.9 uncentered L=1 b=6
-  # 92.5 uncentered L=1 b=7
-  # 92.4 uncentered L=1 b=8
-  # 91.8 centered L=1 b=0 (bound: 50.6)
-  # 90.5 centered L=2 b=0
-  # 90.1 centered L=4 b=0
-  # 91.1 centered L=1 b=0.1
-  # 91.3 centered L=1 b=0.5
-  # 91.0 centered L=1 b=1.0
-
-  #balanced EMNIST t=31
-  #67. for centered L=6
-  #67.6 for centered L=5
-  #70. for uncentered L=6
-  #70.2 for uncentered L=5
-  #73. for centered L=1
-  #72. for uncentered L=1
-
-
-#for L in `seq 1 1 5`; do
-#echo $L
-#
-##for sigmab in 0.0 0.5 1.0 2.0 3.0 4.0 5.0 6.0; do
-#for sigmab in 0.0 0.5 1.0 2.0; do
-#echo $sigmab
-#
-#i=0
-#for rep in `seq 1 8`; do
-#echo $rep
-#
-#  ./run_experiment --prefix $prefix --m $m --centering --threshold $t --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 2.0 --boolfun $boolfun --boolfun_comp 35.0 --optimizer $optimizer  & #--oversampling2 --use_empirical_K --intermediate_pooling 1111 --intermediate_pooling_type none
-#pids[${i}]=$!
-#i=$i+1
-#  ./run_experiment --prefix $prefix --m $m --threshold $t --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 2.0 --boolfun $boolfun --boolfun_comp 35.0 --optimizer $optimizer  & #--oversampling2 --use_empirical_K --intermediate_pooling 1111 --intermediate_pooling_type none
-#pids[${i}]=$!
-#i=$i+1
-#
-#done
-#
-##sleep 1;
-## wait for all pids
-#for pid in ${pids[*]}; do
-#    wait $pid
-#done
-#
-#done
-#done
