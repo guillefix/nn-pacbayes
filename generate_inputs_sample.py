@@ -100,11 +100,17 @@ def main(_):
     elif dataset == "boolean":
         assert network == "fc"
         num_classes = 2
-        #we ignore the 0 input, because it casues problems when computing the kernel matrix :P
+        #we ignore the 0 input, because it casues problems when computing the kernel matrix :P when sigmab==0 though
         if centering:
-            inputs = np.array([[float(l)*2.0-1 for l in "{0:07b}".format(i)] for i in range(1,2**7)])
+            if sigmab == 0:
+                inputs = np.array([[float(l)*2.0-1 for l in "{0:07b}".format(i)] for i in range(1,2**7)])
+            else:
+                inputs = np.array([[float(l)*2.0-1 for l in "{0:07b}".format(i)] for i in range(0,2**7)])
         else:
-            inputs = np.array([[float(l) for l in "{0:07b}".format(i)] for i in range(1,2**7)])
+            if sigmab==0:
+                inputs = np.array([[float(l) for l in "{0:07b}".format(i)] for i in range(1,2**7)])
+            else:
+                inputs = np.array([[float(l) for l in "{0:07b}".format(i)] for i in range(0,2**7)])
 
         if boolfun is not "none":
             fun = boolfun
@@ -128,7 +134,10 @@ def main(_):
             #             funs[comp].append(fun)
             # pickle.dump(funs,open("funs_per_complexity.p","wb"))
 
-        labels=np.array([[int(xx)*2.0-1] for xx in list(fun)[1:]]) #start from 1 because we ignored the 0th input
+        if sigmab==0:
+            labels=np.array([[int(xx)*2.0-1] for xx in list(fun)[1:]]) #start from 1 because we ignored the 0th input
+        else:
+            labels=np.array([[int(xx)*2.0-1] for xx in list(fun)[0:]]) 
     elif dataset == "calabiyau":
         assert network == "fc"
         num_classes = 2
