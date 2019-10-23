@@ -269,6 +269,7 @@ def main(_):
             model1 = keras.applications.xception.Xception(include_top=False, weights=None, input_tensor=None, input_shape=(image_height,image_width,number_channels), pooling=pooling, classes=2)
 
         model.add(model1)
+        print(model1.output_shape)
         model.add(keras.layers.Flatten())
         model.add(keras.layers.Dense(1,
                     kernel_initializer=weight_initializer,

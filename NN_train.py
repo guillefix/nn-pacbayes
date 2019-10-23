@@ -1,6 +1,7 @@
 import numpy as np
 import tensorflow as tf
 from math import *
+import tensorflow_probability as tfp
 
 # import load_dataset
 #from gpflow import settings
@@ -117,8 +118,12 @@ def main(_):
         #     # # m.update_state(y_true,tf.math.sigmoid(y_pred))
         #     # m.update_state(y_true,y_pred)
         #     # return m.result()
+        if optimizer == "langevin":
+            global optimizer
+            optimizer = tfp.optimizer.StochasticGradientLangevinDynamics
 
-        model.compile(optimizer=optimizer,#keras.optimizers.SGD(lr=0.01,momentum=0.9,decay=1e-6),#'sgd',#tf.keras.optimizers.SGD(lr=0.01),
+        model.compile(optimizer=optimizer,
+                #keras.optimizers.SGD(lr=0.01,momentum=0.9,decay=1e-6),#'sgd',#tf.keras.optimizers.SGD(lr=0.01),
         #model.compile(keras.optimizers.SGD(lr=1e-5),#'sgd',#tf.keras.optimizers.SGD(lr=0.01),
                       #loss='binary_crossentropy',
                       #loss=binary_crossentropy_from_logits,
@@ -136,7 +141,7 @@ def main(_):
         weights_norm, biases_norm = measure_sigmas(model)
         print(weights_norm,biases_norm)
 
-        model.fit(train_images, ys, verbose=0,\
+        model.fit(train_images, ys, verbose=1,\
         sample_weight=sample_weights, validation_data=(train_images, ys), epochs=MAX_TRAIN_EPOCHS,callbacks=callbacks, batch_size=batch_size)
 
         '''GET DATA: weights, and errors'''
