@@ -13,7 +13,7 @@ from utils import data_folder,datasets_folder
 
 def main(_):
 
-    FLAGS = tf.app.flags.FLAGS.flag_values_dict()
+    FLAGS = tf.compat.v1.app.flags.FLAGS.flag_values_dict()
     FLAGS = preprocess_flags(FLAGS)
     print(FLAGS)
     globals().update(FLAGS)
@@ -428,12 +428,12 @@ def main(_):
 
 if __name__ == '__main__':
 
-    f = tf.app.flags
+    f = tf.compat.v1.app.flags
 
     from utils import define_default_flags
 
     define_default_flags(f)
 
-    #tf.compat.v1.app.run()
-    tf.app.run()
+    tf.compat.v1.app.run()
+    #tf.app.run()
     import gc; gc.collect()

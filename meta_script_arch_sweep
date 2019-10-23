@@ -13,8 +13,8 @@ sigmaw=1.414
 #sigmaw=50.0
 sigmab=0.0
 n_gpus=1
-optimizer=langevin
-loss=mse
+optimizer=sgd
+loss=ce
 export n_gpus=$n_gpus
 
 L=4

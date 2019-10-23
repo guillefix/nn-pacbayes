@@ -14,7 +14,7 @@ from utils import binary_crossentropy_from_logits,EarlyStoppingByAccuracy, get_b
 def main(_):
     MAX_TRAIN_EPOCHS=3000
 
-    FLAGS = tf.app.flags.FLAGS.flag_values_dict()
+    FLAGS = tf.compat.v1.app.flags.FLAGS.flag_values_dict()
     from utils import preprocess_flags
     FLAGS = preprocess_flags(FLAGS)
     globals().update(FLAGS)
@@ -120,7 +120,7 @@ def main(_):
         #     # return m.result()
         if optimizer == "langevin":
             global optimizer
-            optimizer = tfp.optimizer.StochasticGradientLangevinDynamics
+            optimizer = tfp.optimizer.StochasticGradientLangevinDynamics(learning_rate=0.01)
 
         model.compile(optimizer=optimizer,
                 #keras.optimizers.SGD(lr=0.01,momentum=0.9,decay=1e-6),#'sgd',#tf.keras.optimizers.SGD(lr=0.01),
@@ -254,7 +254,7 @@ def main(_):
 
 if __name__ == '__main__':
 
-    f = tf.app.flags
+    f = tf.compat.v1.app.flags
 
     from utils import define_default_flags
 
@@ -267,5 +267,5 @@ if __name__ == '__main__':
     f.DEFINE_string('optimizer',"sgd","Which optimizer to use (keras optimizers available)")
     f.DEFINE_string('loss',"ce","Which loss to use (ce/mse/etc)")
 
-    tf.app.run()
+    tf.compat.v1.app.run()
     import gc; gc.collect()
