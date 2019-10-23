@@ -67,6 +67,10 @@ def main(_):
         from GP_prob.GP_prob_regression import GP_prob
         # logPU = GP_prob(K,X,Y,sigma_noise=np.sqrt(total_samples/2))
         logPU = GP_prob(K,X,Y,sigma_noise=1.0)
+    elif using_NTK:
+        from GP_prob.GP_prob_regression import GP_prob
+        # logPU = GP_prob(K,X,Y,sigma_noise=np.sqrt(total_samples/2))
+        logPU = GP_prob(K,X,Y,sigma_noise=1.0, posterior="ntk")
 
     if rank == 0:
         print(logPU)
