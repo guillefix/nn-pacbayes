@@ -9,12 +9,12 @@ from numpy.linalg import inv
 from numpy import matmul
 
 
-def GP_prob(K,X,Y,sigma_noise=1.0, using_bayes_posterior=True, using_ntk_posterior=False):
+def GP_prob(K,X,Y,sigma_noise=1.0, posterior="bayes"):
     n = X.shape[0]
-    if using_bayes_posterior:
+    if posterior=="bayes":
         alpha = matmul(inv(np.eye(n)*(sigma_noise**2)+K),Y)
         cov = inv(inv(K)+np.eye(n)/(sigma_noise**2))
-    elif using_ntk_posterior:
+    elif posterior="ntk":
         pass
         # mean =
         # cov =
