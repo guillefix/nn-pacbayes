@@ -9,6 +9,7 @@ def main(_):
     FLAGS = tf.app.flags.FLAGS.flag_values_dict()
     FLAGS = preprocess_flags(FLAGS)
     globals().update(FLAGS)
+    print("poolin", pooling)
 
     print("Generating architecture", network, number_layers)
 
@@ -190,7 +191,7 @@ def main(_):
             initial_pooling=None,
             #initial_pooling='max',
             #final_pooling=None,
-            final_pooling=pooling,
+            final_pooling=pooling if pooling is not None else "none",
             activation=None)
             # activation='sigmoid')
     else:
@@ -268,6 +269,8 @@ def main(_):
             model1 = keras.applications.xception.Xception(include_top=False, weights=None, input_tensor=None, input_shape=(image_height,image_width,number_channels), pooling=pooling, classes=2)
 
         model.add(model1)
+        print(model1.output_shape)
+        model.add(keras.layers.Flatten())
         model.add(keras.layers.Dense(1,
                     kernel_initializer=weight_initializer,
                     bias_initializer=bias_initializer_last_layer,))

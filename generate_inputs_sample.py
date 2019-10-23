@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 import tensorflow as tf
 import keras
 import pickle
@@ -33,6 +34,8 @@ def main(_):
     else:
         image_size=32
 
+    image_width = image_height = image_size
+
     if dataset == "cifar":
         d = torchvision.datasets.CIFAR10("./datasets",download=True,
                 transform=transforms.Compose(
@@ -56,6 +59,7 @@ def main(_):
         print(d)
         mm = int(ceil(d.data.shape[0]*5/6))
         (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
+        #print(train_images)
 
     elif dataset == "mnist-fashion":
         num_classes = 10
@@ -73,7 +77,7 @@ def main(_):
         d = torchvision.datasets.KMNIST("./datasets",download=True,
                 transform=transforms.Compose(
                     [transforms.ToPILImage()]+
-                    ([transforms.Resize(image_size)] if image_size is not None else [])+
+                    ([transforms.Resize((image_size,image_size))] if image_size is not None else [])+
                     [transforms.ToTensor()]
                 ),
             )
@@ -160,16 +164,24 @@ def main(_):
         if network not in ["cnn","fc"]:
             train_images = np.tile(train_images,(1,1,1,3))
             test_images = np.tile(test_images,(1,1,1,3))
-            print(train_images.shape)
+            # print(train_images.dtype)
+            assert train_images.dtype == "uint8" #otherwise ToPILImage wants the input to be NCHW. wtff
+            # plt.imshow(train_images[0])
+            # plt.show()
+            # print(train_images.shape)
+            assert train_images.dtype == "uint8" #otherwise ToPILImage wants the input to be NCHW. wtff
             train_images = np.stack([d.transform(image) for image in train_images])
             train_images = np.transpose(train_images,(0,2,3,1)) # this is because the pytorch transform changes it to NCHW for some reason :P
-            test_images = np.stack([d.transform(image) for image in test_images])
-            test_images = np.transpose(test_images,(0,2,3,1))
+            if training:
+                test_images = np.stack([d.transform(image) for image in test_images])
+                test_images = np.transpose(test_images,(0,2,3,1))
             print(train_images.shape)
-    else:
+    else: #otherwise just perform the dataset transforms appropriate for the given architecture
         if network not in ["cnn","fc"]:
+            # train_images = np.transpose(train_images,(0,3,1,2))
             train_images = np.stack([d.transform(image) for image in train_images])
             train_images = np.transpose(train_images,(0,2,3,1))
+            # test_images = np.transpose(test_images,(0,3,1,2))
             test_images = np.stack([d.transform(image) for image in test_images])
             test_images = np.transpose(test_images,(0,2,3,1))
 
@@ -179,8 +191,9 @@ def main(_):
         number_channels = train_images.shape[-1]
 
     ##get random training sample##
+    # and perform some more processing
 
-    np.random.seed(4206)
+    np.random.seed(42069)
 
     #for datasets that are not images, like the boolean one
     if dataset == "boolean" or dataset == "calabiyau":
@@ -193,7 +206,7 @@ def main(_):
             indices = np.random.choice(range(len(inputs)), size=int(total_samples), replace=False)
             indices = sum([[i]*(num_classes-threshold) for i in indices if train_labels[i]<threshold] \
                 + [[i]*threshold for i in indices if train_labels[i]>=threshold],[])
-            print("Indices: ", indices)
+            #print("Indices: ", indices)
 
             m*=int((2*(num_classes-threshold)*threshold/(num_classes)))
         else:
@@ -209,7 +222,13 @@ def main(_):
 
         flat_train_images = train_inputs
 
+    #for image datasets
     else:
+        #data processing functions assume the images have values in range [0,255]
+        max_val = max(np.max(train_images),np.max(test_images))
+        train_images  = train_images.astype(np.float32)*255.0/max_val
+        test_images = test_images.astype(np.float32)*255.0/max_val
+
         flat_train_images = np.array([train_image.flatten() for train_image in train_images])
         if training:
             flat_test_images = np.array([test_image.flatten() for test_image in test_images])
@@ -229,53 +248,56 @@ def main(_):
             indices = np.random.choice(range(len(train_images)), size=int(total_samples), replace=False)
         # print(indices)
 
-        if network == "nasnet":
-            train_images = (train_images[indices,:,:,:]).astype(np.float32) #NHWC
-            train_images = keras_applications.nasnet.preprocess_input(train_images, backend=tf.keras.backend)
-            if training:
-                test_images = keras_applications.nasnet.preprocess_input(test_images, backend=tf.keras.backend)
-                train_labels = np.take(train_labels,indices)
-                print(len([x for x in train_labels if x<threshold])/len(train_images))
+        #if network == "nasnet":
+        #    train_images = (train_images[indices,:,:,:]).astype(np.float32) #NHWC
+        #    train_images = keras_applications.nasnet.preprocess_input(train_images, backend=tf.keras.backend)
+        #    if training:
+        #        test_images = keras_applications.nasnet.preprocess_input(test_images, backend=tf.keras.backend)
+        #        train_labels = np.take(train_labels,indices)
+        #        print(len([x for x in train_labels if x<threshold])/len(train_images))
 
-        elif network == "vgg19":
-            train_images = (train_images[indices,:,:,:]).astype(np.float32) #NHWC
-            train_images = keras_applications.vgg19.preprocess_input(train_images, backend=tf.keras.backend)
-            if training:
-                test_images = keras_applications.vgg19.preprocess_input(test_images, backend=tf.keras.backend)
-                train_labels = np.take(train_labels,indices)
-                print(len([x for x in train_labels if x<threshold])/len(train_images))
+        #elif network == "vgg19":
+        #    train_images = (train_images[indices,:,:,:]).astype(np.float32) #NHWC
+        #    train_images = keras_applications.vgg19.preprocess_input(train_images, backend=tf.keras.backend)
+        #    if training:
+        #        test_images = keras_applications.vgg19.preprocess_input(test_images, backend=tf.keras.backend)
+        #        train_labels = np.take(train_labels,indices)
+        #        print(len([x for x in train_labels if x<threshold])/len(train_images))
 
-        elif network == "vgg16":
-            train_images = (train_images[indices,:,:,:]).astype(np.float32) #NHWC
-            train_images = keras_applications.vgg16.preprocess_input(train_images, backend=tf.keras.backend)
-            if training:
-                test_images = keras_applications.vgg16.preprocess_input(test_images, backend=tf.keras.backend)
-                train_labels = np.take(train_labels,indices)
-                print(len([x for x in train_labels if x<threshold])/len(train_images))
-                
+        #elif network == "vgg16":
+        #    train_images = (train_images[indices,:,:,:]).astype(np.float32) #NHWC
+        #    train_images = keras_applications.vgg16.preprocess_input(train_images, backend=tf.keras.backend)
+        #    if training:
+        #        test_images = keras_applications.vgg16.preprocess_input(test_images, backend=tf.keras.backend)
+        #        train_labels = np.take(train_labels,indices)
+        #        print(len([x for x in train_labels if x<threshold])/len(train_images))
+
         #elif network == "resnet50" or network == "resnet101" or network == "renset152":
-        elif network == "resnet101" or network == "renset152":
-            train_images = (train_images[indices,:,:,:]).astype(np.float32) #NHWC
-            train_images = keras_applications.resnet.preprocess_input(train_images, backend=tf.keras.backend)
-            train_images = train_images/255.0
-            print(train_images)
-            if training:
-                test_images = keras_applications.resnet.preprocess_input(test_images, backend=tf.keras.backend)
-                train_labels = np.take(train_labels,indices)
-                test_images = test_images/255.0
-                print(len([x for x in train_labels if x<threshold])/len(train_images))
-                
-        elif network in ["resnet_v2_50","resnetv2_101", "resnetv2_152"]:
-            train_images = (train_images[indices,:,:,:]).astype(np.float32) #NHWC
-            train_images = keras_applications.resnet_v2.preprocess_input(train_images, backend=tf.keras.backend)
-            if training:
-                test_images = keras_applications.resnet_v2.preprocess_input(test_images, backend=tf.keras.backend)
-                train_labels = np.take(train_labels,indices)
-                print(len([x for x in train_labels if x<threshold])/len(train_images))
+        ## elif network == "resnet101" or network == "renset152":
+        #    train_images = (train_images[indices,:,:,:]).astype(np.float32) #NHWC
+        #    train_images = keras_applications.resnet.preprocess_input(train_images, backend=tf.keras.backend)
+        #    # train_images = train_images/255.0
+        #    # import matplotlib.pyplot as plt
+        #    # # print(train_images)
+        #    # plt.imshow(train_images[0])
+        #    if training:
+        #        test_images = keras_applications.resnet.preprocess_input(test_images, backend=tf.keras.backend)
+        #        train_labels = np.take(train_labels,indices)
+        #        # test_images = test_images/255.0
+        #        print(len([x for x in train_labels if x<threshold])/len(train_images))
 
-        else:
+        #elif network in ["resnet_v2_50","resnetv2_101", "resnetv2_152"]:
+        #    train_images = (train_images[indices,:,:,:]).astype(np.float32) #NHWC
+        #    train_images = keras_applications.resnet_v2.preprocess_input(train_images, backend=tf.keras.backend)
+        #    if training:
+        #        test_images = keras_applications.resnet_v2.preprocess_input(test_images, backend=tf.keras.backend)
+        #        train_labels = np.take(train_labels,indices)
+        #        print(len([x for x in train_labels if x<threshold])/len(train_images))
 
+        #else:
+        if True:
             train_images = (train_images[indices,:,:,:]/255.0).astype(np.float32) #NHWC
+            # train_images = (train_images[indices,:,:,:]/255.0) #NHWC
             if training:
                 test_images = test_images/255.0
                 train_labels = np.take(train_labels,indices)
@@ -296,10 +318,6 @@ def main(_):
 
                 #test images
                 if training:
-                    #test_images = flat_test_images.reshape((test_images.shape[0], test_images.shape[1], test_images.shape[2], test_images.shape[3]))
-                    #test_images = flat_test_images.reshape((test_images.shape[0], test_images.shape[3], test_images.shape[1],test_images.shape[2]))
-                    #test_images =  np.transpose(test_images, tp_order)
-                    # test_images = flat_test_images.reshape((test_images.shape[0], test_images.shape[1], test_images.shape[2],test_images.shape[3]))
                     test_images = (test_images - x_mean) / x_std
 
 
@@ -317,16 +335,11 @@ def main(_):
                 flat_x -= flat_x.mean(axis=0)
 
                 x = flat_x.reshape((x.shape[0], x.shape[1], x.shape[2], x.shape[3]))
-                #x = flat_x.reshape((x.shape[0], x.shape[3], x.shape[1],x.shape[2]))
-                #tp_order = np.concatenate([[0], np.arange(2, len(train_images.shape)), [1]])
-                #train_images =  np.transpose(x, tp_order)
 
                 #test images
                 if training:
                     flat_test_images -= flat_test_images.mean(axis=0)
                     test_images = flat_test_images.reshape((test_images.shape[0], test_images.shape[1], test_images.shape[2],test_images.shape[3]))
-                    #test_images = flat_test_images.reshape((test_images.shape[0], test_images.shape[3], test_images.shape[1],test_images.shape[2]))
-                    #test_images =  np.transpose(test_images, tp_order)
 
             #WHITENING using training_images
             if whitening:

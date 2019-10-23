@@ -50,19 +50,27 @@ def main(_):
     if using_EP:
         from GP_prob.GP_prob_gpy2 import GP_prob
         logPU = GP_prob(K,X,Y, method="EP", using_exactPB=using_exactPB)
-    if using_Laplace:
+    elif using_Laplace:
         from GP_prob.GP_prob_gpy2 import GP_prob
         # from GP_prob.GP_prob_numpy import GP_prob
         logPU = GP_prob(K,X,Y,method="Laplace", using_exactPB=using_exactPB)
         # logPU = GP_prob(K,np.squeeze(Y))
-    if using_Laplace2:
+    elif using_Laplace2:
         # from GP_prob.GP_prob_gpy import GP_prob
-        from GP_prob.GP_prob_numpy import GP_prob
+        from GP_prob.GP_prob_numpy import GP_prob #this gives different results because it uses a worse implementation of Laplace, by using a more Naive Newton method to find the maximum of the posterior
         # logPU = GP_prob(K,X,Y,method="Laplace")
         logPU = GP_prob(K,np.squeeze(Y))
     elif using_MC:
         from GP_prob.GP_prob_MC import GP_prob
         logPU = GP_prob(K,X,Y,FLAGS)
+    elif using_regression:
+        from GP_prob.GP_prob_regression import GP_prob
+        # logPU = GP_prob(K,X,Y,sigma_noise=np.sqrt(total_samples/2))
+        logPU = GP_prob(K,X,Y,sigma_noise=1.0)
+    elif using_NTK:
+        from GP_prob.GP_prob_regression import GP_prob
+        # logPU = GP_prob(K,X,Y,sigma_noise=np.sqrt(total_samples/2))
+        logPU = GP_prob(K,X,Y,sigma_noise=1.0, posterior="ntk")
 
     if rank == 0:
         print(logPU)
@@ -101,6 +109,7 @@ if __name__ == '__main__':
     f.DEFINE_boolean('using_EP', False, "Whether to use Expectation Propagation method for computing probability")
     f.DEFINE_boolean('using_Laplace', False, "Whether to use Laplace method for computing probability")
     f.DEFINE_boolean('using_Laplace2', False, "Whether my numpy implementation of Laplace method for computing probability")
+    f.DEFINE_boolean('using_regression', False, "Whether to use the exact relative entropy for MSE GP regression")
     f.DEFINE_boolean('using_exactPB', False, "Whether using exact PAC-Bayes on approximate posterior rather than approximate PAC-Bayes on exact postierior")
     f.DEFINE_boolean('using_MC', False, "Whether to use Monte Carlo method for computing probability")
     f.DEFINE_integer('num_post_samples', int(1e5), "Number of approximate EP posterior samples in importance-sampling-based Monte Carlo estimation of marginal likelihood")

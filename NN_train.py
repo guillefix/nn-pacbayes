@@ -1,6 +1,7 @@
 import numpy as np
 import tensorflow as tf
 from math import *
+import tensorflow_probability as tfp
 
 # import load_dataset
 #from gpflow import settings
@@ -30,7 +31,7 @@ def main(_):
     from tensorflow import keras
 
     callbacks = [
-            EarlyStoppingByAccuracy(monitor='val_acc', value=1.0, verbose=1, wait_epochs=32),
+            EarlyStoppingByAccuracy(monitor='val_acc', value=1.0, verbose=1, wait_epochs=epochs_after_fit),
             #missinglink_callback,
             # EarlyStopping(monitor='val_loss', patience=2, verbose=0),
             # ModelCheckpoint(kfold_weights_path, monitor='val_loss', save_best_only=True, verbose=0),
@@ -117,10 +118,16 @@ def main(_):
         #     # # m.update_state(y_true,tf.math.sigmoid(y_pred))
         #     # m.update_state(y_true,y_pred)
         #     # return m.result()
+        if optimizer == "langevin":
+            global optimizer
+            optimizer = tfp.optimizer.StochasticGradientLangevinDynamics
 
-        model.compile(optimizer='sgd',#keras.optimizers.SGD(lr=0.01,momentum=0.9,decay=1e-6),#'sgd',#tf.keras.optimizers.SGD(lr=0.01),
+        model.compile(optimizer=optimizer,
+                #keras.optimizers.SGD(lr=0.01,momentum=0.9,decay=1e-6),#'sgd',#tf.keras.optimizers.SGD(lr=0.01),
+        #model.compile(keras.optimizers.SGD(lr=1e-5),#'sgd',#tf.keras.optimizers.SGD(lr=0.01),
                       #loss='binary_crossentropy',
-                      loss=binary_crossentropy_from_logits,
+                      #loss=binary_crossentropy_from_logits,
+                      loss=binary_crossentropy_from_logits if loss=="ce" else loss,
                       # loss_weights=[50000],
                       metrics=['accuracy'])
                       #metrics=['accuracy',sensitivity])
@@ -134,12 +141,8 @@ def main(_):
         weights_norm, biases_norm = measure_sigmas(model)
         print(weights_norm,biases_norm)
 
-        # model.fit(train_images, ys, verbose=2, epochs=500)
-        # print(ys)
         model.fit(train_images, ys, verbose=1,\
-        sample_weight=sample_weights, validation_data=(train_images, ys), epochs=MAX_TRAIN_EPOCHS,callbacks=callbacks)
-        #print([w.shape for w in model.get_weights()])
-        #print(np.concatenate([w.flatten() for w in model.get_weights()]).shape)
+        sample_weight=sample_weights, validation_data=(train_images, ys), epochs=MAX_TRAIN_EPOCHS,callbacks=callbacks, batch_size=batch_size)
 
         '''GET DATA: weights, and errors'''
         weights, biases = get_rescaled_weights(model)
@@ -155,7 +158,8 @@ def main(_):
         def sigmoid(x):
             return np.exp(x)/(1+np.exp(x))
         print(test_ys)
-        for th in np.linspace(0,1,1000):
+        #for th in np.linspace(0,1,1000):
+        for th in np.linspace(0,1,5): # as I'm not exploring unbalanced datasets right now
             test_sensitivity_base = sum([(sigmoid(preds[i])>th)==x for i,x in enumerate(test_ys) if x==1])/(len([x for x in test_ys if x==1]))
             test_specificity_base = sum([(sigmoid(preds[i])>th)==x for i,x in enumerate(test_ys) if x==0])/(len([x for x in test_ys if x==0]))
             if test_specificity_base>0.99:
@@ -257,7 +261,11 @@ if __name__ == '__main__':
     define_default_flags(f)
 
     f.DEFINE_integer('number_inits',1,"Number of initializations")
+    f.DEFINE_integer('batch_size',32,"batch_size")
+    f.DEFINE_integer('epochs_after_fit',1,"Number of epochs to wait after it first reacehs 100% accuracy")
     f.DEFINE_float('gamma',1.0,"weight for confusion samples (1.0 weigths them the same as normal samples)")
+    f.DEFINE_string('optimizer',"sgd","Which optimizer to use (keras optimizers available)")
+    f.DEFINE_string('loss',"ce","Which loss to use (ce/mse/etc)")
 
     tf.app.run()
     import gc; gc.collect()
