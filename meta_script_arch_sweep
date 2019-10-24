@@ -14,7 +14,7 @@ sigmaw=1.414
 sigmab=0.0
 n_gpus=1
 optimizer=sgd
-loss=ce
+loss=mse
 export n_gpus=$n_gpus
 
 L=4
@@ -26,7 +26,7 @@ pool=none
 for net in vgg19 vgg16 resnet50 resnet101 resnet152 resnetv2_50 resnetv2_101 resnetv2_152 resnext50 resnext101 densenet121 densenet169 densenet201 mobilenetv2 nasnet; do 
     echo $net
     #./run_experiment --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --label_corruption $c --n_gpus $n_gpus --pooling $pool --n_samples_repeats 0.1 --number_inits 1 --use_empirical_K 
-    ./run_experiment2 --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --label_corruption $c --n_gpus $n_gpus --pooling $pool --n_samples_repeats 0.1 --number_inits 1 --use_empirical_K --optimizer ${optimizer} --loss $loss $@
+    ./run_experiment3 --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --label_corruption $c --n_gpus $n_gpus --pooling $pool --n_samples_repeats 0.1 --number_inits 1 --use_empirical_K --optimizer ${optimizer} --loss $loss --nozero_one $@
     #addqueue -n 25 -m 10 -s './run_experiment --prefix '${prefix}' --m '${m}' --dataset '${dataset}' --network '${net}' --number_layers '${L}' --training --sigmaw '${sigmaw}' --sigmab '${sigmab}' --label_corruption '${c}' --n_gpus '${n_gpus}' --compute_bound --pooling '${pool}' --n_samples_repeats 0.25 --number_inits 1 --use_empirical_K '
     #addqueue -n 250 -m 5 -s './run_experiment2 --prefix '${prefix}' --m '${m}' --dataset '${dataset}' --network '${net}' --number_layers '${L}' --training --sigmaw '${sigmaw}' --sigmab '${sigmab}' --label_corruption '${c}' --n_gpus '${n_gpus}' --compute_bound --pooling '${pool}' --n_samples_repeats 0.1 --number_inits 1 --use_empirical_K '
     #addqueue -n 1 -m 5 -s './run_experiment2 --prefix '${prefix}' --m '${m}' --dataset '${dataset}' --network '${net}' --number_layers '${L}' --training --sigmaw '${sigmaw}' --sigmab '${sigmab}' --label_corruption '${c}' --n_gpus '${n_gpus}' --compute_bound --pooling '${pool}' --n_samples_repeats 2.0 --number_inits 1 --use_empirical_K '
