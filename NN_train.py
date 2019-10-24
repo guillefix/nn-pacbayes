@@ -31,6 +31,7 @@ def main(_):
     from tensorflow import keras
 
     callbacks = [
+            #EarlyStoppingByAccuracy(monitor='val_accuracy', value=1.0, verbose=1, wait_epochs=epochs_after_fit),
             EarlyStoppingByAccuracy(monitor='val_acc', value=1.0, verbose=1, wait_epochs=epochs_after_fit),
             #missinglink_callback,
             # EarlyStopping(monitor='val_loss', patience=2, verbose=0),
@@ -82,14 +83,14 @@ def main(_):
     custom_objects = {'cauchy_init': CauchyInit, 'shifted_init':ShiftedInit}
     model = model_from_json(arch_json_string,custom_objects=custom_objects)
 
-    set_session = keras.backend.set_session
+    set_session = tf.compat.v1.keras.backend.set_session
 
-    config = tf.ConfigProto()
+    config = tf.compat.v1.ConfigProto()
     config.gpu_options.allow_growth = True  # dynamically grow the memory used on the GPU
     config.log_device_placement = False  # to log device placement (on which device the operation ran)
     # config.gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.2)
     # (nothing gets printed in Jupyter, only if you run it standalone)
-    sess = tf.Session(config=config)
+    sess = tf.compat.v1.Session(config=config)
     set_session(sess)  # set this TensorFlow session as the default session for Keras
 
     test_accs = []
@@ -142,7 +143,7 @@ def main(_):
         print(weights_norm,biases_norm)
 
         model.fit(train_images, ys, verbose=1,\
-        sample_weight=sample_weights, validation_data=(train_images, ys), epochs=MAX_TRAIN_EPOCHS,callbacks=callbacks, batch_size=batch_size)
+            sample_weight=sample_weights, validation_data=(train_images, ys), epochs=MAX_TRAIN_EPOCHS,callbacks=callbacks, batch_size=batch_size)
 
         '''GET DATA: weights, and errors'''
         weights, biases = get_rescaled_weights(model)
