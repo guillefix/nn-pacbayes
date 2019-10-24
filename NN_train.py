@@ -120,10 +120,12 @@ def main(_):
         #     # m.update_state(y_true,y_pred)
         #     # return m.result()
         if optimizer == "langevin":
-            global optimizer
-            optimizer = tfp.optimizer.StochasticGradientLangevinDynamics(learning_rate=0.01)
+            #global optimizer
+            optimizerr = tfp.optimizer.StochasticGradientLangevinDynamics(learning_rate=0.01)
+        else:
+            optimizerr = optimizer
 
-        model.compile(optimizer=optimizer,
+        model.compile(optimizer=optimizerr,
                 #keras.optimizers.SGD(lr=0.01,momentum=0.9,decay=1e-6),#'sgd',#tf.keras.optimizers.SGD(lr=0.01),
         #model.compile(keras.optimizers.SGD(lr=1e-5),#'sgd',#tf.keras.optimizers.SGD(lr=0.01),
                       #loss='binary_crossentropy',
