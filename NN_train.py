@@ -30,12 +30,24 @@ def main(_):
 
     from tensorflow import keras
 
-    callbacks = [
-            EarlyStoppingByAccuracy(monitor='val_acc', value=1.0, verbose=1, wait_epochs=epochs_after_fit),
-            #missinglink_callback,
-            # EarlyStopping(monitor='val_loss', patience=2, verbose=0),
-            # ModelCheckpoint(kfold_weights_path, monitor='val_loss', save_best_only=True, verbose=0),
-        ]
+    print(tf.__version__)
+    if tf.__version__ == "2.1.0-dev20191024":
+        print("hi im tf 2")
+        callbacks = [
+                EarlyStoppingByAccuracy(monitor='val_accuracy', value=1.0, verbose=1, wait_epochs=epochs_after_fit),
+                #EarlyStoppingByAccuracy(monitor='val_acc', value=1.0, verbose=1, wait_epochs=epochs_after_fit),
+                #missinglink_callback,
+                # EarlyStopping(monitor='val_loss', patience=2, verbose=0),
+                # ModelCheckpoint(kfold_weights_path, monitor='val_loss', save_best_only=True, verbose=0),
+            ]
+    else:
+        callbacks = [
+                #EarlyStoppingByAccuracy(monitor='val_accuracy', value=1.0, verbose=1, wait_epochs=epochs_after_fit),
+                EarlyStoppingByAccuracy(monitor='val_acc', value=1.0, verbose=1, wait_epochs=epochs_after_fit),
+                #missinglink_callback,
+                # EarlyStopping(monitor='val_loss', patience=2, verbose=0),
+                # ModelCheckpoint(kfold_weights_path, monitor='val_loss', save_best_only=True, verbose=0),
+            ]
 
     # %%
 
@@ -82,13 +94,15 @@ def main(_):
     custom_objects = {'cauchy_init': CauchyInit, 'shifted_init':ShiftedInit}
     model = model_from_json(arch_json_string,custom_objects=custom_objects)
 
-    set_session = keras.backend.set_session
+    #set_session = tf.compat.v1.keras.backend.set_session
+    set_session = tf.keras.backend.set_session
 
-    config = tf.ConfigProto()
+    config = tf.compat.v1.ConfigProto()
     config.gpu_options.allow_growth = True  # dynamically grow the memory used on the GPU
     config.log_device_placement = False  # to log device placement (on which device the operation ran)
     # config.gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.2)
     # (nothing gets printed in Jupyter, only if you run it standalone)
+    #sess = tf.compat.v1.Session(config=config)
     sess = tf.Session(config=config)
     set_session(sess)  # set this TensorFlow session as the default session for Keras
 
@@ -144,7 +158,7 @@ def main(_):
         print(weights_norm,biases_norm)
 
         model.fit(train_images, ys, verbose=1,\
-        sample_weight=sample_weights, validation_data=(train_images, ys), epochs=MAX_TRAIN_EPOCHS,callbacks=callbacks, batch_size=batch_size)
+            sample_weight=sample_weights, validation_data=(train_images, ys), epochs=MAX_TRAIN_EPOCHS,callbacks=callbacks, batch_size=batch_size)
 
         '''GET DATA: weights, and errors'''
         weights, biases = get_rescaled_weights(model)
@@ -235,7 +249,7 @@ def main(_):
         # if "h" in useful_flags: del useful_flags["h"]
         # if "f" in useful_flags: del useful_flags["f"]
         # if "prefix" in useful_flags: del useful_flags["prefix"]
-        useful_flags = ["dataset", "m", "network", "pooling", "number_layers", "sigmaw", "sigmab", "init_dist","whitening", "centering", "oversampling", "oversampling2", "channel_normalization", "training", "binarized", "confusion","filter_sizes", "gamma", "intermediate_pooling", "label_corruption", "threshold", "n_gpus", "n_samples_repeats", "num_filters", "number_inits", "padding"]
+        useful_flags = ["dataset", "m", "network", "pooling", "number_layers", "sigmaw", "sigmab", "init_dist","optimizer", "loss", "whitening", "centering", "oversampling", "oversampling2", "channel_normalization", "training", "binarized", "confusion","filter_sizes", "gamma", "intermediate_pooling", "label_corruption", "threshold", "n_gpus", "n_samples_repeats", "num_filters", "number_inits", "padding"]
         with open(prefix+"nn_training_results.txt","a") as file:
             file.write("#")
             for key in sorted(useful_flags):

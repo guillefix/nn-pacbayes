@@ -412,9 +412,10 @@ def main(_):
                 return float(label)
 
     if random_labels:
-	    ys = [[process_labels(label,label_corruption,threshold,zero_one=True,binarized=binarized)] for label in train_labels[:m]] + [[process_labels(label,1.0,threshold,zero_one=True,binarized=binarized)] for label in train_labels[m:]]
+        print("zero_one", zero_one)
+        ys = [[process_labels(label,label_corruption,threshold,zero_one=True,binarized=binarized)] for label in train_labels[:m]] + [[process_labels(label,1.0,threshold,zero_one=True,binarized=binarized)] for label in train_labels[m:]]
     else:
-	    ys = [[process_labels(label,label_corruption,threshold,zero_one=True,binarized=binarized)] for label in train_labels[:m]] + [[float(not binarize(label,threshold))] for label in train_labels[m:]]
+        ys = [[process_labels(label,label_corruption,threshold,zero_one=True,binarized=binarized)] for label in train_labels[:m]] + [[float(not binarize(label,threshold))] for label in train_labels[m:]]
 
     if training:
         test_ys = np.array([process_labels(label,label_corruption,threshold,zero_one=True,binarized=binarized) for label in test_labels])
@@ -433,6 +434,7 @@ if __name__ == '__main__':
     from utils import define_default_flags
 
     define_default_flags(f)
+    f.DEFINE_boolean('zero_one', True, "Whether to use 0,1 or -1,1, for binarized labels")
 
     tf.compat.v1.app.run()
     #tf.app.run()

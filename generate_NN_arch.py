@@ -59,7 +59,7 @@ def main(_):
         image_height = image_size
         image_width = image_size
         input_dim = image_height*image_width*number_channels
-    set_session = keras.backend.set_session
+    set_session = tf.compat.v1.keras.backend.set_session
 
     def cauchy_init_wrapper(sigma):
         def cauchy_init(shape, dtype=None):
@@ -91,12 +91,12 @@ def main(_):
     # bias_initializer = keras.initializers.Zeros()
     # weight_initializer = keras.initializers.glorot_uniform()
 
-    config = tf.ConfigProto()
+    config = tf.compat.v1.ConfigProto()
     config.gpu_options.allow_growth = True  # dynamically grow the memory used on the GPU
     config.log_device_placement = False  # to log device placement (on which device the operation ran)
     # config.gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.2)
     # (nothing gets printed in Jupyter, only if you run it standalone)
-    sess = tf.Session(config=config)
+    sess = tf.compat.v1.Session(config=config)
     set_session(sess)  # set this TensorFlow session as the default session for Keras
 
     if network == "cnn":
