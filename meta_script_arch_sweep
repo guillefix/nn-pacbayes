@@ -7,13 +7,13 @@ m=1000
 #dataset=cifar
 dataset=KMNIST
 #dataset=mnist
-prefix=newer_arch_sweep_
+prefix=newer_arch_sweep_mse_
 sigmaw=1.414
 #sigmaw=0.1
 #sigmaw=50.0
 sigmab=0.0
 n_gpus=1
-optimizer=sgd
+optimizer=adam
 loss=mse
 export n_gpus=$n_gpus
 
