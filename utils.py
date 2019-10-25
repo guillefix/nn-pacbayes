@@ -25,7 +25,7 @@ if not os.path.isdir(results_folder):
 '''DATA FUNCTIONS'''
 def data_filename(FLAGS):
     filename=data_folder
-    for flag in ["network","dataset","m","confusion","label_corruption","binarized","whitening","centering","channel_normalization","threshold","random_labels", "oversampling", "oversampling2"]:
+    for flag in ["prefix", "network","dataset","m","confusion","label_corruption","binarized","whitening","centering","channel_normalization","threshold","random_labels", "oversampling", "oversampling2"]:
         filename+=str(FLAGS[flag])+"_"
     if FLAGS["dataset"] == "boolean" and FLAGS["boolfun_comp"] is not None:
         filename+=str(FLAGS["boolfun_comp"])+"_"
@@ -168,6 +168,7 @@ def preprocess_flags(FLAGS):
     FLAGS["strides"]=[[1, 1]] * number_layers
     # FLAGS["strides"]= FLAGS["strides"][:number_layers]
     FLAGS["num_filters"] = 512
+    #FLAGS["num_filters"] = 1024
     if m is not None: FLAGS["total_samples"] = ceil(m*(1.0+confusion))
     FLAGS["training"] = not FLAGS["no_training"]
     if FLAGS["pooling"] == "none": FLAGS["pooling"] = None
