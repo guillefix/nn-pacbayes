@@ -90,14 +90,16 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
     def get_all_layers(model):
         layers = []
         for layer in model.layers:
-            if isinstance(layer,tf.python.keras.engine.training.Model):
+            #if isinstance(layer,tf.python.keras.engine.training.Model):
+            if isinstance(layer,tf.keras.Model):
                 layers += get_all_layers(layer)
             else:
                 layers += [layer]
         return layers
 
     def is_normalization_layer(l):
-        return isinstance(l,tf.python.keras.layers.normalization.BatchNormalization) or isinstance(l,tf.python.keras.layers.normalization.LayerNormalization)
+        #return isinstance(l,tf.python.keras.layers.normalization.BatchNormalization) or isinstance(l,tf.python.keras.layers.normalization.LayerNormalization)
+        return isinstance(l,tf.keras.layers.BatchNormalization) or isinstance(l,tf.keras.layers.LayerNormalization)
 
     from scipy.stats import truncnorm
     def reset_weights(model, weights, are_norm):

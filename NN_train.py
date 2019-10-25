@@ -9,7 +9,7 @@ import tensorflow_probability as tfp
 #import missinglink
 #missinglink_callback = missinglink.KerasCallback()
 
-from utils import binary_crossentropy_from_logits,EarlyStoppingByAccuracy, get_biases, get_weights, measure_sigmas, get_rescaled_weights
+from utils import binary_crossentropy_from_logits,EarlyStoppingByAccuracy, get_biases, get_weights, measure_sigmas, get_rescaled_weights, results_folder
 
 def main(_):
     MAX_TRAIN_EPOCHS=3000
@@ -250,7 +250,7 @@ def main(_):
         # if "f" in useful_flags: del useful_flags["f"]
         # if "prefix" in useful_flags: del useful_flags["prefix"]
         useful_flags = ["dataset", "m", "network", "pooling", "number_layers", "sigmaw", "sigmab", "init_dist","optimizer", "loss", "whitening", "centering", "oversampling", "oversampling2", "channel_normalization", "training", "binarized", "confusion","filter_sizes", "gamma", "intermediate_pooling", "label_corruption", "threshold", "n_gpus", "n_samples_repeats", "num_filters", "number_inits", "padding"]
-        with open(prefix+"nn_training_results.txt","a") as file:
+        with open(results_folder+prefix+"nn_training_results.txt","a") as file:
             file.write("#")
             for key in sorted(useful_flags):
                 file.write("{}\t".format(key))
