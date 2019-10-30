@@ -138,9 +138,9 @@ def main(_):
         else:
             optimizerr = optimizer
 
-        model.compile(optimizer=optimizerr,
+        #model.compile(optimizer=optimizerr,
                 #keras.optimizers.SGD(lr=0.01,momentum=0.9,decay=1e-6),#'sgd',#tf.keras.optimizers.SGD(lr=0.01),
-        #model.compile(keras.optimizers.SGD(lr=1e-5),#'sgd',#tf.keras.optimizers.SGD(lr=0.01),
+        model.compile(keras.optimizers.SGD(lr=0.1),#'sgd',#tf.keras.optimizers.SGD(lr=0.01),
                       #loss='binary_crossentropy',
                       #loss=binary_crossentropy_from_logits,
                       loss=binary_crossentropy_from_logits if loss=="ce" else loss,

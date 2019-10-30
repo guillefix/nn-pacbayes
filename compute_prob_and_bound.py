@@ -9,7 +9,7 @@ from utils import data_folder,kernel_folder,arch_folder,results_folder
 
 def main(_):
 
-    FLAGS = tf.app.flags.FLAGS.flag_values_dict()
+    FLAGS = tf.compat.v1.app.flags.FLAGS.flag_values_dict()
     FLAGS = preprocess_flags(FLAGS)
     globals().update(FLAGS)
 
@@ -21,13 +21,13 @@ def main(_):
 
     if n_gpus>0:
         os.environ["CUDA_VISIBLE_DEVICES"]=str((rank)%n_gpus)
-    config = tf.ConfigProto()
+    config = tf.compat.v1.ConfigProto()
     config.gpu_options.allow_growth = True
 
     #tf.enable_eager_execution(config=config)
     set_session = keras.backend.set_session
     config.log_device_placement = False  # to log device placement (on which device the operation ran)
-    sess = tf.Session(config=config)
+    sess = tf.compat.v1.Session(config=config)
     set_session(sess)  # set this TensorFlow session as the default session for Keras
 
     from utils import load_data,load_model,load_kernel
@@ -101,7 +101,7 @@ def main(_):
 
 if __name__ == '__main__':
 
-    f = tf.app.flags
+    f = tf.compat.v1.app.flags
 
     from utils import define_default_flags
 

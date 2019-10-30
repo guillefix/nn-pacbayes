@@ -17,8 +17,8 @@ py=/usr/bin/python3
 
 #echo $n_gpus
 
-#$py generate_NN_arch.py $@
-#$py generate_inputs_sample.py $@
+$py generate_NN_arch.py $@
+$py generate_inputs_sample.py $@
 #
 ##/usr/local/shared/openmpi/4.0.0/bin/mpiexec -n 250 $py compute_kernel_and_bound.py $@
 ##mpiexec -n 1 $py compute_kernel.py $@

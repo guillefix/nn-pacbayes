@@ -92,7 +92,8 @@ def main(_):
                     ([transforms.Resize(image_size)] if image_size is not None else [])+
                     [transforms.ToTensor()]
                 ),
-                split="byclass")
+                split="balanced")
+                #split="byclass")
         print(d)
         mm = int(ceil(d.data.shape[0]*5/6))
         (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
