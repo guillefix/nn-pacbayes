@@ -2,12 +2,14 @@
 import tensorflow as tf
 import numpy as np
 
-def kern(X1,X2,number_layers,sigmaw,sigmab):
+def kern(X1,X2,number_layers,sigmaw,sigmab, multiplier=1.0):
     # X1 = tf.placeholder("float32",(None,input_dim))
     # X2 = tf.placeholder("float32",(None,input_dim))
     N = X1.get_shape().as_list()[0]
     input_dim = X1.get_shape().as_list()[1]
+    sigmaw *= multiplier
     if X2 is None:
+        sigmab *= multiplier
         K = sigmab**2 + sigmaw**2 * tf.matmul(X1,tf.transpose(X1))/input_dim
         for l in range(number_layers):
             K_diag = tf.linalg.diag_part(K)
@@ -18,11 +20,13 @@ def kern(X1,X2,number_layers,sigmaw,sigmab):
             K12 = K1 * K2
             costheta = K / tf.sqrt(K12)
             theta = tf.acos(costheta)
+            sigmab *= multiplier
             K = sigmab**2 + (sigmaw**2/(2*np.pi))*tf.sqrt(K12)*(tf.sin(theta)+(np.pi-theta)*costheta)
 
         # K_symm=K
         return K
     else:
+        sigmab *= multiplier
         K = sigmab**2 + sigmaw**2 * tf.matmul(X1,tf.transpose(X2))/input_dim
         K1_diag = sigmab**2 + sigmaw**2 * tf.reduce_sum(X1*X1,axis=1, keepdims=True)/input_dim
         K2_diag = sigmab**2 + sigmaw**2 * tf.reduce_sum(X2*X2,axis=1, keepdims=True)/input_dim
@@ -35,6 +39,7 @@ def kern(X1,X2,number_layers,sigmaw,sigmab):
             K12 = K1 * K2
             costheta = K / tf.sqrt(K12)
             theta = tf.acos(costheta)
+            sigmab *= multiplier
             K = sigmab**2 + (sigmaw**2/(2*np.pi))*tf.sqrt(K12)*(tf.sin(theta)+(np.pi-theta)*costheta)
 
             K1_diag = sigmab**2 + (sigmaw**2/2)*K1_diag
@@ -44,7 +49,7 @@ def kern(X1,X2,number_layers,sigmaw,sigmab):
         return K
 
 
-def kernel_matrix(X,number_layers,sigmaw,sigmab,n_gpus = 1):
+def kernel_matrix(X,number_layers,sigmaw,sigmab,n_gpus = 1, multiplier=1.0):
     m = X.shape[0]
     n_max = 10000
     n_max = min(n_max,m)
@@ -64,15 +69,15 @@ def kernel_matrix(X,number_layers,sigmaw,sigmab,n_gpus = 1):
                 with tf.device("gpu:{}".format(i)):
                     X1 = tf.compat.v1.placeholder(np.float64, [n_max, X.shape[1]], "X1")
                     X2 = tf.compat.v1.placeholder(np.float64, X1.shape, "X2")
-                    K_cross = kern(X1, X2,number_layers,sigmaw,sigmab)
-                    K_symm = kern(X1, None,number_layers,sigmaw,sigmab)
+                    K_cross = kern(X1, X2,number_layers,sigmaw,sigmab, multiplier)
+                    K_symm = kern(X1, None,number_layers,sigmaw,sigmab, multiplier)
                     K_ops.append((X1, X2, K_cross, K_symm))
         else:
             with tf.device("cpu:{}".format(0)):
                 X1 = tf.compat.v1.placeholder(np.float64, [n_max, X.shape[1]], "X1")
                 X2 = tf.compat.v1.placeholder(np.float64, X1.shape, "X2")
-                K_cross = kern(X1, X2,number_layers,sigmaw,sigmab)
-                K_symm = kern(X1, None,number_layers,sigmaw,sigmab)
+                K_cross = kern(X1, X2,number_layers,sigmaw,sigmab, multiplier)
+                K_symm = kern(X1, None,number_layers,sigmaw,sigmab, multiplier)
                 K_ops.append((X1, X2, K_cross, K_symm))
 
         out = np.zeros((m, m), dtype=np.float64)
