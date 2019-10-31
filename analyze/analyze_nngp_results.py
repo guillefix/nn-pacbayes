@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 
 results_folder = "results/results_confsweep/"
 results_folder = "./"
+results_folder = "results/"
 # prefix = "wronglabel1"
 # prefix = "1"
 # prefix = "smalldatabigconfusion" # has wrong (opposite) label too.
@@ -13,6 +14,7 @@ results_folder = "./"
 prefix = "layer_sweep"
 # prefix = "arch_sweep"
 prefix = "test_"
+prefix = "newer_arch_sweep_"
 
 training_results = pd.read_csv(results_folder+prefix+"nn_training_results.txt",comment="#", header='infer',sep="\t")
 bounds = pd.read_csv(results_folder+prefix+"bounds.txt",comment="#", header='infer',sep="\t")
@@ -28,6 +30,8 @@ training_results["number_layers"].unique()
 training_results["m"].unique()
 # training_results["m"].unique()
 # bounds["bound"]
+
+training_results[["network", "test_error"]]
 
 #%%
 ### CONFUSION

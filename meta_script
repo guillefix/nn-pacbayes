@@ -1,18 +1,18 @@
 #!/bin/bash
 
-m=50
+m=100
 dataset=mnist
 #dataset=EMNIST
 #dataset=$1
 #dataset=cifar
 #dataset=calabiyau
-dataset=boolean
-boolfun=00001110110011111001111111001111000000000000000000000000000000000000000001001100000000001101110100000000000000000000000000000000
+#dataset=boolean
+#boolfun=00001110110011111001111111001111000000000000000000000000000000000000000001001100000000001101110100000000000000000000000000000000
 #boolfun=00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000
 #boolfun=$1
 boolfun_comp=84.0
-net=fc
-L=2
+net=cnn
+L=4
 #optimizer=adam
 optimizer=sgd
 loss=mse
@@ -24,14 +24,15 @@ c=0.0
 number_inits=10
 epochs_after_fit=1
 export n_procs=5
-if [ "$dataset" == "boolean" ]; then
-t=1
-elif [ "$dataset" == "EMNIST" ]; then
-t=61
-else
-t=9
-#t=5
-fi
+t=-1
+#if [ "$dataset" == "boolean" ]; then
+#t=1
+#elif [ "$dataset" == "EMNIST" ]; then
+#t=61
+#else
+#t=9
+##t=5
+#fi
 #prefix=new_unbalancedt${t}_${dataset}
 #prefix=test_${t}_${dataset}
 #prefix=GPEP2_logPs_
@@ -45,7 +46,7 @@ export n_gpus=$n_gpus
 for rep in `seq 1 1`; do
 echo $rep
 
-  ./run_experiment --prefix $prefix --m $m --threshold $t --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 2.0 --boolfun_comp $boolfun_comp --boolfun $boolfun --epochs_after_fit $epochs_after_fit -loss $loss #--use_empirical_K --intermediate_pooling 1111 --intermediate_pooling_type none
+  ./run_experiment2 --prefix $prefix --m $m --threshold $t --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 2.0 --boolfun_comp $boolfun_comp --boolfun $boolfun --epochs_after_fit $epochs_after_fit -loss $loss #--use_empirical_K --intermediate_pooling 1111 --intermediate_pooling_type none
 
 
 done

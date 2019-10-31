@@ -40,19 +40,32 @@ FLAGS['no_training'] =  False
 from utils import preprocess_flags
 FLAGS = preprocess_flags(FLAGS)
 globals().update(FLAGS)
+#%%
 
-from utils import load_data,load_model,load_kernel
-train_images,flat_train_images,ys,test_images,test_ys = load_data(FLAGS)
+net="densenet121"
+net="vgg19"
+net="resnet50"
+net="mobilenetv2"
+net="nasnet"
+# net="densenet169"
+filename = net+"_KMNIST_1000_0.0_0.0_True_False_False_False_-1_True_False_False_data.h5"
+filename = "fc_boolean_50_0.0_0.0_True_False_False_False_1_True_False_False_84.0_data.h5"
+
+from utils import load_data_by_filename
+train_images,flat_data,ys,test_images,test_ys = load_data_by_filename("data/"+filename)
+#%%
+
+# from utils import load_data,load_model,load_kernel
+# train_images,flat_train_images,ys,test_images,test_ys = load_data(FLAGS)
 input_dim = train_images.shape[1]
 num_channels = train_images.shape[-1]
 # tp_order = np.concatenate([[0,len(train_images.shape)-1], np.arange(1, len(train_images.shape)-1)])
 # train_images = tf.constant(train_images)
+train_images = np.stack([x.flatten() for x in train_images])
+test_images = np.stack([x.flatten() for x in test_images])
 
 test_images = test_images[:500]
 test_ys = test_ys[:500]
-#%%
-
-train_images,flat_data,ys,test_images,test_ys = load_data_by_filename(filename)
 
 #%%
 
@@ -66,10 +79,21 @@ Y = np.array(ys2)
 # from fc_kernel import kernel_matrix
 # Kfull = kernel_matrix(Xfull,number_layers=number_layers,sigmaw=sigmaw,sigmab=sigmab)
 
+#%%
 
-FLAGS["m"] = 1500
-Kfull = load_kernel(FLAGS)
-K = Kfull[0:m,0:m]
+filename = net+"_KMNIST_1000_0.0_0.0_True_False_True_4_3.0_0.0_None_0000_max_kernel.npy"
+filename = "fc_boolean_50_0.0_0.0_True_False_True_2_1.41_0.0_None_00_max_kernel.npy"
+# FLAGS["m"] = 1500
+from utils import load_kernel_by_filename
+Kfull = load_kernel_by_filename("kernels/"+filename)
+m = 1000
+# K = Kfull[0:m,0:m]
+# Kfull.max()
+
+K = Kfull/Kfull.max()
+K.shape
+# K
+
 
 #%%
 
@@ -84,7 +108,7 @@ K = Kfull[0:m,0:m]
 #%%
 
 import tensorflow as tf
-tf.__version__
+# tf.__version__
 import gpflow
 
 import custom_kernel_gpflow
@@ -112,7 +136,10 @@ from custom_kernel_gpflow import CustomMatrix
 # X[:10].shape
 # kkk.compute_K(X[:10],X[:10])
 
+X.shape
+
 # tf.reset_default_graph()
+# m = gpflow.models.VGP(X.astype(np.float64), Y,
 m = gpflow.models.GPMC(X.astype(np.float64), Y,
     kern=CustomMatrix(X.shape[1],X,K),
     # kern=gpflow.kernels.RBF(28*28),
@@ -120,35 +147,71 @@ m = gpflow.models.GPMC(X.astype(np.float64), Y,
     # Z=X[::5].copy())
 
 
-print(m)
-
+m.compile()
+# print(m)
+m.compute_log_likelihood()
+# m.compute_log_prior()
 # next(m.parameters)
+
+
 
 #### MCMC
 #%%
 
 m.compile()
+# o = gpflow.train.AdamOptimizer(0.01)
 o = gpflow.train.AdamOptimizer(0.01)
-o.minimize(m, maxiter=15) # start near MAP
+o.minimize(m, maxiter=1000) # start near MAP
 
 s = gpflow.train.HMC()
 # for i in range(2):
-samples = s.sample(m, 20, epsilon=1e-4, lmax=15, lmin=5, thin=5, logprobs=False)#, verbose=True)
+# samples = s.sample(m, 100, epsilon=1e-4, lmax=15, lmin=5, thin=5, logprobs=True)#, verbose=True)
+# samples = s.sample(m, 10, epsilon=1e-4, lmax=7, lmin=2, thin=3, logprobs=True)#, verbose=True)
+"".join([str(int(x)) for x in m.V.value>0])
 
-samples["GPMC/V"][18]
+samples = s.sample(m, 10, epsilon=1e-4, lmax=7, lmin=2, thin=1, logprobs=True)#, verbose=True)
+
+# samples
+# samples["GPMC/V"][18]
 # samples_of_V = samples["GPMC/V"]
 # sess = gpflow.get_default_session()
 # m.V.read_value()
 # loglik_samples = [sess.run(m._build_likelihood(), {m.V.constrained_tensor: v}) for v in samples_of_V]
+
+n = samples.iloc[0][0].shape[0]
+N = len(samples)
+def hasZeroLikelihood(f):
+    return np.any(np.sign(f) != Y*2-1)
+
+
+"".join([str(int(x)) for x in Y])
+funs = np.stack(samples["GPMC/V"]).squeeze()
+["".join([str(int(x>0)) for x in f]) for f in funs]
+
+tot=0
+for i, (f,logP) in samples.iterrows():
+    if not hasZeroLikelihood(f) and np.linalg.norm(f) <= np.sqrt(n):
+        tot += np.exp(-logP)
+
+# !pip install -U scipy
+import importlib; importlib.reload(scipy)
+import scipy
+from scipy import special
+logV = (n/2)*np.log(n)+(n/2)*np.log(np.pi)-np.log(special.gamma(n/2+1))-n*np.log(2)
+logV - np.log(tot/N)
+
+from GP_prob.GP_prob_gpy import GP_prob
+logPU = GP_prob(K,X,Y)
+print(logPU)
 
 # m.anchor(m.enquire_session())
 loglik_samples = []
 ps = []
 for i, V in samples.iterrows():
     m.assign(V)
-    loglik_samples.append(m.compute_log_likelihood())
-    p = m.predict_y(test_images)[0].squeeze()
-    ps.append(p)
+    # loglik_samples.append(m.compute_log_likelihood())
+    # p = m.predict_y(test_images)[0].squeeze()
+    # ps.append(p)
 
 loglik_samples
 

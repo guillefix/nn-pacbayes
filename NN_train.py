@@ -60,7 +60,6 @@ def main(_):
     print(train_images.shape, ys.shape)
 
 
-
     sample_weights = None
     if gamma != 1.0:
         sample_weights = np.ones(len(ys))
@@ -106,6 +105,9 @@ def main(_):
     sess = tf.Session(config=config)
     set_session(sess)  # set this TensorFlow session as the default session for Keras
 
+
+    #things to keep track off
+    functions = []
     test_accs = []
     #test_sensitivities = []
     test_sensitivities_base = []
@@ -123,17 +125,7 @@ def main(_):
 
         model = model_from_json(arch_json_string,custom_objects=custom_objects)
 
-        # import keras.backend as K
-        #
-        # def sensitivity(y_true, y_pred):
-        #     fns=tf.math.reduce_sum((~((y_true==1)^(y_pred>0.5)))&(y_true==1))
-        #     return tf.divide(tf.to_float(fns),tf.math.reduce_sum(y_true))
-        #     # m=tf.keras.metrics.SensitivityAtSpecificity(0.99)
-        #     # # m.update_state(y_true,tf.math.sigmoid(y_pred))
-        #     # m.update_state(y_true,y_pred)
-        #     # return m.result()
         if optimizer == "langevin":
-            #global optimizer
             optimizerr = tfp.optimizer.StochasticGradientLangevinDynamics(learning_rate=0.01)
         else:
             optimizerr = optimizer
@@ -182,25 +174,32 @@ def main(_):
                 break
 
         # print([preds[i] for i,x in enumerate(test_ys) if x==0 and preds[i]>=1-1e-3])
-
+        function = (model.predict(X_test[:test_function_size]))[:,0]
+        function = function>0
+        function=function.astype(int)
+        function = ''.join([str(int(i)) for i in function])
         print('Test accuracy:', test_acc)
         # print('Test sensitivity (at 99% accuracy):', test_sensitivity)
         print('Test sensitivity:', test_sensitivity_base)
         print('Test specificity:', test_specificity_base)
         # print('Test false positive rate:', test_false_positive_rate)
-        test_accs.append(test_acc)
-        #test_sensitivities.append(test_sensitivity)
-        test_sensitivities_base.append(test_sensitivity_base)
-        test_specificities_base.append(test_specificity_base)
-        train_accs.append(train_acc)
-        weightss.append(weights)
-        biasess.append(biases)
-        weights_norms.append(weights_norm)
-        biases_norms.append(biases_norm)
-        iterss.append(model.history.epoch[-1])
+        if not ignore_non_fit or train_acc == 1.0:
+            functions.append(function)
+            test_accs.append(test_acc)
+            #test_sensitivities.append(test_sensitivity)
+            test_sensitivities_base.append(test_sensitivity_base)
+            test_specificities_base.append(test_specificity_base)
+            train_accs.append(train_acc)
+            weightss.append(weights)
+            biasess.append(biases)
+            weights_norms.append(weights_norm)
+            biases_norms.append(biases_norm)
+            iterss.append(model.history.epoch[-1])
         keras.backend.clear_session()
 
-    print("HI")
+    print("Print functions to file")
+    open("nn_train_functions.txt", 'w').write("\n".join(functions))
+    # functions = comm.gather(functions, root=0)
     test_accs = comm.gather(test_accs, root=0)
     #test_sensitivities = comm.gather(test_sensitivities, root=0)
     test_sensitivities_base = comm.gather(test_sensitivities_base, root=0)
@@ -225,6 +224,7 @@ def main(_):
         biases_norm_mean = np.mean(biases_norm)
         biases_norm_std = np.std(biases_norm)
 
+        # functions = sum(functions,[])
         test_acc = np.mean(np.array(test_accs))
         #test_sensitivity = np.mean(np.array(test_sensitivities))
         test_sensitivity_base = np.mean(np.array(test_sensitivities_base))
@@ -249,7 +249,7 @@ def main(_):
         # if "h" in useful_flags: del useful_flags["h"]
         # if "f" in useful_flags: del useful_flags["f"]
         # if "prefix" in useful_flags: del useful_flags["prefix"]
-        useful_flags = ["dataset", "m", "network", "pooling", "number_layers", "sigmaw", "sigmab", "init_dist","optimizer", "loss", "whitening", "centering", "oversampling", "oversampling2", "channel_normalization", "training", "binarized", "confusion","filter_sizes", "gamma", "intermediate_pooling", "label_corruption", "threshold", "n_gpus", "n_samples_repeats", "num_filters", "number_inits", "padding"]
+        useful_flags = ["dataset", "m", "network", "loss", "optimizer", "pooling", "epochs_after_fit", "ignore_non_fit", "test_function_size", "batch_size", "number_layers", "sigmaw", "sigmab", "init_dist","whitening", "centering", "oversampling", "oversampling2", "channel_normalization", "training", "binarized", "confusion","filter_sizes", "gamma", "intermediate_pooling", "label_corruption", "threshold", "n_gpus", "n_samples_repeats", "num_filters", "number_inits", "padding"]
         with open(results_folder+prefix+"nn_training_results.txt","a") as file:
             file.write("#")
             for key in sorted(useful_flags):
@@ -282,6 +282,8 @@ if __name__ == '__main__':
     f.DEFINE_float('gamma',1.0,"weight for confusion samples (1.0 weigths them the same as normal samples)")
     f.DEFINE_string('optimizer',"sgd","Which optimizer to use (keras optimizers available)")
     f.DEFINE_string('loss',"ce","Which loss to use (ce/mse/etc)")
+    f.DEFINE_boolean('ignore_non_fit', False, "Whether to ignore functions that don't fit data")
+    f.DEFINE_integer('test_function_size',100,"Number of samples on the test set to use to evaluate the function the network has found")
 
     tf.compat.v1.app.run()
     import gc; gc.collect()

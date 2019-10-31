@@ -47,10 +47,13 @@ def save_data(train_images,ys,test_images,test_ys,FLAGS):
 
 def load_data(FLAGS):
     filename = data_filename(FLAGS)
+    return load_data_by_filename(filename, training=FLAGS["training"])
+
+def load_data_by_filename(filename, training=True):
     h5f = h5py.File(filename,'r')
     train_images = h5f['train_images'][:]
     ys = h5f['ys'][:]
-    if FLAGS["training"]:
+    if training:
         test_images = h5f['test_images'][:]
         test_ys = h5f['test_ys'][:]
     else:
@@ -106,6 +109,9 @@ def save_kernel(K,FLAGS):
 
 def load_kernel(FLAGS):
     filename = kernel_filename(FLAGS)
+    return load_kernel_by_filename(filename)
+    
+def load_kernel_by_filename(filename):
     K = np.load(filename,"r")
     return K
 

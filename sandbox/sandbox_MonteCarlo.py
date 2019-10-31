@@ -105,7 +105,7 @@ def newProposal(f1):
     return np.random.multivariate_normal(f1,sigma*K)
 
 def hasZeroLikelihood(f):
-    return np.all(np.sign(f) != Y*2-1)
+    return np.any(np.sign(f) != Y*2-1)
 
 def alpha(logPf2,logPf1):
     if hasZeroLikelihood(f2):
