@@ -7,6 +7,7 @@ import torchvision
 from torchvision import transforms, utils
 from math import ceil
 import keras_applications
+import torch
 
 from utils import preprocess_flags, save_data
 from utils import data_folder,datasets_folder
@@ -157,39 +158,6 @@ def main(_):
     if threshold==-1:
         threshold=ceil(num_classes/2)
 
-    ##adding channel dimenions for image datasets without them
-    if dataset in ["mnist","mnist-fashion","KMNIST","EMNIST"]:
-        train_images = np.expand_dims(train_images,-1)
-        test_images = np.expand_dims(test_images,-1)
-        if network not in ["cnn","fc"]:
-            train_images = np.tile(train_images,(1,1,1,3))
-            test_images = np.tile(test_images,(1,1,1,3))
-            # print(train_images.dtype)
-            assert train_images.dtype == "uint8" #otherwise ToPILImage wants the input to be NCHW. wtff
-            # plt.imshow(train_images[0])
-            # plt.show()
-            # print(train_images.shape)
-            assert train_images.dtype == "uint8" #otherwise ToPILImage wants the input to be NCHW. wtff
-            train_images = np.stack([d.transform(image) for image in train_images])
-            train_images = np.transpose(train_images,(0,2,3,1)) # this is because the pytorch transform changes it to NCHW for some reason :P
-            if training:
-                test_images = np.stack([d.transform(image) for image in test_images])
-                test_images = np.transpose(test_images,(0,2,3,1))
-            print(train_images.shape)
-    else: #otherwise just perform the dataset transforms appropriate for the given architecture
-        if network not in ["cnn","fc"]:
-            # train_images = np.transpose(train_images,(0,3,1,2))
-            train_images = np.stack([d.transform(image) for image in train_images])
-            train_images = np.transpose(train_images,(0,2,3,1))
-            # test_images = np.transpose(test_images,(0,3,1,2))
-            test_images = np.stack([d.transform(image) for image in test_images])
-            test_images = np.transpose(test_images,(0,2,3,1))
-
-    if network != "fc":
-        image_size = train_images.shape[1]
-        assert train_images.shape[1] == train_images.shape[2]
-        number_channels = train_images.shape[-1]
-
     ##get random training sample##
     # and perform some more processing
 
@@ -225,9 +193,14 @@ def main(_):
     #for image datasets
     else:
         #data processing functions assume the images have values in range [0,255]
-        max_val = max(np.max(train_images),np.max(test_images))
-        train_images  = train_images.astype(np.float32)*255.0/max_val
-        test_images = test_images.astype(np.float32)*255.0/max_val
+        #global train_images_obs
+        #train_images_obs=train_images
+        max1 = torch.max(train_images).item()
+        max2 = torch.max(test_images).item()
+        print(max1,max2)
+        max_val = max(max1,max2)
+        train_images  = train_images.numpy().astype(np.float32)*255.0/max_val
+        test_images = test_images.numpy().astype(np.float32)*255.0/max_val
 
         flat_train_images = np.array([train_image.flatten() for train_image in train_images])
         if training:
@@ -296,12 +269,37 @@ def main(_):
 
         #else:
         if True:
-            train_images = (train_images[indices,:,:,:]/255.0).astype(np.float32) #NHWC
-            # train_images = (train_images[indices,:,:,:]/255.0) #NHWC
+            train_images = (train_images[indices]/255.0).astype(np.float32)
             if training:
                 test_images = test_images/255.0
                 train_labels = np.take(train_labels,indices)
                 print(len([x for x in train_labels if x<threshold])/len(train_images))
+
+            ##adding channel dimenions for image datasets without them
+            if dataset in ["mnist","mnist-fashion","KMNIST","EMNIST"]:
+                train_images = np.expand_dims(train_images,-1)
+                test_images = np.expand_dims(test_images,-1)
+            ## for non-flexible architectures, transform the data
+            if network not in ["cnn","fc"]:
+                train_images = np.tile(train_images,(1,1,1,3))
+                test_images = np.tile(test_images,(1,1,1,3))
+                # print(train_images.dtype)
+                assert train_images.dtype == "uint8" #otherwise ToPILImage wants the input to be NCHW. wtff
+                # plt.imshow(train_images[0])
+                # plt.show()
+                # print(train_images.shape)
+                assert train_images.dtype == "uint8" #otherwise ToPILImage wants the input to be NCHW. wtff
+                train_images = np.stack([d.transform(image) for image in train_images])
+                train_images = np.transpose(train_images,(0,2,3,1)) # this is because the pytorch transform changes it to NCHW for some reason :P
+                if training:
+                    test_images = np.stack([d.transform(image) for image in test_images])
+                    test_images = np.transpose(test_images,(0,2,3,1))
+                print(train_images.shape)
+
+            if network != "fc":
+                image_size = train_images.shape[1]
+                assert train_images.shape[1] == train_images.shape[2]
+                number_channels = train_images.shape[-1]
 
 
             if channel_normalization:
