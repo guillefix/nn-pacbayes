@@ -147,7 +147,7 @@ def main(_):
             ]
                 # + [keras.layers.Lambda(lambda x: x-1/np.sqrt(2*np.pi))]
             + [
-                keras.layers.Dense(input_dim, activation=tf.nn.relu,#)
+                keras.layers.Dense(layer_width, activation=tf.nn.relu,#)
                     kernel_initializer=weight_initializer,
                     bias_initializer=bias_initializer)
                     # kernel_regularizer=keras.regularizers.l2(0.01*input_dim/(2*sigmaw**2)),
