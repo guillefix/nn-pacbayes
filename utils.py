@@ -25,7 +25,7 @@ if not os.path.isdir(results_folder):
 '''DATA FUNCTIONS'''
 def data_filename(FLAGS):
     filename=data_folder
-    for flag in ["network","dataset","m","confusion","label_corruption","binarized","whitening","centering","channel_normalization","threshold","random_labels", "oversampling", "oversampling2"]:
+    for flag in ["prefix", "network","dataset","m","confusion","label_corruption","binarized","whitening","centering","channel_normalization","threshold","random_labels", "oversampling", "oversampling2"]:
         filename+=str(FLAGS[flag])+"_"
     if FLAGS["dataset"] == "boolean" and FLAGS["boolfun_comp"] is not None:
         filename+=str(FLAGS["boolfun_comp"])+"_"
@@ -174,6 +174,7 @@ def preprocess_flags(FLAGS):
     FLAGS["strides"]=[[1, 1]] * number_layers
     # FLAGS["strides"]= FLAGS["strides"][:number_layers]
     FLAGS["num_filters"] = 512
+    #FLAGS["num_filters"] = 1024
     if m is not None: FLAGS["total_samples"] = ceil(m*(1.0+confusion))
     FLAGS["training"] = not FLAGS["no_training"]
     if FLAGS["pooling"] == "none": FLAGS["pooling"] = None
@@ -187,7 +188,7 @@ def binary_crossentropy_from_logits(y_true,y_pred):
 Callback = keras.callbacks.Callback
 import warnings
 class EarlyStoppingByAccuracy(Callback):
-    def __init__(self, monitor='val_acc', value=0.98, wait_epochs=0, verbose=0):
+    def __init__(self, monitor='val_accuracy', value=0.98, wait_epochs=0, verbose=0):
         super(Callback, self).__init__()
         self.monitor = monitor
         self.value = value
@@ -195,7 +196,8 @@ class EarlyStoppingByAccuracy(Callback):
         self.wait_epochs = wait_epochs
         self.first_time = True
         self.epoch_after_first_time = 0
-    def on_epoch_end(self, epoch, logs={}):
+    def on_epoch_end(self, epoch, logs=None):
+        print(logs)
         current = logs.get(self.monitor)
         if current is None:
             warnings.warn("Early stopping requires %s available!" % self.monitor, RuntimeWarning)

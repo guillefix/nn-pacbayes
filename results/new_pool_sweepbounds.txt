@@ -1,0 +1,16 @@
+#dataset	boolfun_comp	boolfun	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound	logP
+KMNIST	none	none	cnn	1000	0.0	0.0	4	50.0	0.0	True	avg	1111	False	True	1	0.2563929601233651	-274.49557352638
+#dataset	boolfun_comp	boolfun	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound	logP
+KMNIST	none	none	cnn	1000	0.0	0.0	4	50.0	0.0	True	max	1111	False	True	1	0.29332471467072985	-325.43702147433294
+#dataset	boolfun_comp	boolfun	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound	logP
+KMNIST	none	none	cnn	1000	0.0	0.0	4	50.0	0.0	True	None	0000	False	True	1	0.5925308922394836	-876.0431759879639
+##using empirical_K
+#dataset	boolfun_comp	boolfun	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound	logP
+KMNIST	none	none	cnn	1000	0.0	0.0	4	50.0	0.0	True	None	0000	False	True	1	0.37478252817078694	-447.9087524777074
+##### test_bigger_sample_of_K
+#dataset	boolfun_comp	boolfun	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound	logP
+KMNIST	none	none	cnn	1000	0.0	0.0	4	50.0	0.0	True	None	0000	False	True	1	0.3735868563037549	-445.9981692498495
+##### with more filters (512->1024)
+#dataset	boolfun_comp	boolfun	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound	logP
+KMNIST	none	none	cnn	1000	0.0	0.0	4	50.0	0.0	True	None	0000	False	True	1	0.3746164024628107	-447.6430790938881
+##### so there should be something not quite right with my analytical cnn code :p
