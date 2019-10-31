@@ -110,7 +110,7 @@ def save_kernel(K,FLAGS):
 def load_kernel(FLAGS):
     filename = kernel_filename(FLAGS)
     return load_kernel_by_filename(filename)
-    
+
 def load_kernel_by_filename(filename):
     K = np.load(filename,"r")
     return K
@@ -124,6 +124,7 @@ def define_default_flags(f):
     f.DEFINE_string('dataset', None, "The dataset to use")
     f.DEFINE_string('network', None, "The type of network to use")
     f.DEFINE_integer('number_layers', None, "The number of layers in the network")
+    f.DEFINE_integer('layer_width', 512, "Number of hidden neurons (fc) or filters (CNN)")
     f.DEFINE_boolean('binarized', True, "Whether to convert classification labels to binary")
     f.DEFINE_boolean('oversampling', False, "Whether to oversample the minority class from the data distribution (a standard technique when dealing with class imbalance)")
     f.DEFINE_boolean('oversampling2', False, "Whether to oversample the minority class from the empirical distribution out of an original samplo of size m (a standard technique when dealing with class imbalance)")
@@ -173,7 +174,7 @@ def preprocess_flags(FLAGS):
     FLAGS["pooling_in_layer"] = [x=="1" for x in intermediate_pooling]
     FLAGS["strides"]=[[1, 1]] * number_layers
     # FLAGS["strides"]= FLAGS["strides"][:number_layers]
-    FLAGS["num_filters"] = 512
+    FLAGS["num_filters"] = FLAGS["layer_width"]
     #FLAGS["num_filters"] = 1024
     if m is not None: FLAGS["total_samples"] = ceil(m*(1.0+confusion))
     FLAGS["training"] = not FLAGS["no_training"]
