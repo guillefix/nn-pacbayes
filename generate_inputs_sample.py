@@ -98,6 +98,7 @@ def main(_):
         print(d)
         mm = int(ceil(d.data.shape[0]*5/6))
         (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
+        print(train_images.min(), train_images.max())
         num_classes = 62
 
     #TODO: add custom datasets
@@ -198,7 +199,7 @@ def main(_):
         #train_images_obs=train_images
         max1 = torch.max(train_images).item()
         max2 = torch.max(test_images).item()
-        print(max1,max2)
+        print("maxs", max1,max2)
         max_val = max(max1,max2)
         train_images  = train_images.numpy().astype(np.float32)*255.0/max_val
         test_images = test_images.numpy().astype(np.float32)*255.0/max_val
@@ -270,25 +271,31 @@ def main(_):
 
         #else:
         if True:
-            train_images = (train_images[indices]/255.0).astype(np.float32)
+            train_images = train_images[indices]
             if training:
-                test_images = test_images/255.0
+                test_images = test_images
                 train_labels = np.take(train_labels,indices)
                 print(len([x for x in train_labels if x<threshold])/len(train_images))
 
             ##adding channel dimenions for image datasets without them
             if dataset in ["mnist","mnist-fashion","KMNIST","EMNIST"]:
-                train_images = np.expand_dims(train_images,-1)
-                test_images = np.expand_dims(test_images,-1)
+                train_images = np.expand_dims(train_images,-1).astype(np.uint8)
+                test_images = np.expand_dims(test_images,-1).astype(np.uint8)
             ## for non-flexible architectures, transform the data
-            if network not in ["cnn","fc"]:
-                train_images = np.tile(train_images,(1,1,1,3))
-                test_images = np.tile(test_images,(1,1,1,3))
-                # print(train_images.dtype)
-                assert train_images.dtype == "uint8" #otherwise ToPILImage wants the input to be NCHW. wtff
-                # plt.imshow(train_images[0])
-                # plt.show()
-                # print(train_images.shape)
+                if network not in ["cnn","fc"]:
+                    train_images = np.tile(train_images,(1,1,1,3))
+                    test_images = np.tile(test_images,(1,1,1,3))
+                    #print(train_images.dtype)
+                    # plt.imshow(train_images[0])
+                    # plt.show()
+                    #print(train_images.shape)
+            if network in ["cnn","fc"]:
+                #normalize the images pixels to be in [0,1]
+                train_images = train_images.astype(np.float32)/255.0
+                if traininig:
+                    test_images = test_images.astype(np.float32)/255.0
+            else:
+                #note that the transformation to PIL and back to Tensor normalizes the image pixels to be in [0,1]
                 assert train_images.dtype == "uint8" #otherwise ToPILImage wants the input to be NCHW. wtff
                 train_images = np.stack([d.transform(image) for image in train_images])
                 train_images = np.transpose(train_images,(0,2,3,1)) # this is because the pytorch transform changes it to NCHW for some reason :P
@@ -296,12 +303,14 @@ def main(_):
                     test_images = np.stack([d.transform(image) for image in test_images])
                     test_images = np.transpose(test_images,(0,2,3,1))
                 print(train_images.shape)
+                print("max after transforming", train_images.max())
 
+
+            #check correct dimensions
             if network != "fc":
                 image_size = train_images.shape[1]
                 assert train_images.shape[1] == train_images.shape[2]
                 number_channels = train_images.shape[-1]
-
 
             if channel_normalization:
                 #flatten to compute SVD matrix
@@ -372,8 +381,7 @@ def main(_):
         if n_gpus>0:
             flat_train_images = np.transpose(train_images, tp_order)  # NHWC -> NCHW
             flat_train_images = np.array([train_image.flatten() for train_image in flat_train_images])
-        if training:
-            if n_gpus>0:
+            if training:
                 flat_test_images = np.transpose(test_images, tp_order)  # NHWC -> NCHW
                 flat_test_images = np.array([test_image.flatten() for test_image in flat_test_images])
 

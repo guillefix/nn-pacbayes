@@ -114,11 +114,7 @@ def main(_):
     #things to keep track off
     functions = []
     test_accs = []
-    test_sensitivities = []
-    test_specificities = []
     train_accs = []
-    weightss = []
-    biasess = []
     weights_norms = []
     biases_norms = []
     iterss = []
@@ -141,16 +137,15 @@ def main(_):
         model = model_from_json(arch_json_string,custom_objects=custom_objects)
         model.compile(optim,
                       loss=binary_crossentropy_from_logits if loss=="ce" else loss,
-                      metrics=[binary_accuracy_for_mse] if loss=="mse" else ['accuracy'])
+                      #metrics=([binary_accuracy_for_mse] if loss=="mse" else ['accuracy']))
+                      metrics=['accuracy'])
                       #metrics=['accuracy',sensitivity])
                       #metrics=['accuracy',tf.keras.metrics.SensitivityAtSpecificity(0.99),\
                                 #tf.keras.metrics.FalsePositives()])
 
-        weights, biases = get_weights(model), get_biases(model)
-        weights_norm, biases_norm = measure_sigmas(model)
-        print(weights_norm,biases_norm)
+        print("model.metrics",model.metrics)
 
-        model.fit(train_images, ys, verbose=0,\
+        model.fit(train_images, ys, verbose=1,\
             sample_weight=sample_weights, validation_data=(train_images, ys), epochs=MAX_TRAIN_EPOCHS,callbacks=callbacks, batch_size=batch_size)
 
         '''GET DATA: weights, and errors'''
@@ -169,20 +164,7 @@ def main(_):
             return np.exp(x)/(1+np.exp(x))
 
         #for th in np.linspace(0,1,1000):
-        if loss=="mse":
-            #NOTE: sensitivity and specificity are not implemented for MSE loss
-            test_sensitivity = -1
-            test_specificity = -1
-        else:
-            for th in np.linspace(0,1,5): # low number of thresholds as I'm not exploring unbalanced datasets right now
-                test_sensitivity = sum([(sigmoid(preds[i])>th)==x for i,x in enumerate(test_ys) if x==1])/(len([x for x in test_ys if x==1]))
-                test_specificity = sum([(sigmoid(preds[i])>th)==x for i,x in enumerate(test_ys) if x==0])/(len([x for x in test_ys if x==0]))
-                if test_specificity>0.99:
-                    break
-
         print('Test accuracy:', test_acc)
-        print('Test sensitivity:', test_sensitivity)
-        print('Test specificity:', test_specificity)
         if not ignore_non_fit or train_acc == 1.0:
             print("printing function to file", funs_filename)
             function = (model.predict(test_images[:test_function_size], verbose=0))[:,0]
@@ -193,41 +175,22 @@ def main(_):
             funs_file.close()
             #functions.append(function)
             test_accs.append(test_acc)
-            test_sensitivities.append(test_sensitivity)
-            test_specificities.append(test_specificity)
             train_accs.append(train_acc)
-            weightss.append(weights)
-            biasess.append(biases)
             weights_norms.append(weights_norm)
             biases_norms.append(biases_norm)
             iterss.append(model.history.epoch[-1])
         keras.backend.clear_session()
 
-    #print("Print functions to file")
-    #with open(,"a") as file:
-    #    file.write("\r\n".join(functions))
-    #    file.write("\r\n")
-
-    # functions = comm.gather(functions, root=0)
     test_accs = comm.gather(test_accs, root=0)
-    test_sensitivities = comm.gather(test_sensitivities, root=0)
-    test_specificities = comm.gather(test_specificities, root=0)
     train_accs = comm.gather(train_accs, root=0)
 
-    weightss = comm.gather(weightss, root=0)
-    biasess = comm.gather(biasess, root=0)
     weights_norms = comm.gather(weights_norms,root=0)
     iterss = comm.gather(iterss, root=0)
 
     '''PROCESS COLLECTIVE DATA'''
     if rank == 0:
-        weightss = np.stack(sum(weightss,[]))
         weights_norms = sum(weights_norms,[])
         biasess = np.stack(sum(biasess,[]))
-        weights_std = np.mean(np.std(weightss,axis=0)).squeeze()
-        biases_std = np.mean(np.std(biasess,axis=0)).squeeze()
-        weights_mean = np.mean(weightss)
-        biases_mean = np.mean(biasess)
         weights_norm_mean = np.mean(weights_norms)
         weights_norm_std = np.std(weights_norms)
         biases_norm_mean = np.mean(biases_norm)
@@ -235,12 +198,8 @@ def main(_):
 
         # functions = sum(functions,[])
         test_acc = np.mean(sum(test_accs,[]))
-        test_sensitivity = np.mean(sum(test_sensitivities,[]))
-        test_specificity = np.mean(sum(test_specificities,[]))
         train_acc = np.mean(sum(train_accs,[]))
         print('Mean test accuracy:', test_acc)
-        print('Mean test sensitivity:', test_sensitivity)
-        print('Mean test specificity:', test_specificity)
         print('Mean train accuracy:', train_acc)
         test_acc = np.mean(sum(test_accs,[]))
         train_acc = np.mean(sum(train_accs,[]))
@@ -257,7 +216,7 @@ def main(_):
             file.write("\n")
             for key in sorted(useful_train_flags):
                 file.write("{}\t".format(FLAGS[key]))
-            file.write("{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:d}\t{:.4f}\t{:.4f}\n".format(train_acc, 1-test_acc,test_acc,\
+            file.write("{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:d}\t{:.4f}\t{:.4f}\n".format(train_acc, 1-test_acc,test_acc,\
                 test_sensitivity,test_specificity,weights_std,biases_std,\
                 weights_mean,biases_mean,weights_norm_mean,weights_norm_std,biases_norm_mean,biases_norm_std,int(mean_iters),train_acc_std,test_acc_std)) #normalized to sqrt(input_dim)
     else:
