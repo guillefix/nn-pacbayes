@@ -31,7 +31,7 @@ training_results["m"].unique()
 # training_results["m"].unique()
 # bounds["bound"]
 
-training_results[["network", "test_error"]]
+training_results.groupby(["network"],as_index=False).mean()[["network", "test_error"]]
 
 #%%
 ### CONFUSION

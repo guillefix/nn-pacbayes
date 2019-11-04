@@ -24,6 +24,7 @@ FLAGS['confusion'] = 0.0
 FLAGS['dataset'] =  "mnist"
 FLAGS['binarized'] =  True
 FLAGS['number_layers'] =  1
+FLAGS['layer_width'] =  1024
 FLAGS['pooling'] =  "none"
 FLAGS['intermediate_pooling'] =  "0000"
 FLAGS['sigmaw'] =  10.0
@@ -42,58 +43,123 @@ FLAGS = preprocess_flags(FLAGS)
 globals().update(FLAGS)
 #%%
 
-net="densenet121"
-net="vgg19"
 net="resnet50"
 net="mobilenetv2"
 net="nasnet"
+net="vgg19"
+net="densenet121"
 # net="densenet169"
-filename = net+"_KMNIST_1000_0.0_0.0_True_False_False_False_-1_True_False_False_data.h5"
-filename = "fc_boolean_50_0.0_0.0_True_False_False_False_1_True_False_False_84.0_data.h5"
+things = []
+for net in ["densenet121","densenet169","densenet201","mobilenetv2","nasnet","resnet50","vgg16","vgg19"]:
+    filename = net+"_KMNIST_1000_0.0_0.0_True_False_False_False_-1_True_False_False_data.h5"
+    # filename = "fc_boolean_50_0.0_0.0_True_False_False_False_1_True_False_False_84.0_data.h5"
 
-from utils import load_data_by_filename
-train_images,flat_data,ys,test_images,test_ys = load_data_by_filename("data/"+filename)
+    from utils import load_data_by_filename
+    train_images,flat_data,ys,test_images,test_ys = load_data_by_filename("data/"+filename)
+    #%%
+
+    # from utils import load_data,load_model,load_kernel
+    # train_images,flat_train_images,ys,test_images,test_ys = load_data(FLAGS)
+    input_dim = train_images.shape[1]
+    num_channels = train_images.shape[-1]
+    # tp_order = np.concatenate([[0,len(train_images.shape)-1], np.arange(1, len(train_images.shape)-1)])
+    # train_images = tf.constant(train_images)
+    X = np.stack([x.flatten() for x in train_images])
+    X_test = np.stack([x.flatten() for x in test_images])
+
+    test_images = test_images[:500]
+    test_ys = test_ys[:500]
+
+    #%%
+
+    Xfull =  np.concatenate([X,X_test])
+    ys2 = [[y] for y in ys]
+    ysfull = ys2 + [[y] for y in test_ys]
+    Yfull = np.array(ysfull)
+    Y = np.array(ys2)
+    #
+    # from fc_kernel import kernel_matrix
+    # Kfull = kernel_matrix(Xfull,number_layers=number_layers,sigmaw=sigmaw,sigmab=sigmab)
+
+    #%%
+
+    filename = net+"_KMNIST_1000_0.0_0.0_True_False_True_4_3.0_0.0_None_0000_max_kernel.npy"
+    # filename = "fc_boolean_50_0.0_0.0_True_False_True_2_1.41_0.0_None_00_max_kernel.npy"
+    # FLAGS["m"] = 1500
+    from utils import load_kernel_by_filename
+    Kfull = load_kernel_by_filename("kernels/"+filename)
+    m = 1000
+    # K = Kfull[0:m,0:m]
+    # Kfull.max()
+
+    K = Kfull/Kfull.max()
+    # Kfull = K
+    K.shape
+    # K
+    # Y = Y*2-1
+    Y.shape
+    Kfull.shape
+    # logdet = np.sum(np.log(np.linalg.eigh(Kfull)[0]))
+    # thing = -0.5*(-np.matmul(Y.T,np.matmul(np.linalg.inv(Kfull),Y)) - m*np.log(np.pi) - logdet)
+    from GP_prob.GP_prob_gpy import GP_prob
+    logPU = GP_prob(Kfull,X,Y, method="Laplace")
+    thing = logPU
+    things.append(thing)
+
+things
+
+#%%
+filename = net+"_True_4_None_0000_max_gaussian_model"
+json_string_filename = filename
+arch_json_string = open("archs/"+filename, "r") .read()
+from tensorflow.keras.models import model_from_json
+model = model_from_json(arch_json_string)
+model.compile("sgd",loss=lambda target, pred: pred )
+import tensorflow.keras.backend as K
+def get_weight_grad(model, inputs, outputs):
+    """ Gets gradient of model for given inputs and outputs for all weights"""
+    grads = model.optimizer.get_gradients(model.total_loss, model.trainable_weights)
+    # symb_inputs = (model._feed_inputs + model._feed_targets + model._feed_sample_weights)
+    symb_inputs = (model._feed_inputs + model._feed_targets)
+    f = K.function(symb_inputs, grads)
+    # x, y, sample_weight = model._standardize_user_data(inputs, outputs)
+    x, y, _= model._standardize_user_data(inputs, outputs)
+    # output_grad = f(x + y + sample_weight)
+    output_grad = f(x + y )
+    return output_grad
+
 #%%
 
-# from utils import load_data,load_model,load_kernel
-# train_images,flat_train_images,ys,test_images,test_ys = load_data(FLAGS)
-input_dim = train_images.shape[1]
-num_channels = train_images.shape[-1]
-# tp_order = np.concatenate([[0,len(train_images.shape)-1], np.arange(1, len(train_images.shape)-1)])
-# train_images = tf.constant(train_images)
-train_images = np.stack([x.flatten() for x in train_images])
-test_images = np.stack([x.flatten() for x in test_images])
+import cupy as cp
+# NTK = np.zeros((len(X),len(X)))
+NTK = cp.zeros((len(X),len(X)))
+chunk1 = 10
+chunk2 = 10 # it's benefitial to chunk in j2 too, in orden to reduce the python for loop. Even though we do more on numpy/pytorch (by reducing the chunking on j1, we do more grad computaiotns), python is much slower than those, and so tradeoff is worth it I think
+for j1 in range(len(X)//chunk):
+    grad_features = []
+    for i in range(chunk1):
+        print(i)
+        gradient = get_weight_grad(model, train_images[j1*chunk+i:j1*chunk+i+1], Y[j1*chunk+i:j1*chunk+i+1])
+        gradient = cp.concatenate([x.flatten() for x in gradient])
+        grad_features.append(gradient)
+    # X_ntk1 = np.stack(grad_features)
+    X_ntk1 = cp.stack(grad_features)
+    for j2 in range(j1,len(X)//chunk2):
+        grad_features = []
+        print(j1,j2)
+        for i in range(chunk2):
+            # print(i)
+            gradient = get_weight_grad(model, train_images[j2*chunk2+i:j2*chunk2+i+1], Y[j2*chunk2+i:j2*chunk2+i+1])
+            gradient = cp.concatenate([x.flatten() for x in gradient])
+            grad_features.append(gradient)
+        # X_ntk2 = np.stack(grad_features)
+        X_ntk2 = cp.stack(grad_features)
+        NTK[j1*chunk1:(j1+1)*chunk1,j2*chunk2:(j2+1)*chunk2] = cp.matmul(X_ntk1,X_ntk2.T)
 
-test_images = test_images[:500]
-test_ys = test_ys[:500]
 
+NTK = (NTK+NTK.T)/2
 #%%
-
-X = train_images
-Xfull =  np.concatenate([train_images,test_images])
-ys2 = [[y] for y in ys]
-ysfull = ys2 + [[y] for y in test_ys]
-Yfull = np.array(ysfull)
-Y = np.array(ys2)
-#
-# from fc_kernel import kernel_matrix
-# Kfull = kernel_matrix(Xfull,number_layers=number_layers,sigmaw=sigmaw,sigmab=sigmab)
-
-#%%
-
-filename = net+"_KMNIST_1000_0.0_0.0_True_False_True_4_3.0_0.0_None_0000_max_kernel.npy"
-filename = "fc_boolean_50_0.0_0.0_True_False_True_2_1.41_0.0_None_00_max_kernel.npy"
-# FLAGS["m"] = 1500
-from utils import load_kernel_by_filename
-Kfull = load_kernel_by_filename("kernels/"+filename)
-m = 1000
-# K = Kfull[0:m,0:m]
-# Kfull.max()
-
-K = Kfull/Kfull.max()
-K.shape
-# K
-
+##############################
 
 #%%
 
