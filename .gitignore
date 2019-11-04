@@ -37,3 +37,4 @@ fs.p
 
 batch_devel.sh
 LZ_freq_1e6_7_40_40_1_relu.txt
+results/*_train_functions.txt
