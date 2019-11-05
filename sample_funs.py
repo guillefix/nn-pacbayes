@@ -123,7 +123,14 @@ def main(_):
     index_fun_probs = []
     fun_probs = {}
 
+    if FLAGS["pooling"] is None:
+        pooling_flag = "none"
+    else:
+        pooling_flag = FLAGS["pooling"]
+    outfilename = results_folder+"index_funs_probs_"+FLAGS["prefix"]+"_"+FLAGS["dataset"]+"_"+FLAGS["network"]+"_"+str(FLAGS["number_layers"])+"_"+pooling_flag+"_"+FLAGS["intermediate_pooling"]+".txt"
+
     for index in tasks:
+        outfile = open(outfilename, "a")
         print(index)
         # index = rank*num_inits_per_task+i
         reset_weights(model)
@@ -145,7 +152,9 @@ def main(_):
         #    fun_probs[fstring] = calculate_logPU(predictions)
         #index_fun_probs.append((index,ent,fstring,fun_probs[fstring]))
         
-        index_fun_probs.append((index,ent,fstring))
+        #index_fun_probs.append((index,ent,fstring))
+        outfile.write(str(index)+"\t"+fstring+"\t"+str(ent)+"\n")
+        outfile.close()
         #keras.backend.clear_session()
         #del model
 
@@ -153,18 +162,18 @@ def main(_):
 
     index_fun_probs = comm.gather(index_fun_probs,root=0)
 
-    if rank == 0:
-        index_fun_probs = sum(index_fun_probs, [])
-        #print(FLAGS["pooling"])
-        if FLAGS["pooling"] is None:
-            pooling_flag = "none"
-        else:
-            pooling_flag = FLAGS["pooling"]
-        with open(results_folder+"index_funs_probs_"+FLAGS["prefix"]+"_"+FLAGS["dataset"]+"_"+FLAGS["network"]+"_"+str(FLAGS["number_layers"])+"_"+pooling_flag+"_"+FLAGS["intermediate_pooling"]+".txt","w") as f:
-            #for index,ent,fstring,logProb in index_fun_probs:
-            for index,ent,fstring in index_fun_probs:
-                    #f.write(str(index)+"\t"+fstring+"\t"+str(ent)+"\t"+str(logProb)+"\n")
-                    f.write(str(index)+"\t"+fstring+"\t"+str(ent)+"\n")
+    #if rank == 0:
+    #    index_fun_probs = sum(index_fun_probs, [])
+    #    #print(FLAGS["pooling"])
+    #    if FLAGS["pooling"] is None:
+    #        pooling_flag = "none"
+    #    else:
+    #        pooling_flag = FLAGS["pooling"]
+    #    with open(results_folder+"index_funs_probs_"+FLAGS["prefix"]+"_"+FLAGS["dataset"]+"_"+FLAGS["network"]+"_"+str(FLAGS["number_layers"])+"_"+pooling_flag+"_"+FLAGS["intermediate_pooling"]+".txt","w") as f:
+    #        #for index,ent,fstring,logProb in index_fun_probs:
+    #        for index,ent,fstring in index_fun_probs:
+    #                #f.write(str(index)+"\t"+fstring+"\t"+str(ent)+"\t"+str(logProb)+"\n")
+    #                f.write(str(index)+"\t"+fstring+"\t"+str(ent)+"\n")
 
 if __name__ == '__main__':
 

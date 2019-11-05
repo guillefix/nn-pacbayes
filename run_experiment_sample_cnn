@@ -14,8 +14,8 @@
 #py=/usr/bin/python3
 #py=/users/guillefix/anaconda3/bin/python3
 #py=/usr/bin/python3.6
-py=python3
-#py=python
+#py=python3
+py=python
 #py=/users/guillefix/anaconda3/envs/venv/bin/python
 
 #echo $n_gpus
@@ -30,4 +30,4 @@ $py generate_inputs_sample.py $@
 
 #/usr/local/shared/openmpi/4.0.0/bin/mpiexec -n 100 $py sample_funs.py $@ --number_samples 10000
 
-mpiexec -n 1 $py sample_funs.py $@ --number_samples 10
+mpiexec -n 1 $py sample_funs.py $@ --number_samples 100000
