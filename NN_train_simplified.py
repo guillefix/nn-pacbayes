@@ -37,7 +37,7 @@ def main(_):
 
     def binary_accuracy_for_mse(y_true,y_pred):
         if zero_one:
-            return keras.backend.mean(tf.cast(tf.equal(tf.cast(y_pred>0.5,tf.float32),y_true), tf.float32))
+            return keras.backend.mean(tf.cast(tf.equal(tf.cast(tf.math.greater(y_pred,0.5),tf.float32),y_true), tf.float32))
         else:
             return keras.backend.mean(tf.cast(tf.equal(tf.math.sign(y_pred),y_true), tf.float32))
 
@@ -58,7 +58,7 @@ def main(_):
 
     '''LOAD DATA & ARCHITECTURE'''
 
-    from utils import load_data,load_model,load_kernel
+    from utils import load_data,load_model,load_kernel, reset_weights
     train_images,_,ys,test_images,test_ys = load_data(FLAGS)
     input_dim = train_images.shape[1]
     num_channels = train_images.shape[-1]
@@ -129,23 +129,20 @@ def main(_):
     else:
         optim = optimizer
 
+    model = model_from_json(arch_json_string,custom_objects=custom_objects)
+    model.compile(optim,
+                  loss=binary_crossentropy_from_logits if loss=="ce" else loss,
+                  metrics=([binary_accuracy_for_mse] if loss=="mse" else ['accuracy']))
+
     for init in tasks:
         funs_file = open(funs_filename,"a")
         print(init)
 
         #this reinitalizes the net
-        model = model_from_json(arch_json_string,custom_objects=custom_objects)
-        model.compile(optim,
-                      loss=binary_crossentropy_from_logits if loss=="ce" else loss,
-                      #metrics=([binary_accuracy_for_mse] if loss=="mse" else ['accuracy']))
-                      metrics=['accuracy'])
-                      #metrics=['accuracy',sensitivity])
-                      #metrics=['accuracy',tf.keras.metrics.SensitivityAtSpecificity(0.99),\
-                                #tf.keras.metrics.FalsePositives()])
+        reset_weights(model)
 
-        print("model.metrics",model.metrics)
-
-        model.fit(train_images, ys, verbose=1,\
+        print(train_images.shape,ys.shape)
+        model.fit(train_images, ys, verbose=0,\
             sample_weight=sample_weights, validation_data=(train_images, ys), epochs=MAX_TRAIN_EPOCHS,callbacks=callbacks, batch_size=batch_size)
 
         '''GET DATA: weights, and errors'''
@@ -179,7 +176,7 @@ def main(_):
             weights_norms.append(weights_norm)
             biases_norms.append(biases_norm)
             iterss.append(model.history.epoch[-1])
-        keras.backend.clear_session()
+        #keras.backend.clear_session()
 
     test_accs = comm.gather(test_accs, root=0)
     train_accs = comm.gather(train_accs, root=0)
@@ -190,7 +187,6 @@ def main(_):
     '''PROCESS COLLECTIVE DATA'''
     if rank == 0:
         weights_norms = sum(weights_norms,[])
-        biasess = np.stack(sum(biasess,[]))
         weights_norm_mean = np.mean(weights_norms)
         weights_norm_std = np.std(weights_norms)
         biases_norm_mean = np.mean(biases_norm)
@@ -212,13 +208,12 @@ def main(_):
             file.write("#")
             for key in sorted(useful_train_flags):
                 file.write("{}\t".format(key))
-            file.write("\t".join(["train_acc", "test_error", "test_acc","test_sensitivity","test_specificity","weights_std","biases_std","weights_mean", "biases_mean", "weights_norm_mean","weights_norm_std","biases_norm_mean","biases_norm_std","mean_iters","train_acc_std","test_acc_std"]))
+            file.write("\t".join(["train_acc", "test_error", "test_acc","weights_norm_mean","weights_norm_std","biases_norm_mean","biases_norm_std","mean_iters","train_acc_std","test_acc_std"]))
             file.write("\n")
             for key in sorted(useful_train_flags):
                 file.write("{}\t".format(FLAGS[key]))
             file.write("{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:d}\t{:.4f}\t{:.4f}\n".format(train_acc, 1-test_acc,test_acc,\
-                test_sensitivity,test_specificity,weights_std,biases_std,\
-                weights_mean,biases_mean,weights_norm_mean,weights_norm_std,biases_norm_mean,biases_norm_std,int(mean_iters),train_acc_std,test_acc_std)) #normalized to sqrt(input_dim)
+                weights_norm_mean,weights_norm_std,biases_norm_mean,biases_norm_std,int(mean_iters),train_acc_std,test_acc_std)) #normalized to sqrt(input_dim)
     else:
         assert test_accs is None
         assert train_accs is None
@@ -245,3 +240,6 @@ if __name__ == '__main__':
 
     tf.compat.v1.app.run()
     import gc; gc.collect()
+
+#
+#

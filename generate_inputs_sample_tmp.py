@@ -43,7 +43,7 @@ def main(_):
         y_train=2*y_train-1
 
     '''SAVING DATA SAMPLES'''
-    save_data(X_train,y_train,X_test,y_test,FLAGS)
+    save_data(tf.cast(X_train,tf.float32),tf.cast(y_train,tf.float32),tf.cast(X_test,tf.float32),tf.cast(y_test,tf.float32),FLAGS)
 
 
 if __name__ == '__main__':

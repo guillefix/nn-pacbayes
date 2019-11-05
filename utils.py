@@ -198,7 +198,7 @@ class EarlyStoppingByAccuracy(Callback):
         self.first_time = True
         self.epoch_after_first_time = 0
     def on_epoch_end(self, epoch, logs=None):
-        print(logs)
+        #print(logs)
         current = logs.get(self.monitor)
         if current is None:
             warnings.warn("Early stopping requires %s available!" % self.monitor, RuntimeWarning)
@@ -267,3 +267,6 @@ def get_rescaled_weights(model):
     ws = np.concatenate([get_rescaled_weight(w).flatten() for w in weights])
     bs = np.concatenate([get_rescaled_weight(w).flatten() for w in biases])
     return ws, bs
+
+#
+#
