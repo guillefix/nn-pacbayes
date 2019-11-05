@@ -292,7 +292,7 @@ def main(_):
             if network in ["cnn","fc"]:
                 #normalize the images pixels to be in [0,1]
                 train_images = train_images.astype(np.float32)/255.0
-                if traininig:
+                if training:
                     test_images = test_images.astype(np.float32)/255.0
             else:
                 #note that the transformation to PIL and back to Tensor normalizes the image pixels to be in [0,1]
