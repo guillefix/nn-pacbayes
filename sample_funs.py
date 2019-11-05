@@ -19,7 +19,7 @@ results_folder = "results/"
 
 def main(_):
 
-    FLAGS = tf.app.flags.FLAGS.flag_values_dict()
+    FLAGS = tf.compat.v1.app.flags.FLAGS.flag_values_dict()
     from utils import preprocess_flags
     FLAGS = preprocess_flags(FLAGS)
     globals().update(FLAGS)
@@ -50,14 +50,14 @@ def main(_):
 
     os.environ["CUDA_VISIBLE_DEVICES"]=str(rank%num_gpus)
 
-    config = tf.ConfigProto()
+    config = tf.compat.v1.ConfigProto()
     if num_gpus > 0:
         #config = tf.ConfigProto(device_count={'GPU': rank%num_gpus})
         #config.device_count = {'GPU': rank%num_gpus}
         config.gpu_options.allow_growth = True
         #config.gpu_options.visible_device_list = str(rank%num_gpus)
 
-    tf.enable_eager_execution(config=config)
+    tf.compat.v1.enable_eager_execution(config=config)
 
     # total_samples = m
 
@@ -90,11 +90,11 @@ def main(_):
         new_weights = [initialize_var(w.shape) for w in initial_weights]
         model.set_weights(new_weights)
 
-    from GP_prob_gpy import GP_prob
+    #from GP_prob.GP_prob_gpy import GP_prob
 
-    def calculate_logPU(preds):
-        logPU = GP_prob(K,flat_data,preds )
-        return logPU
+    #def calculate_logPU(preds):
+    #    logPU = GP_prob(K,flat_data,preds )
+    #    return logPU
 
     from math import log
 
@@ -155,7 +155,12 @@ def main(_):
 
     if rank == 0:
         index_fun_probs = sum(index_fun_probs, [])
-        with open(results_folder+"index_funs_probs_"+FLAGS["prefix"]+"_"+FLAGS["dataset"]+"_"+FLAGS["network"]+"_"+str(FLAGS["number_layers"])+"_"+FLAGS["pooling"]+"_"+FLAGS["intermediate_pooling"]+".txt","w") as f:
+        #print(FLAGS["pooling"])
+        if FLAGS["pooling"] is None:
+            pooling_flag = "none"
+        else:
+            pooling_flag = FLAGS["pooling"]
+        with open(results_folder+"index_funs_probs_"+FLAGS["prefix"]+"_"+FLAGS["dataset"]+"_"+FLAGS["network"]+"_"+str(FLAGS["number_layers"])+"_"+pooling_flag+"_"+FLAGS["intermediate_pooling"]+".txt","w") as f:
             #for index,ent,fstring,logProb in index_fun_probs:
             for index,ent,fstring in index_fun_probs:
                     #f.write(str(index)+"\t"+fstring+"\t"+str(ent)+"\t"+str(logProb)+"\n")
@@ -163,11 +168,11 @@ def main(_):
 
 if __name__ == '__main__':
 
-    f = tf.app.flags
+    f = tf.compat.v1.app.flags
 
     from utils import define_default_flags
 
     f.DEFINE_integer('number_samples', None, "Number of samples")
     define_default_flags(f)
 
-    tf.app.run()
+    tf.compat.v1.app.run()
