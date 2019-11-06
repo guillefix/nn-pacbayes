@@ -58,7 +58,9 @@ def main(_):
 
     '''LOAD DATA & ARCHITECTURE'''
 
-    from utils import load_data,load_model,load_kernel, reset_weights
+    from utils import load_data,load_model,load_kernel
+
+    from initialization import simple_reset_weights as reset_weights
     train_images,_,ys,test_images,test_ys = load_data(FLAGS)
     input_dim = train_images.shape[1]
     num_channels = train_images.shape[-1]
@@ -139,10 +141,10 @@ def main(_):
         print(init)
 
         #this reinitalizes the net
-        reset_weights(model)
+        reset_weights(model, sigmaw, sigmab)
 
         print(train_images.shape,ys.shape)
-        model.fit(train_images, ys, verbose=0,\
+        model.fit(train_images, ys, verbose=1,\
             sample_weight=sample_weights, validation_data=(train_images, ys), epochs=MAX_TRAIN_EPOCHS,callbacks=callbacks, batch_size=batch_size)
 
         '''GET DATA: weights, and errors'''

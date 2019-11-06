@@ -85,17 +85,6 @@ def load_model(FLAGS):
     arch_json_string = open(filename, "r") .read()
     return arch_json_string
 
-def reset_weights(model):
-    initial_weights = model.get_weights()
-    def initialize_var(shape):
-        if len(shape) == 1:
-           #return tf.random.normal(shape).eval(session=sess)
-           return np.random.normal(0,1,shape)
-        else:
-            return np.random.normal(0,1.0/np.sqrt(np.prod(shape[:-1])),shape)
-    new_weights = [initialize_var(w.shape) for w in initial_weights]
-    model.set_weights(new_weights)
-
 def kernel_filename(FLAGS):
     filename=kernel_folder
     for flag in ["network","dataset","m","confusion","label_corruption","binarized","whitening","random_labels","number_layers","sigmaw","sigmab","pooling","intermediate_pooling","intermediate_pooling_type"]:
@@ -268,5 +257,33 @@ def get_rescaled_weights(model):
     bs = np.concatenate([get_rescaled_weight(w).flatten() for w in biases])
     return ws, bs
 
+from math import log
+
+def log2(x):
+    return log(x)/log(2.0)
+
+def entropy(f):
+    n0=0
+    n=len(f)
+    for char in f:
+        if char=='0':
+            n0+=1
+    n1=n-n0
+    if n1 > 0 and n0 > 0:
+        return log2(n) - (1.0/n)*(n0*log2(n0)+n1*log2(n1))
+    else:
+        return 0
+
 #
 #
+
+    #from tensorflow.python.client import device_lib
+    #local_device_protos = device_lib.list_local_devices()
+    #print(local_device_protos)
+    #def get_available_gpus():
+    #    local_device_protos = device_lib.list_local_devices()
+    #    return [x.name for x in local_device_protos if x.device_type == 'GPU']
+
+    #num_gpus = len(get_available_gpus())
+    #num_gpus = n_gpus
+    #print("num_gpus",num_gpus)

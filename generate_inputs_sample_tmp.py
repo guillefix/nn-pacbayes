@@ -31,11 +31,13 @@ def main(_):
         return 0
 
     n = m
-    X_train = X_train_full[:n].reshape(n,784)/255.0
+    #X_train = X_train_full[:n].reshape(n,784)/255.0
+    X_train = X_train_full[:n].reshape(n,784)
     y_train = np.asarray([data_binariser(i) for i in y_train_full[:n]]).reshape(n,1)
 
     n = test_set_size
-    X_test = X_test_full[:n].reshape(n,784)/255.0
+    #X_test = X_test_full[:n].reshape(n,784)/255.0
+    X_test = X_test_full[:n].reshape(n,784)
     y_test = np.asarray([data_binariser(i) for i in y_test_full])[:n].reshape(n,1)
 
     if not zero_one:
