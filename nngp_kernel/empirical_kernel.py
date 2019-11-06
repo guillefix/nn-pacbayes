@@ -25,18 +25,8 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
     print(rank)
     num_tasks = number_samples
 
-    #from tensorflow.python.client import device_lib
-    #local_device_protos = device_lib.list_local_devices()
-    #print(local_device_protos)
-    #def get_available_gpus():
-    #    local_device_protos = device_lib.list_local_devices()
-    #    return [x.name for x in local_device_protos if x.device_type == 'GPU']
-
-    #num_gpus = len(get_available_gpus())
-    #num_gpus = n_gpus
-    #print("num_gpus",num_gpus)
-
     save_freq = 5000
+    # we can use checkpoints (TODO: make this work again with nice option and stuff)
     try:
         chkpt = pickle.load(open("checkpoint.p","rb"))
         print("getting checkopoint of "+str(chkpt)+" functions")
@@ -56,25 +46,6 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
     if rank < num_tasks%size:
         tasks.append(size*num_tasks_per_job+rank)
 
-    #os.environ["CUDA_VISIBLE_DEVICES"]=str(rank%n_gpus)
-    #print(rank%n_gpus)
-
-#    config = tf.ConfigProto()
-#    if n_gpus > 0:
-#        #config = tf.ConfigProto(device_count={'GPU': rank%num_gpus})
-#        #config.device_count = {'GPU': rank%num_gpus}
-#        # config.gpu_options.allow_growth = True
-#        #config.gpu_options.per_process_gpu_memory_fraction = 0.5
-#        config.gpu_options.visible_device_list = str(rank%n_gpus)
-#
-#    #tf.enable_eager_execution(config=config)
-    #set_session = keras.backend.set_session
-    #config.log_device_placement = False  # to log device placement (on which device the operation ran)
-    #sess = tf.Session(config=config)
-    #set_session(sess)  # set this TensorFlow session as the default session for Keras
-
-    #data = tf.constant(data)
-
     print("Doing task %d of %d" % (rank, size))
     import time
     start_time = time.time()
@@ -82,52 +53,7 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
     from tensorflow.keras.models import model_from_json
     model = model_from_json(arch_json_string) # this resets the weights (makes sense as the json string only has architecture)
 
-    # from keras.initializers import lecun_normal  # Or your initializer of choice
-
-    # k_eval = lambda placeholder: placeholder.eval(session=keras.backend.get_session())
-    # initial_weights = model.get_weights()
-
-    def get_all_layers(model):
-        layers = []
-        for layer in model.layers:
-            #if isinstance(layer,tf.python.keras.engine.training.Model):
-            if isinstance(layer,tf.keras.Model):
-                layers += get_all_layers(layer)
-            else:
-                layers += [layer]
-        return layers
-
-    def is_normalization_layer(l):
-        #return isinstance(l,tf.python.keras.layers.normalization.BatchNormalization) or isinstance(l,tf.python.keras.layers.normalization.LayerNormalization)
-        return isinstance(l,tf.keras.layers.BatchNormalization) or isinstance(l,tf.keras.layers.LayerNormalization)
-
-    from scipy.stats import truncnorm
-    def reset_weights(model, weights, are_norm):
-        #initial_weights = model.get_weights()
-        def initialize_var(w, is_norm):
-            if is_norm:
-                return w
-            else:
-                shape = w.shape
-                if len(shape) == 1:
-                    #return tf.random.normal(shape,stddev=sigmab).eval(session=sess)
-                    return np.random.normal(0,sigmab,shape)
-                else:
-                    #return tf.random.normal(shape,stddev=1.0/np.sqrt(np.prod(shape[:-1]))).eval(session=sess)
-                    #return np.random.normal(0,1.0/np.sqrt(np.prod(shape[:-1])),shape)
-                    #return np.random.normal(0,sigmaw/np.sqrt(shape[-2]),shape) #assumes NHWC so that we divide by number of channels as in GP limit
-                    return (sigmaw/np.sqrt(np.prod(shape[:-1])))*truncnorm.rvs(-np.sqrt(2),np.sqrt(2),size=shape) #assumes NHWC so that we divide by number of channels as in GP limit
-
-        new_weights = [initialize_var(w,are_norm[i]) for i,w in enumerate(weights)]
-        model.set_weights(new_weights)
-        #[l.set_weights([initialize_var(w.shape) for w in l.get_weights()]) for l in layers]
-        #for l in layers:
-        #    #if is_normalization_layer(l):
-        #    #    # new_weights += l.get_weights()
-        #    #    pass
-        #    #else:
-        #    new_weights = [initialize_var(w.shape) for w in l.get_weights()]
-        #    l.set_weights(new_weights)
+    from initialization import get_all_layers, is_normalization_layer, reset_weights
 
     #fs = []
     covs = np.zeros((len(data),len(data)))
@@ -135,36 +61,20 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
     print(last_layer.shape)
     func = K.function(model.input,last_layer)
     local_index = 0
+    layers = get_all_layers(model)
+    are_norm = [is_normalization_layer(l) for l in layers for w in l.get_weights()]
+    initial_weights = model.get_weights()
     for index in tasks:
         print("sample for kernel", index)
 
         #model = model_from_json(arch_json_string) # this resets the weights (makes sense as the json string only has architecture)
-        #last_layer = model.layers[-1].input
-        #func = K.function(model.input,last_layer)
-
-        #model = model_from_json(arch_json_string) # this resets the weights (makes sense as the json string only has architecture)
-        #initial_weights = model.get_weights()
-        if local_index == 1:
-            layers = get_all_layers(model) 
-            are_norm = [is_normalization_layer(l) for l in layers for w in l.get_weights()]
-            initial_weights = model.get_weights()
         if local_index>0:
-            reset_weights(model, initial_weights, are_norm)
-        #last_layer = model.layers[-1].input
-        #func = K.function(model.input,last_layer)
+            reset_weights(model, initial_weights, are_norm, sigmaw, sigmab)
 
-        #model.save_weights("sampled_nets/"+str(index)+"_"+json_string_filename+".h5")
-        #outputs = model.predict(data,batch_size=data.shape[0])
-        #outputs = model.predict(data,steps=1)
-        #print(func(data).shape)
-        #X = func(data)
         X = np.squeeze(func(data))
-        #print("X,data",X,data.max())
         covs += (sigmaw**2/X.shape[1])*np.matmul(X,X.T)+(sigmab**2)*np.ones((X.shape[0],X.shape[0]))
         #outputs = model.predict(data)
         #print(outputs)
-
-        #keras.backend.clear_session()
 
         # print(outputs)
         #fs.append(outputs)

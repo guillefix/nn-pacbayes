@@ -1,16 +1,11 @@
-
 import numpy as np
 import tensorflow as tf
 import keras
-
-#import sys
 import os
 #os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
-# os.chdir("/users/guillefix/bias/nn_bias/CSR")
-#tf.enable_eager_execution()
 import h5py
 import pickle
-
+from initialization import get_all_layers, is_normalization_layer, reset_weights, simple_reset_weights
 
 arch_folder = "archs/"
 data_folder = "data/"
@@ -29,16 +24,8 @@ def main(_):
     rank = comm.Get_rank()
     size = comm.Get_size()
     print(rank)
-    # num_inits_per_task = 1
     num_tasks = number_samples
 
-    #from tensorflow.python.client import device_lib
-
-    #def get_available_gpus():
-    #    local_device_protos = device_lib.list_local_devices()
-    #    return [x.name for x in local_device_protos if x.device_type == 'GPU']
-
-    #num_gpus = len(get_available_gpus())
     num_gpus = n_gpus
     print("num_gpus",num_gpus)
 
@@ -52,18 +39,13 @@ def main(_):
 
     config = tf.compat.v1.ConfigProto()
     if num_gpus > 0:
-        #config = tf.ConfigProto(device_count={'GPU': rank%num_gpus})
-        #config.device_count = {'GPU': rank%num_gpus}
         config.gpu_options.allow_growth = True
-        #config.gpu_options.visible_device_list = str(rank%num_gpus)
 
     tf.compat.v1.enable_eager_execution(config=config)
 
-    # total_samples = m
-
     '''LOAD DATA & ARCHITECTURE'''
 
-    from utils import load_data,load_model,load_kernel
+    from utils import load_data,load_model,load_kernel,entropy
     data,flat_data,_,_,_ = load_data(FLAGS)
     data = tf.constant(data)
     input_dim = data.shape[1]
@@ -74,47 +56,10 @@ def main(_):
     model = model_from_json(arch_json_string)
 
     #K = load_kernel(FLAGS)
-
-    #sess = tf.Session()
-
-    #from keras.initializers import lecun_normal  # Or your initializer of choice
-
-    def reset_weights(model):
-        initial_weights = model.get_weights()
-        def initialize_var(shape):
-            if len(shape) == 1:
-               #return tf.random.normal(shape).eval(session=sess)
-               return np.random.normal(0,1,shape)
-            else:
-                return np.random.normal(0,1.0/np.sqrt(np.prod(shape[:-1])),shape)
-        new_weights = [initialize_var(w.shape) for w in initial_weights]
-        model.set_weights(new_weights)
-
     #from GP_prob.GP_prob_gpy import GP_prob
-
     #def calculate_logPU(preds):
     #    logPU = GP_prob(K,flat_data,preds )
     #    return logPU
-
-    from math import log
-
-    def log2(x):
-        return log(x)/log(2.0)
-
-    def entropy(f):
-        n0=0
-        n=len(f)
-        for char in f:
-            if char=='0':
-                n0+=1
-        n1=n-n0
-        if n1 > 0 and n0 > 0:
-            return log2(n) - (1.0/n)*(n0*log2(n0)+n1*log2(n1))
-        else:
-            return 0
-
-
-    #%%
 
     print("Doing task %d of %d" % (rank, size))
     import time
@@ -129,21 +74,28 @@ def main(_):
         pooling_flag = FLAGS["pooling"]
     outfilename = results_folder+"index_funs_probs_"+str(rank)+"_"+FLAGS["prefix"]+"_"+FLAGS["dataset"]+"_"+FLAGS["network"]+"_"+str(FLAGS["number_layers"])+"_"+pooling_flag+"_"+FLAGS["intermediate_pooling"]+".txt"
 
+    if network not in ["cnn", "fc"]:
+        layers = get_all_layers(model)
+        are_norm = [is_normalization_layer(l) for l in layers for w in l.get_weights()]
+        initial_weights = model.get_weights()
+
+    local_index = 0
+
+    '''SAMPLING LOOP'''
     for index in tasks:
         outfile = open(outfilename, "a")
         print(index)
-        # index = rank*num_inits_per_task+i
-        reset_weights(model)
+        if local_index>0:
+            if network in ["cnn", "fc"]:
+                simple_reset_weights(model, sigmaw, sigmab)
+            else:
+                reset_weights(model, initial_weights, are_norm, sigmaw, sigmab)
         #model = model_from_json(arch_json_string) # this resets the weights (makes sense as the json string only has architecture)
 
         #save weights?
         #model.save_weights("sampled_nets/"+str(index)+"_"+json_string_filename+".h5")
 
         #predictions = tf.keras.backend.eval(model(data)) > 0
-        # if network == "resnet":
-        #     predictions = model.predict(data,steps=1) > 0.5 #because resnet is defined with sigmoid as output, rather than logits (because I use a module that requires that :P)
-        # else:
-
         predictions = model.predict(data) > 0
         fstring = "".join([str(int(x[0])) for x in predictions])
         ent = entropy(fstring)
@@ -151,12 +103,11 @@ def main(_):
         #if fstring not in fun_probs:
         #    fun_probs[fstring] = calculate_logPU(predictions)
         #index_fun_probs.append((index,ent,fstring,fun_probs[fstring]))
-        
         #index_fun_probs.append((index,ent,fstring))
         outfile.write(str(index)+"\t"+fstring+"\t"+str(ent)+"\n")
         outfile.close()
         #keras.backend.clear_session()
-        #del model
+        local_index+=1
 
     print("--- %s seconds ---" % (time.time() - start_time))
 
