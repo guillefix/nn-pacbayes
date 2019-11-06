@@ -15,9 +15,9 @@
 #py=/usr/bin/python3
 #py=/users/guillefix/anaconda3/bin/python3
 #py=/usr/bin/python3.6
-py=python3
+#py=python3
 #py=python
-#py=/users/guillefix/anaconda3/envs/venv/bin/python
+py=/users/guillefix/anaconda3/envs/venv/bin/python
 
 #echo $n_gpus
 

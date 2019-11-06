@@ -77,9 +77,6 @@ def main(_):
     from tensorflow.keras.models import model_from_json
 
     '''some custom initalizers and keras setup'''
-    # from keras.utils.generic_utils import get_custom_objects
-    # get_custom_objects().update({'cauchy_init': CauchyInit})
-
     def cauchy_init(shape, dtype=None):
         # return keras.backend.variable((sigmaw/(np.sqrt(np.prod(shape[:-1]))))*np.random.standard_cauchy(shape), dtype=dtype)
         return (sigmaw/(np.sqrt(np.prod(shape[:-1]))))*np.random.standard_cauchy(shape)
@@ -99,15 +96,11 @@ def main(_):
     model = model_from_json(arch_json_string,custom_objects=custom_objects)
 
     set_session = tf.compat.v1.keras.backend.set_session
-    # set_session = tf.keras.backend.set_session
 
     config = tf.compat.v1.ConfigProto()
     config.gpu_options.allow_growth = True  # dynamically grow the memory used on the GPU
     config.log_device_placement = False  # to log device placement (on which device the operation ran)
-    # config.gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.2)
-    # (nothing gets printed in Jupyter, only if you run it standalone)
     sess = tf.compat.v1.Session(config=config)
-    # sess = tf.Session(config=config)
     set_session(sess)  # set this TensorFlow session as the default session for Keras
 
     '''TRAINING LOOP'''
@@ -146,9 +139,10 @@ def main(_):
             sample_weight=sample_weights, validation_data=(train_images, ys), epochs=MAX_TRAIN_EPOCHS,callbacks=callbacks, batch_size=batch_size)
 
         '''GET DATA: weights, and errors'''
-        weights, biases = get_rescaled_weights(model)
-        weights_norm, biases_norm = measure_sigmas(model)
-        print(weights_norm,biases_norm)
+        #weights, biases = get_rescaled_weights(model)
+        #weights_norm, biases_norm = measure_sigmas(model)
+        weights_norm, biases_norm = -1, -1
+        #print(weights_norm,biases_norm)
 
         train_loss, train_acc = model.evaluate(train_images, ys, verbose=0)
         print(train_acc)
