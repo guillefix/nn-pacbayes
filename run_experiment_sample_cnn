@@ -21,7 +21,7 @@ py=python
 #echo $n_gpus
 
 $py generate_NN_arch.py $@
-
+#
 $py generate_inputs_sample.py $@
 
 #/users/guillefix/anaconda3/envs/venv/bin/mpiexec -n 500 $py compute_prob_and_bound.py $@ --num_post_samples 8000000 --cov_mult 0.7 --using_MC

@@ -127,7 +127,7 @@ def main(_):
         pooling_flag = "none"
     else:
         pooling_flag = FLAGS["pooling"]
-    outfilename = results_folder+"index_funs_probs_"+FLAGS["prefix"]+"_"+FLAGS["dataset"]+"_"+FLAGS["network"]+"_"+str(FLAGS["number_layers"])+"_"+pooling_flag+"_"+FLAGS["intermediate_pooling"]+".txt"
+    outfilename = results_folder+"index_funs_probs_"+str(rank)+"_"+FLAGS["prefix"]+"_"+FLAGS["dataset"]+"_"+FLAGS["network"]+"_"+str(FLAGS["number_layers"])+"_"+pooling_flag+"_"+FLAGS["intermediate_pooling"]+".txt"
 
     for index in tasks:
         outfile = open(outfilename, "a")
