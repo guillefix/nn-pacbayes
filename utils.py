@@ -87,7 +87,7 @@ def load_model(FLAGS):
 
 def kernel_filename(FLAGS):
     filename=kernel_folder
-    for flag in ["network","dataset","m","confusion","label_corruption","binarized","whitening","random_labels","number_layers","sigmaw","sigmab","pooling","intermediate_pooling","intermediate_pooling_type"]:
+    for flag in ["prefix","network","dataset","m","confusion","label_corruption","binarized","whitening","random_labels","number_layers","sigmaw","sigmab","pooling","intermediate_pooling","intermediate_pooling_type"]:
         filename+=str(FLAGS[flag])+"_"
     filename += "kernel.npy"
     return filename
