@@ -14,13 +14,13 @@ optimizer=sgd
 loss=mse
 sigmaw=1.41
 #sigmaw=100.0
-sigmab=0.1
+sigmab=0.0
 pool=none
 c=0.0
 number_inits=10
 epochs_after_fit=1
 export n_procs=5
-prefix=cnn_sample_sigmab0.1_
+prefix=cnn_sample_sigmab0.0_
 
 n_gpus=1
 export n_gpus=$n_gpus
