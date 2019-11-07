@@ -137,7 +137,7 @@ def main(_):
         reset_weights(model, sigmaw, sigmab)
 
         print(train_images.shape,ys.shape)
-        model.fit(train_images, ys, verbose=1,\
+        model.fit(train_images, ys, verbose=0,\
             sample_weight=sample_weights, validation_data=(train_images, ys), epochs=MAX_TRAIN_EPOCHS,callbacks=callbacks, batch_size=batch_size)
 
         '''GET DATA: weights, and errors'''
