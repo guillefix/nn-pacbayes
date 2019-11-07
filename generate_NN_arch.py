@@ -141,12 +141,12 @@ def main(_):
 
     elif network == "fc":
             model = keras.Sequential(
-                [ keras.layers.Dense(input_dim, activation=tf.nn.relu,input_shape=(input_dim,),#)
+                ([ keras.layers.Dense(layer_width, activation=tf.nn.relu,input_shape=(input_dim,),#)
                     kernel_initializer=weight_initializer,
                     bias_initializer=bias_initializer,)
-            ]
+                    ]
                 # + [keras.layers.Lambda(lambda x: x-1/np.sqrt(2*np.pi))]
-            + [
+                + [
                 keras.layers.Dense(layer_width, activation=tf.nn.relu,#)
                     kernel_initializer=weight_initializer,
                     bias_initializer=bias_initializer)
@@ -155,9 +155,9 @@ def main(_):
                     # kernel_regularizer=keras.regularizers.l2(0.05),
                     # bias_regularizer=keras.regularizers.l2(0.1))
                     for i in range(number_layers-1)
-                ]
+                ] if number_layers > 0 else [])
                 # + [keras.layers.Lambda(lambda x: x-1/np.sqrt(2*np.pi))]
-                + [
+                + ([
                     keras.layers.Dense(1,#activation=tf.nn.sigmoid,
                     kernel_initializer=weight_initializer,
                     bias_initializer=bias_initializer_last_layer,)
@@ -165,7 +165,15 @@ def main(_):
                     # bias_regularizer=keras.regularizers.l2(1/(2*sigmab**2)))
                     # kernel_regularizer=keras.regularizers.l2(0.05),
                     # bias_regularizer=keras.regularizers.l2(0.1))
-                ])
+                ] if number_layers>0 else [
+                    keras.layers.Dense(1,input_shape=(input_dim,),#activation=tf.nn.sigmoid,
+                    kernel_initializer=weight_initializer,
+                    bias_initializer=bias_initializer_last_layer,)
+                    # kernel_regularizer=keras.regularizers.l2(0.01*input_dim/(2*sigmaw**2)),
+                    # bias_regularizer=keras.regularizers.l2(1/(2*sigmab**2)))
+                    # kernel_regularizer=keras.regularizers.l2(0.05),
+                    # bias_regularizer=keras.regularizers.l2(0.1))
+                ]))
 
     elif network == "resnet":
         #from keras_contrib.applications.resnet import ResNet

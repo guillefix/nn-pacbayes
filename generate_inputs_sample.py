@@ -182,6 +182,7 @@ def main(_):
         else:
             indices = np.random.choice(range(int(len(inputs))), size=int(total_samples), replace=False)
         # print(indices)
+        print("train_set", "".join([("1" if i in indices else "0") for i in range(int(len(inputs)))]))
         test_indices = np.array([i for i in range(len(inputs)) if i not in indices])
         train_inputs = inputs[indices,:].astype(np.float32)
         train_labels = labels[indices]
