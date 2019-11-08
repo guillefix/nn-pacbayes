@@ -35,13 +35,20 @@ def main(_):
     if rank < num_tasks%size:
         tasks.append(size*num_tasks_per_job+rank)
 
-    os.environ["CUDA_VISIBLE_DEVICES"]=str(rank%num_gpus)
+    if num_gpus>0:
+        os.environ["CUDA_VISIBLE_DEVICES"]=str(rank%num_gpus)
 
     config = tf.compat.v1.ConfigProto()
     if num_gpus > 0:
         config.gpu_options.allow_growth = True
 
     tf.compat.v1.enable_eager_execution(config=config)
+
+    '''some custom initalizers and keras setup'''
+    from utils import cauchy_init_class_wrapper, shifted_init_class_wrapper
+    CauchyInit = cauchy_init_class_wrapper(sigmaw)
+    ShiftedInit = shifted_init_class_wrapper(sigmab,shifted_init_shift)
+    custom_objects = {'cauchy_init': CauchyInit, 'shifted_init':ShiftedInit}
 
     '''LOAD DATA & ARCHITECTURE'''
 
@@ -53,7 +60,7 @@ def main(_):
 
     arch_json_string = load_model(FLAGS)
     from tensorflow.keras.models import model_from_json
-    model = model_from_json(arch_json_string)
+    model = model_from_json(arch_json_string, custom_objects=custom_objects)
 
     #K = load_kernel(FLAGS)
     #from GP_prob.GP_prob_gpy import GP_prob
@@ -72,7 +79,7 @@ def main(_):
         pooling_flag = "none"
     else:
         pooling_flag = FLAGS["pooling"]
-    outfilename = results_folder+"index_funs_probs_"+str(rank)+"_"+FLAGS["prefix"]+"_"+FLAGS["dataset"]+"_"+FLAGS["network"]+"_"+str(FLAGS["number_layers"])+"_"+pooling_flag+"_"+FLAGS["intermediate_pooling"]+".txt"
+    outfilename = results_folder+"index_funs_probs_"+str(rank)+"_"+FLAGS["prefix"]+"_"+str(FLAGS["shifted_init_shift"])+"_"+FLAGS["dataset"]+"_"+FLAGS["network"]+"_"+str(FLAGS["number_layers"])+"_"+pooling_flag+"_"+FLAGS["intermediate_pooling"]+".txt"
 
     if network not in ["cnn", "fc"]:
         layers = get_all_layers(model)
@@ -98,13 +105,14 @@ def main(_):
         #predictions = tf.keras.backend.eval(model(data)) > 0
         predictions = model.predict(data) > 0
         fstring = "".join([str(int(x[0])) for x in predictions])
+        n1s = len([x for x in fstring if x == "1"])
         ent = entropy(fstring)
 
         #if fstring not in fun_probs:
         #    fun_probs[fstring] = calculate_logPU(predictions)
         #index_fun_probs.append((index,ent,fstring,fun_probs[fstring]))
         #index_fun_probs.append((index,ent,fstring))
-        outfile.write(str(index)+"\t"+fstring+"\t"+str(ent)+"\n")
+        outfile.write(str(index)+"\t"+fstring+"\t"+str(ent)+"\t"+str(n1s)+"\n")
         outfile.close()
         #keras.backend.clear_session()
         local_index+=1
