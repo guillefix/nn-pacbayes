@@ -5,13 +5,16 @@
 
 m=64
 dataset=boolean
+#boolfun_comp=45.0
+boolfun=00000000000000001111111111111111000000000000000011111111111111110000000000000000111111111111111100000000000000001111111111111110
 prefix=sgd_perceptron_
 #prefix=langevin_ce_run_
 sigmaw=1.0
-sigmab=0.0357
+#sigmab=0.0357
+sigmab=0.0
 #sigmab=1.0
 n_gpus=0
-optimizer=adam
+optimizer=sgd
 #optimizer=langevin
 loss=ce
 L=0 # number of layers
@@ -33,5 +36,5 @@ export n_procs=200
     #echo $net
 #./run_experiment_sgd_bayes --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --label_corruption $c --n_gpus $n_gpus --pooling $pool --number_inits 2 --optimizer ${optimizer} --loss $loss --zero_one --ignore_non_fit --batch_size $batch_size --layer_width $layer_width --epochs_after_fit $epochs_after_fit $@
 
-addqueue -n $n_procs -m 4 -s './run_experiment_sgd_bayes --prefix '${prefix}' --m '${m}' --dataset '${dataset}' --network '${net}' --number_layers '${L}' --training --sigmaw '${sigmaw}' --sigmab '${sigmab}' --n_gpus '${n_gpus}' --pooling '${pool}' --loss '${loss}' --optimizer '${optimizer}' --number_inits 600000 --ignore_non_fit --batch_size '${batch_size}' --layer_width '${layer_width}' --epochs_after_fit '${epochs_after_fit}' --zero_one'
+addqueue -n $n_procs -m 1 -s './run_experiment_sgd_bayes_perceptron --prefix '${prefix}' --m '${m}' --dataset '${dataset}' --network '${net}' --number_layers '${L}' --training --sigmaw '${sigmaw}' --sigmab '${sigmab}' --n_gpus '${n_gpus}' --pooling '${pool}' --loss '${loss}' --optimizer '${optimizer}' --number_inits 600000 --ignore_non_fit --batch_size '${batch_size}' --layer_width '${layer_width}' --epochs_after_fit '${epochs_after_fit}' --zero_one --boolfun '${boolfun}
 #done
