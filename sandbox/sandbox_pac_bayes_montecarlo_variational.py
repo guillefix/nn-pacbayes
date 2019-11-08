@@ -108,6 +108,9 @@ for net in ["densenet121","densenet169","densenet201","mobilenetv2","nasnet","re
 
 things
 
+
+'''CODE FOR EMPIRICAL NTK CALCULATION'''
+
 #%%
 filename = net+"_True_4_None_0000_max_gaussian_model"
 json_string_filename = filename
@@ -160,6 +163,8 @@ for j1 in range(len(X)//chunk):
 NTK = (NTK+NTK.T)/2
 #%%
 ##############################
+
+'''CODE FOR VARIATIONAL INFERENCE''' #(including some application to montecarlo)
 
 #%%
 
