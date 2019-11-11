@@ -1,3 +1,8 @@
+'''
+Simplified version of NN_train to allow for faster execution and less memory leak
+(it still tends to run out of memory tho)
+
+'''
 import numpy as np
 import tensorflow as tf
 from math import *
@@ -79,21 +84,9 @@ def main(_):
     from tensorflow.keras.models import model_from_json
 
     '''some custom initalizers and keras setup'''
-    def cauchy_init(shape, dtype=None):
-        # return keras.backend.variable((sigmaw/(np.sqrt(np.prod(shape[:-1]))))*np.random.standard_cauchy(shape), dtype=dtype)
-        return (sigmaw/(np.sqrt(np.prod(shape[:-1]))))*np.random.standard_cauchy(shape)
-
-    def shifted_init(shape, dtype=None):
-        return sigmab*np.random.standard_normal(shape)-0.5
-
-    class CauchyInit:
-        def __call__(self, shape, dtype=None):
-            return cauchy_init(shape, dtype=dtype)
-
-    class ShiftedInit:
-        def __call__(self, shape, dtype=None):
-            return shifted_init(shape, dtype=dtype)
-
+    from utils import cauchy_init_class_wrapper, shifted_init_class_wrapper
+    CauchyInit = cauchy_init_class_wrapper(sigmaw)
+    ShiftedInit = shifted_init_class_wrapper(sigmab,shifted_init_shift)
     custom_objects = {'cauchy_init': CauchyInit, 'shifted_init':ShiftedInit}
     model = model_from_json(arch_json_string,custom_objects=custom_objects)
 

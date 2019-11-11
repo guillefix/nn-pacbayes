@@ -77,37 +77,18 @@ def main(_):
     from tensorflow.keras.models import model_from_json
 
     '''some custom initalizers and keras setup'''
-    # from keras.utils.generic_utils import get_custom_objects
-    # get_custom_objects().update({'cauchy_init': CauchyInit})
-
-    def cauchy_init(shape, dtype=None):
-        # return keras.backend.variable((sigmaw/(np.sqrt(np.prod(shape[:-1]))))*np.random.standard_cauchy(shape), dtype=dtype)
-        return (sigmaw/(np.sqrt(np.prod(shape[:-1]))))*np.random.standard_cauchy(shape)
-
-    def shifted_init(shape, dtype=None):
-        return sigmab*np.random.standard_normal(shape)-0.5
-
-    class CauchyInit:
-        def __call__(self, shape, dtype=None):
-            return cauchy_init(shape, dtype=dtype)
-
-    class ShiftedInit:
-        def __call__(self, shape, dtype=None):
-            return shifted_init(shape, dtype=dtype)
-
+    from utils import cauchy_init_class_wrapper, shifted_init_class_wrapper
+    CauchyInit = cauchy_init_class_wrapper(sigmaw)
+    ShiftedInit = shifted_init_class_wrapper(sigmab,shifted_init_shift)
     custom_objects = {'cauchy_init': CauchyInit, 'shifted_init':ShiftedInit}
     model = model_from_json(arch_json_string,custom_objects=custom_objects)
 
     set_session = tf.compat.v1.keras.backend.set_session
-    # set_session = tf.keras.backend.set_session
 
     config = tf.compat.v1.ConfigProto()
     config.gpu_options.allow_growth = True  # dynamically grow the memory used on the GPU
     config.log_device_placement = False  # to log device placement (on which device the operation ran)
-    # config.gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.2)
-    # (nothing gets printed in Jupyter, only if you run it standalone)
     sess = tf.compat.v1.Session(config=config)
-    # sess = tf.Session(config=config)
     set_session(sess)  # set this TensorFlow session as the default session for Keras
 
     '''TRAINING LOOP'''
@@ -174,11 +155,18 @@ def main(_):
             test_sensitivity = -1
             test_specificity = -1
         else:
-            for th in np.linspace(0,1,5): # low number of thresholds as I'm not exploring unbalanced datasets right now
-                test_sensitivity = sum([(sigmoid(preds[i])>th)==x for i,x in enumerate(test_ys) if x==1])/(len([x for x in test_ys if x==1]))
-                test_specificity = sum([(sigmoid(preds[i])>th)==x for i,x in enumerate(test_ys) if x==0])/(len([x for x in test_ys if x==0]))
-                if test_specificity>0.99:
-                    break
+            if threshold != -1:
+                for th in np.linspace(0,1,100):
+                    test_sensitivity = sum([(sigmoid(preds[i])>th)==x for i,x in enumerate(test_ys) if x==1])/(len([x for x in test_ys if x==1]))
+                    test_specificity = sum([(sigmoid(preds[i])>th)==x for i,x in enumerate(test_ys) if x==0])/(len([x for x in test_ys if x==0]))
+                    if test_specificity>0.99:
+                        break
+            else:
+                for th in np.linspace(0,1,5): # low number of thresholds as I'm not exploring unbalanced datasets right now
+                    test_sensitivity = sum([(sigmoid(preds[i])>th)==x for i,x in enumerate(test_ys) if x==1])/(len([x for x in test_ys if x==1]))
+                    test_specificity = sum([(sigmoid(preds[i])>th)==x for i,x in enumerate(test_ys) if x==0])/(len([x for x in test_ys if x==0]))
+                    if test_specificity>0.99:
+                        break
 
         print('Test accuracy:', test_acc)
         print('Test sensitivity:', test_sensitivity)
@@ -248,7 +236,7 @@ def main(_):
         test_acc_std = np.std(sum(train_accs,[]))
         mean_iters = np.mean(sum(iterss,[]))
 
-        useful_train_flags = ["dataset", "m", "network", "loss", "optimizer", "pooling", "epochs_after_fit", "ignore_non_fit", "test_function_size", "batch_size", "number_layers", "sigmaw", "sigmab", "init_dist","whitening", "centering", "oversampling", "oversampling2", "channel_normalization", "training", "binarized", "confusion","filter_sizes", "gamma", "intermediate_pooling", "label_corruption", "threshold", "n_gpus", "n_samples_repeats", "layer_width", "number_inits", "padding"]
+        useful_train_flags = ["dataset", "m", "network", "loss", "optimizer", "pooling", "epochs_after_fit", "ignore_non_fit", "test_function_size", "batch_size", "number_layers", "sigmaw", "sigmab", "init_dist","use_shifted_init","shifted_init_shift","whitening", "centering", "oversampling", "oversampling2", "channel_normalization", "training", "binarized", "confusion","filter_sizes", "gamma", "intermediate_pooling", "label_corruption", "threshold", "n_gpus", "n_samples_repeats", "layer_width", "number_inits", "padding"]
         with open(results_folder+prefix+"nn_training_results.txt","a") as file:
             file.write("#")
             for key in sorted(useful_train_flags):

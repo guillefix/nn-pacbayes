@@ -61,26 +61,19 @@ def main(_):
         input_dim = image_height*image_width*number_channels
     set_session = tf.compat.v1.keras.backend.set_session
 
-    def cauchy_init_wrapper(sigma):
-        def cauchy_init(shape, dtype=None):
-            # return keras.backend.variable((sigmaw/(np.sqrt(np.prod(shape[:-1]))))*np.random.standard_cauchy(shape), dtype=dtype)
-            return (sigma/(np.sqrt(np.prod(shape[:-1]))))*np.random.standard_cauchy(shape)
-        return cauchy_init
-
-    def shifted_init(shape, dtype=None):
-        return sigmab*np.random.standard_normal(shape)-0.5
+    from utils import cauchy_init_wrapper,shifted_init_wrapper
 
     if init_dist == "gaussian":
         bias_initializer = keras.initializers.RandomNormal(stddev=sigmab)
         # weight_initializer = keras.initializers.RandomNormal(stddev=sigmaw/np.sqrt(input_dim))
         weight_initializer = keras.initializers.VarianceScaling(scale=sigmaw**2, mode='fan_in', distribution='normal', seed=None)
         if use_shifted_init:
-            bias_initializer_last_layer = shifted_init
+            bias_initializer_last_layer = shifted_init_wrapper(sigmab,shifted_init_shift)
         else:
             bias_initializer_last_layer = bias_initializer
     elif init_dist == "cauchy":
-        bias_initializer = cauchy_init(sigmab)
-        weight_initializer  = cauchy_init(sigmaw)
+        bias_initializer = cauchy_init_wrapper(sigmab)
+        weight_initializer  = _wrapper(sigmaw)
         bias_initializer_last_layer = bias_initializer
     elif init_dist == "uniform":
         bias_initializer = keras.initializers.RandomUniform(minval=-np.sqrt(3 * sigmab), maxval=np.sqrt(3 * sigmab), seed=None)

@@ -1,3 +1,7 @@
+'''
+Simple version of the generate_input_sample for the SGDvsBayes experiments I'm doing with Chris
+To make sure we are using the same dataset
+'''
 import numpy as np
 import matplotlib.pyplot as plt
 import tensorflow as tf

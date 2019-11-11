@@ -5,7 +5,7 @@
 
 m=20000
 dataset=mnist
-prefix=adam_ce_chris_unnormalized_correct_bias_
+prefix=adam_ce_chris_unnormalized_correct_bias_fixed_layer_width_
 #prefix=langevin_ce_run_
 sigmaw=1.0
 sigmab=0.0357

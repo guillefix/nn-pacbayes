@@ -141,6 +141,8 @@ def main(_):
             #             funs[comp].append(fun)
             # pickle.dump(funs,open("funs_per_complexity.p","wb"))
 
+        print("fun",fun)
+
         if sigmab==0:
             labels=np.array([[int(xx)*2.0-1] for xx in list(fun)[1:]]) #start from 1 because we ignored the 0th input
         else:

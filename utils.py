@@ -124,6 +124,7 @@ def define_default_flags(f):
     f.DEFINE_float('sigmaw', 1.0, "The variance parameter of the weights; their variance will be sigmaw/sqrt(number of inputs to neuron")
     f.DEFINE_float('sigmab', 1.0, "The variance of the biases")
     f.DEFINE_string('init_dist', "gaussian", "The distribution to use to initialize parameters")
+    f.DEFINE_float('shifted_init_shift',1.0,"Mean of the bias term distribution of the last layer (for some class imbalance experiments)")
     # f.DEFINE_boolean('compute_bound', False, "Whether to compute the PAC-Bayes bound or just generate the training data")
     #f.DEFINE_boolean('compute_kernel', False, "Whether to compute the kernel or just generate the training data")
     f.DEFINE_boolean('use_shifted_init', False, "Whether to use a distribution of the last layer bias term which has non-zero mean; may be useful for learning class-imbalanced data")
@@ -274,6 +275,26 @@ def entropy(f):
     else:
         return 0
 
+def cauchy_init_wrapper(sigmaw):
+    def cauchy_init(shape, dtype=None):
+        return (sigmaw/(np.sqrt(np.prod(shape[:-1]))))*np.random.standard_cauchy(shape)
+    return cauchy_init
+
+
+def shifted_init_wrapper(sigmab, shifted_init_shift):
+    def shifted_init(shape, dtype=None):
+        return sigmab*np.random.standard_normal(shape)-shifted_init_shift
+    return shifted_init
+
+def cauchy_init_class_wrapper(sigmaw):
+    class CauchyInit:
+        def __call__(self, shape, dtype=None):
+            return cauchy_init_wrapper(sigmaw)(shape, dtype=dtype)
+
+def shifted_init_class_wrapper(sigmab, shifted_init_shift):
+    class ShiftedInit:
+        def __call__(self, shape, dtype=None):
+            return shifted_init_wrapper(sigmab,shifted_init_shift)(shape, dtype=dtype)
 #
 #
 
