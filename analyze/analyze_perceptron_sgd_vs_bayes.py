@@ -20,17 +20,37 @@ test_set_indices = [i for i in range(len(train_set)) if train_set[i]=="0"]
 # sgd_sample = pd.read_csv("results/sgd_perceptron_64_512_0_8_sgd_ce_1_combined_nn_train_functions_counted.txt", header=None, delim_whitespace=True, names=["freq","testfun"])
 # abi_sample = pd.read_csv("results/abi_samples_sgd_vs_bayes_2hlfc_counts_sorted.txt",header=None,delim_whitespace=True, names=["freq", "fun", "generror"], comment="#")
 # sgd_sample = pd.read_csv("results/sgd_fc_64___8_sgd_ce_1_train_functions_counts_sorted.txt", header=None, delim_whitespace=True, names=["freq","testfun"])
-abi_sample = pd.read_csv("results/m32_abi_sample_net_2hl_counts_sorted.txt",header=None,delim_whitespace=True, names=["freq", "fun", "generror"], comment="#")
-sgd_sample = pd.read_csv("results/sgd_fc_32___8_sgd_ce_1_counts_sorted.txt", header=None, delim_whitespace=True, names=["freq","testfun"])
+# abi_sample = pd.read_csv("results/m32_abi_sample_net_2hl_counts_sorted.txt",header=None,delim_whitespace=True, names=["freq", "fun", "generror"], comment="#")
+abi_sample = pd.read_csv("results/m32_abi_sample_net_2hl_counts_sorted_testfuns.txt")
+# abi_sample.to_csv("results/m32_abi_sample_net_2hl_counts_sorted_testfuns.txt")
+# sgd_sample = pd.read_csv("results/sgd_fc_32___8_sgd_ce_1_counts_sorted.txt", header=None, delim_whitespace=True, names=["freq","testfun"])
+sgd_sample2 = pd.read_csv("results/sgd_fc_32___8_sgd_ce_1_counts_sorted.txt", header=None, delim_whitespace=True, names=["freq","testfun"])
+sgd_sample = pd.read_csv("results/sgd_fc_32___8_sgd_ce_64_counts_sorted.txt", header=None, delim_whitespace=True, names=["freq","testfun"])
 
-abi_sample.sort_values("freq",ascending=False)
+target_testfun = "".join([x for i,x in enumerate(target_fun) if i in test_set_indices])
 
-sgd_sample
+def compute_gen_error(testfun,target_testfun):
+    assert len(testfun) == len(target_testfun)
+    return len([x for i,x in enumerate(testfun) if x==target_testfun[i]])/len(testfun)
+
+gen_error_sgd_sample = list(map(lambda x: compute_gen_error(x, target_testfun), sgd_sample.index))
+gen_error_sgd_sample2 = list(map(lambda x: compute_gen_error(x, target_testfun), sgd_sample2.index))
+
+plt.hist(gen_error_sgd_sample, alpha=0.5, density=True, bins=20, label="Overtrained SGD");
+plt.hist(gen_error_sgd_sample2, alpha=0.5, density=True, bins=20, label="Early stopped SGD");
+plt.legend()
+plt.xlabel("Test error")
+plt.savefig("test_error_histograms_sgd_fc_32___8_sgd_ce_wait64_vs_wait_1_7_2x40_1.png")
+
+# abi_sample.sort_values("freq",ascending=False)
+# sgd_sample
 
 sgd_tot_samples = sum(sgd_sample["freq"])
+sgd_tot_samples2 = sum(sgd_sample2["freq"])
 abi_tot_samples = sum(abi_sample["freq"])
 
-abi_sample["testfun"] = abi_sample["fun"].apply(lambda fun: "".join([x for i,x in enumerate(fun) if i in test_set_indices]))
+# abi_sample["testfun"] = abi_sample["fun"].apply(lambda fun: "".join([x for i,x in enumerate(fun) if i in test_set_indices]))
+
 # abi_sample["testfun"] = abi_sample["fun"].apply(lambda fun: "".join([x for i,x in enumerate(fun[1:]) if i in test_set_indices]))
 
 abi_sample = abi_sample.groupby("testfun").sum()
@@ -40,12 +60,35 @@ abi_sample = abi_sample.groupby("testfun").sum()
 
 # abi_sample = abi_sample.set_index("testfun")
 sgd_sample = sgd_sample.set_index("testfun")
+sgd_sample2 = sgd_sample2.set_index("testfun")
 
 # abi_sample.index
 #
 # abi_sample.loc[test_fun_abi_sample_unique[0]]["freq"]
 
 # test_fun_abi_sample_unique = abi_sample["testfun"].unique()
+
+##SGD vs SGD
+
+sgd_freqs = []
+sgd_freqs2 = []
+test_funs = []
+# for index,row in list(sgd_sample[["testfun","freq"]].iterrows())[:10]:
+#     print(row["freq"])
+
+for test_fun,row in sgd_sample.iterrows():
+    # test_fun = row["testfun"]
+    sgd_freq = row["freq"]
+    if test_fun in abi_sample.index:
+        if sgd_freq > 3:
+            sgd_freq2 = sgd_sample2.loc[test_fun]["freq"]
+            if abi_freq > 3:
+                sgd_freqs2.append(sgd_freq2)
+                sgd_freqs.append(sgd_freq)
+                test_funs.append(test_fun)
+
+
+##ABI vs SGD
 
 abi_freqs = []
 sgd_freqs = []
@@ -74,22 +117,32 @@ for test_fun,row in sgd_sample.iterrows():
 
 normalized_abi_freqs = np.array(abi_freqs)/abi_tot_samples
 normalized_sgd_freqs = np.array(sgd_freqs)/sgd_tot_samples
+normalized_sgd_freqs2 = np.array(sgd_freqs2)/sgd_tot_samples2
 #%%
 
-len(logPUs_GP) == len(normalized_sgd_freqs)
+# len(logPUs_GP) == len(normalized_sgd_freqs)
 
 len(normalized_sgd_freqs)
-plt.scatter(normalized_abi_freqs, normalized_sgd_freqs)
+# plt.scatter(normalized_abi_freqs, normalized_sgd_freqs)
+plt.scatter(normalized_sgd_freqs2, normalized_sgd_freqs)
 # plt.scatter(logPUs_GP, normalized_sgd_freqs)
 plt.yscale("log")
 plt.xscale("log")
-plt.xlim([normalized_abi_freqs.min()*0.5,normalized_abi_freqs.max()*1.5])
+# plt.xlim([normalized_abi_freqs.min()*0.5,normalized_abi_freqs.max()*1.5])
+plt.xlim([min(normalized_sgd_freqs.min(),normalized_sgd_freqs2.min())*0.5,max(normalized_abi_freqs.max(),normalized_sgd_freqs2.max())*2])
+plt.ylim([min(normalized_sgd_freqs.min(),normalized_sgd_freqs2.min())*0.5,max(normalized_abi_freqs.max(),normalized_sgd_freqs2.max())*2])
 # plt.xlim([min(logPUs_GP)*1.1,max(logPUs_GP)*0.1])
-plt.ylim([normalized_sgd_freqs.min()*0.5,normalized_sgd_freqs.max()*1.5])
+# plt.ylim([normalized_sgd_freqs.min()*0.5,normalized_sgd_freqs.max()*1.5])
 plt.xlabel("ABI probabilities")
 plt.ylabel("SGD probabilities")
+plt.xlabel("SGD probabilities (Early stopping)")
+plt.ylabel("SGD probabilities (Overtrain)")
+plt.plot([min(normalized_sgd_freqs.min(),normalized_sgd_freqs2.min())*0.5,max(normalized_abi_freqs.max(),normalized_sgd_freqs2.max())*2],[min(normalized_sgd_freqs.min(),normalized_sgd_freqs2.min())*0.5,max(normalized_abi_freqs.max(),normalized_sgd_freqs2.max())*2], c='k')
+#%%
 # plt.savefig("sgd_fc_64___8_sgd_ce_vs_abi_7_2x40_1_above5.png")
 plt.savefig("sgd_fc_32___8_sgd_ce_vs_abi_7_2x40_1_above5.png")
+plt.savefig("sgd_fc_32___8_sgd_ce_wait1_vs_sgd_wait64_7_2x40_1_above5.png")
+#%%
 
 # plt.scatter(logPUs_GP, normalized_sgd_freqs)
 plt.scatter(logPUs_GP, normalized_abi_freqs)
@@ -101,7 +154,9 @@ plt.xlabel("GPEP probabilities")
 # plt.ylabel("SGD probabilities")
 plt.ylabel("ABI probabilities")
 # plt.savefig("sgd_fc_32___8_sgd_ce_vs_gpep_7_2x40_1_above4.png")
+#%%
 plt.savefig("abi_fc_32___8_sgd_ce_vs_gpep_7_2x40_1_above4.png")
+#%%
 
 H, xedges, yedges = np.histogram2d(normalized_abi_freqs, normalized_sgd_freqs)
 
@@ -114,22 +169,24 @@ h
 # h,_,_,_ = plt.hist2d(np.log(normalized_abi_freqs), np.log(normalized_sgd_freqs), weights=np.maximum(1,normalized_abi_freqs), bins=30)
 # h,xedges,yedges,_ = plt.hist2d(np.log(normalized_abi_freqs), np.log(normalized_sgd_freqs), weights=normalized_abi_freqs, bins=30)
 h,xedges,yedges,_ = plt.hist2d(np.log10(normalized_abi_freqs), np.log10(normalized_sgd_freqs), weights=normalized_sgd_freqs, bins=30)
-h,_,_,_ = plt.hist2d(np.log(normalized_abi_freqs), np.log(normalized_sgd_freqs), bins=30)
-h = h/np.maximum(1e-6,h.max(axis=1, keepdims=True))
-# h = h/np.maximum(1e-6,h.max(axis=0, keepdims=True))
+h,xedges,yedges,_ = plt.hist2d(np.log10(normalized_abi_freqs), np.log10(normalized_sgd_freqs), bins=30)
+# h = h/np.maximum(1e-6,h.max(axis=1, keepdims=True))
+h = h/np.maximum(1e-6,h.max(axis=0, keepdims=True))
 plt.imshow(np.rot90(h))
 tick_places = list(map(lambda x: np.argmin(np.abs(xedges+x)), range(5,0,-1)))
 # tick_places = range(3,30,5)
-plt.xticks(tick_places,["$10^{{{0:.0f}}}$".format(x) for i,x in enumerate(xedges) if i in tick_places])
+plt.xticks(tick_places,["$10^{{{0:.0f}}}$".format(x) for i,x in enumerate(xedges) if i in tick_places]);
 tick_places = list(map(lambda x: np.argmin(np.abs(yedges+x)), range(0,6)))
-plt.yticks(tick_places,["$10^{{{0:.0f}}}$".format(x) for i,x in enumerate(yedges) if i in tick_places])
+plt.yticks(tick_places,["$10^{{{0:.0f}}}$".format(x) for i,x in enumerate(yedges) if i in tick_places]);
 plt.xlabel("ABI probabilities")
 plt.ylabel("SGD probabilities")
-# plt.savefig("sgd_fc_32___8_sgd_ce_vs_abi_7_2x40_1_above3_sgd_weighted_column_normalized.png")
-plt.savefig("sgd_fc_32___8_sgd_ce_vs_abi_7_2x40_1_above3_sgd_weighted_row_normalized.png")
-# plt.savefig("sgd_fc_32___8_sgd_ce_vs_abi_7_2x40_1_above3_unweighted_column_normalized.png")
-plt.savefig("sgd_fc_32___8_sgd_ce_vs_abi_7_2x40_1_above3_unweighted_row_normalized.png")
-# plt.savefig("sgd_fc_32___8_sgd_ce_vs_abi_7_2x40_1_above3_abi_weighted_column_normalized.png")
+# # plt.savefig("sgd_fc_32___8_sgd_ce_vs_abi_7_2x40_1_above3_sgd_weighted_column_normalized.png")
+# plt.savefig("sgd_fc_32___8_sgd_ce_vs_abi_7_2x40_1_above3_sgd_weighted_row_normalized.png")
+# # plt.savefig("sgd_fc_32___8_sgd_ce_vs_abi_7_2x40_1_above3_unweighted_column_normalized.png")
+# plt.savefig("sgd_fc_32___8_sgd_ce_vs_abi_7_2x40_1_above3_unweighted_row_normalized.png")
+# # plt.savefig("sgd_fc_32___8_sgd_ce_vs_abi_7_2x40_1_above3_abi_weighted_column_normalized.png")
+
+# plt.savefig("sgd_fc_32___8_sgd_ce_wait64_vs_abi_7_2x40_1_above3_sgd_weighted_row_normalized.png")
 plt.hist2d(np.log(normalized_abi_freqs), np.log(normalized_sgd_freqs))
 from matplotlib.colors import LogNorm
 plt.hist2d(np.log(normalized_abi_freqs), np.log(normalized_sgd_freqs), bins=40, norm=LogNorm())

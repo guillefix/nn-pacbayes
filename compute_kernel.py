@@ -45,13 +45,19 @@ def main(_):
     print("compute kernel", network, dataset)
 
     # COMPUTE KERNEL
-    if use_empirical_K:
+    if use_empirical_NTK:
+        from nngp_kernel.empirical_ntk import empirical_NTK
+        print(ceil(int(train_images.shape[0])*n_samples_repeats))
+        from tensorflow.keras.models import model_from_json
+        model = model_from_json(arch_json_string)
+        K = empirical_NTK(model,train_images)#,sess=sess)
+    elif use_empirical_K:
         from nngp_kernel.empirical_kernel import empirical_K
         print("n_samples_repeats",n_samples_repeats)
         print(ceil(int(train_images.shape[0])*n_samples_repeats))
         K = empirical_K(arch_json_string,train_images,ceil(int(train_images.shape[0])*n_samples_repeats),sigmaw=sigmaw,sigmab=sigmab,n_gpus=n_gpus,sess=sess)
     if rank == 0:
-        if not use_empirical_K:
+        if not (use_empirical_K or use_empirical_NTK):
             if network=="cnn":
                 from nngp_kernel.cnn_kernel import kernel_matrix
                 K = kernel_matrix(flat_train_images,image_size=image_size,number_channels=number_channels,filter_sizes=filter_sizes,padding=padding,strides=strides,sigmaw=sigmaw,sigmab=sigmab,n_gpus=n_gpus)
