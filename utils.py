@@ -89,6 +89,7 @@ def kernel_filename(FLAGS):
     filename=kernel_folder
     for flag in ["prefix","network","dataset","m","confusion","label_corruption","binarized","whitening","random_labels","number_layers","sigmaw","sigmab","pooling","intermediate_pooling","intermediate_pooling_type"]:
         filename+=str(FLAGS[flag])+"_"
+    if FLAGS["use_empirical_NTK"]: filename += "NTK_"
     filename += "kernel.npy"
     return filename
 
@@ -133,6 +134,7 @@ def define_default_flags(f):
     f.DEFINE_boolean('channel_normalization', False, "Whether to normalize the channel of the images")
     f.DEFINE_boolean('no_training', False, "Whether to also generate labels and test data")
     f.DEFINE_boolean('use_empirical_K', False, "Whether to use the empirical kernel matrix (from sampling) or the analytical one")
+    f.DEFINE_boolean('use_empirical_NTK', False, "Whether to calculate the empirical NTK rather than NNGP")
     f.DEFINE_integer('n_gpus', 1, "Number of GPUs to use")
     f.DEFINE_integer('threshold', -1, "Label above or on which to binarze as 1, and below which to binarize as 0")
     f.DEFINE_float('n_samples_repeats', 1.0, "Number of samples to compute empirical kernel, as a multiple of training set size, m")

@@ -8,15 +8,15 @@ import numpy as np
 from numpy.linalg import inv
 from numpy import matmul
 
-import neural_tangents as nt
-from neural_tangents import stax
+# import neural_tangents as nt
+# from neural_tangents import stax
 
 def GP_prob(K,X,Y,sigma_noise=1.0, posterior="bayes"):
     n = X.shape[0]
     if posterior=="bayes":
         alpha = matmul(inv(np.eye(n)*(sigma_noise**2)+K),Y)
         cov = inv(inv(K)+np.eye(n)/(sigma_noise**2))
-    elif posterior="ntk":
+    elif posterior=="ntk":
         pass
         # mean =
         # cov =
