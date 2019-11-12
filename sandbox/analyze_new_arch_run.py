@@ -7,6 +7,7 @@ import tensorflow as tf
 data_folder = "data/"
 arch_folder = "archs/"
 kernel_folder = "kernels/"
+results_folder = "results/"
 
 training_results = pd.read_csv(results_folder+prefix+"nn_training_results.txt",comment="#", header='infer',sep="\t")
 
@@ -22,7 +23,8 @@ def logP(K,X,Y):
     thing = -0.5*(-np.matmul(Y.T,np.matmul(np.linalg.inv(Kfull),Y)) - m*np.log(np.pi) - logdet)
     return thing
 
-methods = ["EP","Laplace","importance_sampling","HMC", "Metropolis_EPproposal","variational", "logP"]
+# methods = ["EP","Laplace","importance_sampling","HMC", "Metropolis_EPproposal","variational", "logP"]
+methods = ["EP","Laplace","variational", "logP"]
 funs = {"EP": lambda K,X,Y: GP_prob1(K,X,Y, method="EP"),
         "Laplace": lambda K,X,Y: GP_prob1(K,X,Y,method="Laplace"),
         "importance_sampling": lambda K,X,Y: GP_prob_MC(K,X,Y,method="importance_sampling"),
@@ -61,7 +63,8 @@ for net in ["densenet121","densenet169","densenet201","mobilenetv2","nasnet","re
 
     #%%
 
-    filename = net+"_KMNIST_1000_0.0_0.0_True_False_True_4_3.0_0.0_None_0000_max_kernel.npy"
+    # filename = net+"_KMNIST_1000_0.0_0.0_True_False_True_4_3.0_0.0_None_0000_max_kernel.npy"
+    filename = "newer_arch_sweep_ce_sgd__"+str(net)+"_EMNIST_1000_0.0_0.0_True_False_True_4_1.414_0.0_None_0000_max_kernel.npy"
 
     from utils import load_kernel_by_filename
     Kfull = load_kernel_by_filename("kernels/"+filename)
