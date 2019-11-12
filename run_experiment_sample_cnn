@@ -30,4 +30,4 @@ $py generate_inputs_sample.py $@
 
 #/usr/local/shared/openmpi/4.0.0/bin/mpiexec -n 100 $py sample_funs.py $@ --number_samples 10000
 
-mpiexec -n 1 $py sample_funs.py $@ --number_samples 100000
+mpiexec -n $n_procs $py sample_funs.py $@ --number_samples 100000
