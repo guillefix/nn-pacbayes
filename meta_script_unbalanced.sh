@@ -18,7 +18,7 @@ optimizer=sgd
 loss=ce
 sigmaw=1.41
 #sigmaw=100.0
-sigmab=1.0
+sigmab=0.1
 pool=none
 c=0.0
 number_inits=20
@@ -41,7 +41,7 @@ prefix=shifted_init_sweep_${t}_${dataset}_
 
 n_gpus=0
 export n_gpus=$n_gpus
-export n_procs=20
+export n_procs=1
 
 for shifted_init_shift in `seq 0.0 0.5 5.0`; do
 #for shifted_init_shift in 1.5; do
