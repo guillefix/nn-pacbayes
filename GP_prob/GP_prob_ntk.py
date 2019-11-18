@@ -7,24 +7,22 @@ sys.path.append(GP_prob_folder)
 import numpy as np
 from numpy.linalg import inv
 from numpy import matmul
+    import scipy
 
 import neural_tangents as nt
 from neural_tangents import stax
 
-def GP_prob(K,X,Y,sigma_noise=1.0, posterior="bayes"):
-    n = X.shape[0]
-    if posterior=="bayes":
-        alpha = matmul(inv(np.eye(n)*(sigma_noise**2)+K),Y)
-        cov = inv(inv(K)+np.eye(n)/(sigma_noise**2))
-    elif posterior="ntk":
-        pass
-        # mean =
-        # cov =
-        # alpha = np.linalg.solve(K,mean)
-    covi = inv(cov)
-    coviK = matmul(covi,K)
-    KL = 0.5*np.log(np.linalg.det(coviK)) + 0.5*np.trace(inv(coviK)) + 0.5*matmul(alpha.T,matmul(K,alpha)) - n/2
-    return -KL[0,0]
+def GP_prob(K,theta,X,Y,sigma_noise=1.0, posterior="bayes"):
+    n = K.shape[0]
+    t = 1.0
+    decay_matrix = np.eye(n)-scipy.linalg.expm(-t*theta)
+    Sigma = K + np.matmul(decay_matrix, np.matmul(K, np.matmul(np.linalg.inv(theta), np.matmul(decay_matrix, theta))) - 2*K)
+
+    alpha = np.matmul(np.linalg.inv(K), np.matmul(decay_matrix,Y))
+    eigs_sigma = np.linalg.eigvals(Sigma)
+    eigs_K = np.linalg.eigvals(K)
+    KL = 0.5*(np.sum(np.log(1/eigs_sigma) + np.log(eigs_K)) + np.sum(eigs_sigma/eigs_K) + np.matmul(alpha.T,np.matmul(K,alpha)) - n)
+    return np.real(KL)
 
 '''PLAYGROUND'''
 
