@@ -113,16 +113,17 @@ h
 
 # h,_,_,_ = plt.hist2d(np.log(normalized_abi_freqs), np.log(normalized_sgd_freqs), weights=np.maximum(1,normalized_abi_freqs), bins=30)
 # h,xedges,yedges,_ = plt.hist2d(np.log(normalized_abi_freqs), np.log(normalized_sgd_freqs), weights=normalized_abi_freqs, bins=30)
-h,xedges,yedges,_ = plt.hist2d(np.log10(normalized_abi_freqs), np.log10(normalized_sgd_freqs), weights=normalized_sgd_freqs, bins=30)
-h,_,_,_ = plt.hist2d(np.log(normalized_abi_freqs), np.log(normalized_sgd_freqs), bins=30)
-h = h/np.maximum(1e-6,h.max(axis=1, keepdims=True))
-# h = h/np.maximum(1e-6,h.max(axis=0, keepdims=True))
+# h,xedges,yedges,_ = plt.hist2d(np.log10(normalized_abi_freqs), np.log10(normalized_sgd_freqs), weights=normalized_sgd_freqs, bins=30)
+h,xedges,yedges,_ = plt.hist2d(np.log10(normalized_abi_freqs), np.log10(normalized_sgd_freqs), bins=30)
+# h = h/np.maximum(1e-6,h.max(axis=1, keepdims=True))
+h = h/np.maximum(1e-6,h.max(axis=0, keepdims=True))
 plt.imshow(np.rot90(h))
 tick_places = list(map(lambda x: np.argmin(np.abs(xedges+x)), range(5,0,-1)))
 # tick_places = range(3,30,5)
-plt.xticks(tick_places,["$10^{{{0:.0f}}}$".format(x) for i,x in enumerate(xedges) if i in tick_places])
+plt.xticks(tick_places,["$10^{{{0:.0f}}}$".format(x) for i,x in enumerate(xedges) if i in tick_places]);
 tick_places = list(map(lambda x: np.argmin(np.abs(yedges+x)), range(0,6)))
-plt.yticks(tick_places,["$10^{{{0:.0f}}}$".format(x) for i,x in enumerate(yedges) if i in tick_places])
+plt.yticks(tick_places,["$10^{{{0:.0f}}}$".format(x) for i,x in enumerate(yedges) if i in tick_places]);
+plt.colorbar()
 plt.xlabel("ABI probabilities")
 plt.ylabel("SGD probabilities")
 # plt.savefig("sgd_fc_32___8_sgd_ce_vs_abi_7_2x40_1_above3_sgd_weighted_column_normalized.png")

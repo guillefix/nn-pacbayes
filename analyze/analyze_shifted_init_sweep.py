@@ -2,60 +2,81 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 %matplotlib
-
+import glob
 # d["train_acc"]
 
-d = pd.read_csv("results/new_shifted_init_sweep_1_mnist_nn_training_results.txt", sep="\t", comment="#")
-d = d.sort_values("shifted_init_shift")
-d.columns
-x=d["shifted_init_shift"]
-y=d["test_sensitivity"]
-y=d["test_acc"]
+prefix="new_shifted_init_sweep"
+dataset="mnist"
+net="cnn"
+number_layers=4
 
-# plt.plot(x,y)
-# plt.xlabel("shift")
-# plt.ylabel("Sensitivity")
-# plt.savefig("sensitivity_vs_b_cnn_100mnist_sigmab0.png")
+prefix="tanh_centered_fc_shifted_init_sweep"
+prefix="uncentered_fc_shifted_init_sweep"
+prefix="fc_shifted_init_sweep"
+net="fc"
+number_layers=1
+dataset="mnist"
+dataset="EMNIST"
+
+#%%
+d = pd.read_csv("results/"+prefix+"_1_"+dataset+"_nn_training_results.txt", sep="\t", comment="#")
+d = d.sort_values("shifted_init_shift")
+x=d["shifted_init_shift"]
+test_sensitivities=d["test_sensitivity"]
+test_accuracies=d["test_acc"]
+
 
 # shift=0.5
-shifts=[-5.0,-4.0,-3.0,-2.0,-1.0,0.0,0.5,1.0,2.0,3.0,4.0,5.0]
+# shifts=[-5.0,-4.0,-3.0,-2.0,-1.0,0.0,0.5,1.0,2.0,3.0,4.0,5.0]
+# shifts=[-5.0,-4.0,-3.0,-2.0,-1.0,0.0,1.0,2.0,3.0,4.0,5.0]
+# shifts=[0.0]
+shifts=x
 hist_datas=[]
 mean_n1s=[]
 for i,shift in enumerate(shifts):
-    d = pd.read_csv("results/index_funs_probs_0_new_shifted_init_sweep_"+"{0:g}".format(shift)+"_1_mnist__"+str(shift)+"_mnist_cnn_4_none_0000.txt", header=None, names=["index","fun","ent","n1s"],delim_whitespace=True, \
-        dtype={"index":np.int, "fun":"str","ent":np.float,"n1s":np.int})
+    # print(shift)
+    d = pd.DataFrame()
+    for filename in glob.glob("results/index_funs_probs_*_"+prefix+"_*_"+str(shift)+"_"+dataset+"_"+net+"_"+str(number_layers)+"*.txt"):
+        # print(filename)
+        d = pd.concat([d,pd.read_csv(filename, header=None, names=["index","fun","ent","n1s"],delim_whitespace=True, \
+            dtype={"index":np.int, "fun":"str","ent":np.float,"n1s":np.int})],axis=0)
 
-    hist_data = plt.hist(d["n1s"], bins=len(d["n1s"].unique()))
+    hist_data = plt.hist(d["n1s"], bins=len(d["n1s"].unique()), label=shift)
     mean_n1s.append(d["n1s"].mean())
     hist_datas.append(hist_data)
 
-# for i,hist_data in enumerate(hist_datas[::-1]):
-#     plt.bar(hist_data[1][:-1],hist_data[0]/np.sum(hist_data[0]),width=1, log=False, alpha=0.8,color=(i/12,i/12,i/12), label=shifts[::-1][i])
-#
-# plt.legend()
-# plt.xlabel("T")
-# plt.ylabel("Probability")
+plt.legend()
+plt.close()
 
-# d.plot.hist("n1s")
-# plt.plot(shifts,np.array(mean_n1s)/100)
 fig = plt.figure()
 ax = fig.add_subplot(111)
 
-# lns1 = ax.plot(x, y, '-', label = 'Sensitivity')
-lns1 = ax.plot(x, y, '-', label = 'Accuracy')
-# lns2 = ax.plot(shifts, np.array(mean_n1s)/100, '-', label = 'T')
+lns1 = ax.plot(x, test_sensitivities, '-', c="red", label = 'Sensitivity')
+# lns2 = ax.plot(x, np.array(mean_n1s)/100, '-', label = 'T')
 ax2 = ax.twinx()
-lns3 = ax2.plot(shifts, np.array(mean_n1s), '-r', label = '$\langle T\\rangle$')
+ax3 = ax.twinx()
+lns3 = ax2.plot(shifts, np.array(mean_n1s), '-k', label = '$\langle T\\rangle$')
+lns2 = ax3.plot(x, test_accuracies, '-b', label = 'Accuracy')
 
+from matplotlib.ticker import FormatStrFormatter
+ax3.yaxis.set_major_formatter(FormatStrFormatter('%g'))
+ax3.yaxis.set_major_locator(plt.MaxNLocator(6))
+# ax3.xaxis.set_major_locator(plt.MaxNLocator(7))
+ax3.spines['left'].set_position(('outward', 60))
+ax3.spines["left"].set_visible(True)
+ax3.yaxis.set_label_position('left')
+ax3.yaxis.set_ticks_position('left')
+plt.subplots_adjust(left=0.23, right=0.9, top=0.9, bottom=0.15)
 # added these three lines
-lns = lns1+lns3
+lns = lns1+lns2+lns3
 labs = [l.get_label() for l in lns]
-ax.legend(lns, labs, loc=0)
+ax.legend(lns, labs, loc="upper left")
 ax.grid()
 ax.set_xlabel("shift")
 # ax.set_ylabel("Sensitivity")
-ax.set_ylabel("Accuracy")
+ax.set_ylabel("Test sensitivity")
 ax2.set_ylabel("$\langle T\\rangle$")
+ax3.set_ylabel("Test accuracy")
 
 # plt.savefig("sensitivity_T_vs_shift_100mnist_cnn_sigmab0.png")
-plt.savefig("accuracy_T_vs_shift_100mnist_cnn_sigmab0.png")
+# plt.savefig("accuracy_sensitivity_T_vs_shift_"+dataset+"_"+net+"_"+str(number_layers)+"_"+prefix+".png")
