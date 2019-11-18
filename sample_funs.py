@@ -43,6 +43,14 @@ def main(_):
         config.gpu_options.allow_growth = True
 
     tf.compat.v1.enable_eager_execution(config=config)
+    ##the code below is necessary for keras not to use all memory
+    set_session = tf.compat.v1.keras.backend.set_session
+
+    config = tf.compat.v1.ConfigProto()
+    config.gpu_options.allow_growth = True  # dynamically grow the memory used on the GPU
+    config.log_device_placement = False  # to log device placement (on which device the operation ran)
+    sess = tf.compat.v1.Session(config=config)
+    set_session(sess)  # set this TensorFlow session as the default session for Keras
 
     '''some custom initalizers and keras setup'''
     from utils import cauchy_init_class_wrapper, shifted_init_class_wrapper
@@ -79,7 +87,7 @@ def main(_):
         pooling_flag = "none"
     else:
         pooling_flag = FLAGS["pooling"]
-    outfilename = results_folder+"index_funs_probs_"+str(rank)+"_"+FLAGS["prefix"]+"_"+str(FLAGS["shifted_init_shift"])+"_"+FLAGS["dataset"]+"_"+FLAGS["network"]+"_"+str(FLAGS["number_layers"])+"_"+pooling_flag+"_"+FLAGS["intermediate_pooling"]+".txt"
+    outfilename = results_folder+"index_funs_probs_"+str(rank)+"_"+FLAGS["prefix"]+"_"+str(shifted_init_shift)+"_"+FLAGS["dataset"]+"_"+FLAGS["network"]+"_"+str(FLAGS["number_layers"])+"_"+pooling_flag+"_"+FLAGS["intermediate_pooling"]+".txt"
 
     if network not in ["cnn", "fc"]:
         layers = get_all_layers(model)

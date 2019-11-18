@@ -47,6 +47,9 @@ def main(_):
         print(d)
         mm = int(ceil(d.data.shape[0]*5/6))
         (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
+        train_images = torch.Tensor(train_images)
+        test_images = torch.Tensor(test_images)
+        #print("HIIIII",type(train_images))
         num_classes = 10
 
     elif dataset == "mnist":
@@ -109,10 +112,7 @@ def main(_):
         num_classes = 2
         #we ignore the 0 input, because it casues problems when computing the kernel matrix :P when sigmab==0 though
         if centering:
-            if sigmab == 0:
-                inputs = np.array([[float(l)*2.0-1 for l in "{0:07b}".format(i)] for i in range(1,2**7)])
-            else:
-                inputs = np.array([[float(l)*2.0-1 for l in "{0:07b}".format(i)] for i in range(0,2**7)])
+            inputs = np.array([[float(l)*2.0-1 for l in "{0:07b}".format(i)] for i in range(0,2**7)])
         else:
             if sigmab==0:
                 inputs = np.array([[float(l) for l in "{0:07b}".format(i)] for i in range(1,2**7)])
@@ -143,7 +143,7 @@ def main(_):
 
         print("fun",fun)
 
-        if sigmab==0:
+        if sigmab==0 and not centering:
             labels=np.array([[int(xx)*2.0-1] for xx in list(fun)[1:]]) #start from 1 because we ignored the 0th input
         else:
             labels=np.array([[int(xx)*2.0-1] for xx in list(fun)[0:]]) 
@@ -207,9 +207,6 @@ def main(_):
         train_images  = train_images.numpy().astype(np.float32)*255.0/max_val
         test_images = test_images.numpy().astype(np.float32)*255.0/max_val
 
-        flat_train_images = np.array([train_image.flatten() for train_image in train_images])
-        if training:
-            flat_test_images = np.array([test_image.flatten() for test_image in test_images])
 
         if oversampling:
             probs = list(map(lambda x: threshold/(num_classes) if x>=threshold else (num_classes-threshold)/(num_classes), train_labels))
@@ -308,12 +305,15 @@ def main(_):
                 print(train_images.shape)
                 print("max after transforming", train_images.max())
 
-
             #check correct dimensions
             if network != "fc":
                 image_size = train_images.shape[1]
                 assert train_images.shape[1] == train_images.shape[2]
                 number_channels = train_images.shape[-1]
+
+            flat_train_images = np.array([train_image.flatten() for train_image in train_images])
+            if training:
+                flat_test_images = np.array([test_image.flatten() for test_image in test_images])
 
             if channel_normalization:
                 #flatten to compute SVD matrix
@@ -431,6 +431,7 @@ def main(_):
         test_ys = np.array([process_labels(label,label_corruption,threshold,zero_one=True,binarized=binarized) for label in test_labels])
 
         '''SAVING DATA SAMPLES'''
+        print(ys)
         save_data(train_images,ys,test_images,test_ys,FLAGS)
     else:
         test_images = test_ys = []

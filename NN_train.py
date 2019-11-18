@@ -77,6 +77,7 @@ def main(_):
     from tensorflow.keras.models import model_from_json
 
     '''some custom initalizers and keras setup'''
+    from initialization import get_all_layers, is_normalization_layer, reset_weights, simple_reset_weights
     from utils import cauchy_init_class_wrapper, shifted_init_class_wrapper
     CauchyInit = cauchy_init_class_wrapper(sigmaw)
     ShiftedInit = shifted_init_class_wrapper(sigmab,shifted_init_shift)
@@ -113,25 +114,38 @@ def main(_):
         #keras.optimizers.SGD(lr=0.01,momentum=0.9,decay=1e-6)
     else:
         optim = optimizer
+    
+    model = model_from_json(arch_json_string,custom_objects=custom_objects)
+    model.compile(optim,
+                  loss=binary_crossentropy_from_logits if loss=="ce" else loss,
+                  metrics=[binary_accuracy_for_mse] if loss=="mse" else ['accuracy'])
+                  #metrics=['accuracy',sensitivity])
+                  #metrics=['accuracy',tf.keras.metrics.SensitivityAtSpecificity(0.99),\
+                            #tf.keras.metrics.FalsePositives()])
 
+    if network not in ["cnn", "fc"]:
+        layers = get_all_layers(model)
+        are_norm = [is_normalization_layer(l) for l in layers for w in l.get_weights()]
+        initial_weights = model.get_weights()
+
+    local_index = 0
     for init in tasks:
         funs_file = open(funs_filename,"a")
         print(init)
+        if local_index>0:
+            if network in ["cnn", "fc"]:
+                simple_reset_weights(model, sigmaw, sigmab)
+            else:
+                reset_weights(model, initial_weights, are_norm, sigmaw, sigmab)
+        local_index+=1
 
         #this reinitalizes the net
-        model = model_from_json(arch_json_string,custom_objects=custom_objects)
-        model.compile(optim,
-                      loss=binary_crossentropy_from_logits if loss=="ce" else loss,
-                      metrics=[binary_accuracy_for_mse] if loss=="mse" else ['accuracy'])
-                      #metrics=['accuracy',sensitivity])
-                      #metrics=['accuracy',tf.keras.metrics.SensitivityAtSpecificity(0.99),\
-                                #tf.keras.metrics.FalsePositives()])
 
         weights, biases = get_weights(model), get_biases(model)
         weights_norm, biases_norm = measure_sigmas(model)
         print(weights_norm,biases_norm)
 
-        model.fit(train_images, ys, verbose=0,\
+        model.fit(train_images, ys, verbose=1,\
             sample_weight=sample_weights, validation_data=(train_images, ys), epochs=MAX_TRAIN_EPOCHS,callbacks=callbacks, batch_size=batch_size)
 
         '''GET DATA: weights, and errors'''
@@ -189,7 +203,7 @@ def main(_):
             weights_norms.append(weights_norm)
             biases_norms.append(biases_norm)
             iterss.append(model.history.epoch[-1])
-        keras.backend.clear_session()
+        #keras.backend.clear_session()
 
     #print("Print functions to file")
     #with open(,"a") as file:

@@ -15,6 +15,7 @@ prefix = "layer_sweep"
 # prefix = "arch_sweep"
 prefix = "test_"
 prefix = "newer_arch_sweep_"
+prefix = "new_pool_sweep"
 
 training_results = pd.read_csv(results_folder+prefix+"nn_training_results.txt",comment="#", header='infer',sep="\t")
 bounds = pd.read_csv(results_folder+prefix+"bounds.txt",comment="#", header='infer',sep="\t")
@@ -28,13 +29,46 @@ training_results["dataset"].unique()
 training_results["network"].unique()
 training_results["number_layers"].unique()
 training_results["m"].unique()
+training_results["train_acc"].unique()
+bounds["sigmaw"].unique()
+bounds["sigmab"].unique()
+# training_results["optimizer"].unique()
+
+####POOLING######
+
+%matplotlib
+
+training_results[["pooling","test_error"]]
+bounds[["pooling","bound"]]
+
+# d = pd.concat([training_results,bounds],axis=1)
+d = training_results.merge(bounds,on="pooling")
+import seaborn as sns
+# sns.barplot(x="pooling",y=["bound","test_error"],data=d)
+d=d.sort_values("test_error")
+def subcategorybar(xname, valnames, d, labels=None, width=0.8):
+    X=d[xname]
+    if labels == None: labels=valnames
+    vals = list(map(lambda x: d[x],valnames))
+    n = len(vals)
+    _X = np.arange(len(X))
+    for i in range(n):
+        plt.bar(_X - width/2. + i/float(n)*width, vals[i],
+                width=width/float(n), align="edge",label=labels[i])
+    plt.xticks(_X, X)
+    plt.legend()
+
+subcategorybar("pooling",["bound","test_error"],d, labels=["PAC-Bayes bound","Test error"])
+plt.savefig("bound_test_error_vs_poolingtype_CNN_4_layers_KMNIST_m1000_sigmawEP50_sigmabEP0.png")
+
+
 # training_results["m"].unique()
 # bounds["bound"]
 
 training_results.groupby(["network"],as_index=False).mean()[["network", "test_error"]]
 
 #%%
-### CONFUSION
+###### CONFUSION  #######
 
 %matplotlib
 

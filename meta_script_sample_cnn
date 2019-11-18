@@ -2,13 +2,16 @@
 
 m=100
 #dataset=boolean
-dataset=mnist
+#dataset=mnist
+dataset=cifar
 boolfun=00001110110011111001111111001111000000000000000000000000000000000000000001001100000000001101110100000000000000000000000000000000
 #boolfun=00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000
 #boolfun=$1
 boolfun_comp=84.0
 net=cnn
+#net=fc
 L=4
+#L=0
 #optimizer=adam
 optimizer=sgd
 loss=mse
@@ -19,8 +22,10 @@ pool=none
 c=0.0
 number_inits=10
 epochs_after_fit=1
-export n_procs=5
-prefix=cnn_sample_sigmab0.0_
+export n_procs=2
+prefix=cnn_sample_sigmab0.0_CIFAR10_uncentered_
+#prefix=2perceptron_sample_
+#prefix=centered_perceptron_sample_
 
 n_gpus=1
 export n_gpus=$n_gpus
@@ -30,7 +35,7 @@ export n_gpus=$n_gpus
 for rep in `seq 1 1`; do
 echo $rep
 
-./run_experiment_sample_cnn --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --n_gpus $n_gpus --pooling $pool --boolfun_comp $boolfun_comp --boolfun $boolfun #--intermediate_pooling 1111 --intermediate_pooling_type none
+./run_experiment_sample_cnn --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --n_gpus $n_gpus --pooling $pool --boolfun_comp $boolfun_comp --boolfun $boolfun #--centering #--intermediate_pooling 1111 --intermediate_pooling_type none
 
 
 done

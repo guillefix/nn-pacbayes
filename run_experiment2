@@ -20,7 +20,7 @@ py=python3
 
 #echo $n_gpus
 
-#$py generate_NN_arch.py $@
+$py generate_NN_arch.py $@
 #$py generate_inputs_sample.py $@
 
 #

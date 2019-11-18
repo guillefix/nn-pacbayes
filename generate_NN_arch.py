@@ -23,7 +23,7 @@ def main(_):
         os.environ["CUDA_VISIBLE_DEVICES"]=str((rank)%n_gpus)
 
     from tensorflow import keras
-    # import keras
+    #import keras
     import keras_applications
     keras_applications._KERAS_BACKEND = keras.backend
     keras_applications._KERAS_LAYERS = keras.layers
@@ -207,7 +207,7 @@ def main(_):
 
         elif network == "resnet50":
             image_height, image_width, number_channels = max(image_height,32), max(image_width,32), max(number_channels,3)
-            model1 = keras.applications.ResNet50(include_top=False, weights=None, input_tensor=None, input_shape=(image_height,image_width,number_channels), pooling=pooling, classes=2)
+            model1 = keras.applications.resnet.ResNet50(include_top=False, weights=None, input_tensor=None, input_shape=(image_height,image_width,number_channels), pooling=pooling, classes=2)
 
         elif network == "resnet101":
             image_height, image_width, number_channels = max(image_height,32), max(image_width,32), max(number_channels,3)
@@ -231,7 +231,7 @@ def main(_):
 
         elif network == "inception_resnet_v2":
             image_height, image_width, number_channels = max(image_height,75), max(image_width,75), max(number_channels,3)
-            model1 = keras.applications.inception_resnet_v2.InceptionResNetV2(include_top=False, weights=None, input_tensor=None, input_shape=(image_height,image_width,number_channels), pooling=pooling, classes=2)
+            model1 = keras_applications.inception_resnet_v2.InceptionResNetV2(include_top=False, weights=None, input_tensor=None, input_shape=(image_height,image_width,number_channels), pooling=pooling, classes=2)
 
         elif network == "inception_v3":
             image_height, image_width, number_channels = max(image_height,75), max(image_width,75), max(number_channels,3)
