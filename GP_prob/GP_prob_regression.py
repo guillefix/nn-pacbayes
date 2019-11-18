@@ -28,6 +28,28 @@ def GP_prob(K,X,Y,sigma_noise=1.0, posterior="bayes"):
 
 '''PLAYGROUND'''
 
+
+    # import scipy
+    # t = 0.005
+    # t = 1.0
+    # import numpy as np
+    # decay_matrix = np.eye(n)-scipy.linalg.expm(-t*theta)
+    # decay_matrix.shape
+    # theta.shape
+    # K.shape
+    # Sigma = K + np.matmul(decay_matrix, np.matmul(K, np.matmul(np.linalg.inv(theta), np.matmul(decay_matrix, theta))) - 2*K)
+    #
+    # Y = y_train.reshape(n)
+    # alpha = np.matmul(np.linalg.inv(K), np.matmul(decay_matrix,Y))
+    #
+    # # eigs_sigma = np.maximum(1e-3,np.linalg.eigh(Sigma)[0])
+    # # eigs_sigma = np.linalg.eigh(Sigma)[0]
+    # eigs_sigma = np.linalg.eigvals(Sigma)
+    # # eigs_K = np.maximum(1e-3,np.linalg.eigh(K)[0])
+    # # eigs_K = np.linalg.eigh(K)[0]
+    # eigs_K = np.linalg.eigvals(K)
+    # KL = 0.5*(np.sum(np.log(1/eigs_sigma) + np.log(eigs_K)) + np.sum(eigs_sigma/eigs_K) + np.matmul(alpha.T,np.matmul(K,alpha)) - n)
+
     #lik = GPy.likelihoods.Bernoulli()
     #m = GPy.models.GPClassification(X=X,
     #                Y=Y,
