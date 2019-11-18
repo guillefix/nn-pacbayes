@@ -431,7 +431,7 @@ def main(_):
         test_ys = np.array([process_labels(label,label_corruption,threshold,zero_one=True,binarized=binarized) for label in test_labels])
 
         '''SAVING DATA SAMPLES'''
-        print(ys)
+        #print(ys)
         save_data(train_images,ys,test_images,test_ys,FLAGS)
     else:
         test_images = test_ys = []

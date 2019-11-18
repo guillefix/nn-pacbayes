@@ -35,17 +35,19 @@ def average_error_wrapper(K):
     sigma=1e-2
     return average_error(K,sigma)
 
+#%%
+
 # methods = ["EP","Laplace","importance_sampling","HMC", "Metropolis_EPproposal","variational", "logP_regression"]
 methods = ["EP","exact_PB","logP_regression"]
 methods = ["average_error_estimate"]
 funs={"average_error_estimate":lambda K,X,Y: average_error_wrapper(K)}
-funs = {"EP": lambda K,X,Y: GP_prob1(K,X,Y, method="EP"),
-        "exact_PB": lambda K,X,Y: GP_prob2(K,X,Y,using_exactPB=True),
-        "Laplace": lambda K,X,Y: GP_prob1(K,X,Y,method="Laplace"),
-        "importance_sampling": lambda K,X,Y: GP_prob_MC(K,X,Y,method="importance_sampling"),
-        "HMC": lambda K,X,Y: GP_prob_MC(K,X,Y,"HMC"),
-        "Metropolis_EPproposal": lambda K,X,Y: GP_prob_MC(K,X,Y,method="Metropolis_EPproposal"),
-        "variational":lambda K,X,Y: GP_prob_VI(K,X,Y),
+funs = {"EP": lambda K,X,Y: -GP_prob1(K,X,Y, method="EP"),
+        "exact_PB": lambda K,X,Y: -GP_prob2(K,X,Y,using_exactPB=True),
+        "Laplace": lambda K,X,Y: -GP_prob1(K,X,Y,method="Laplace"),
+        "importance_sampling": lambda K,X,Y: -GP_prob_MC(K,X,Y,method="importance_sampling"),
+        "HMC": lambda K,X,Y: -GP_prob_MC(K,X,Y,"HMC"),
+        "Metropolis_EPproposal": lambda K,X,Y: -GP_prob_MC(K,X,Y,method="Metropolis_EPproposal"),
+        "variational":lambda K,X,Y: -GP_prob_VI(K,X,Y),
         "average_error_estimate":lambda K,X,Y: average_error_wrapper(K),
         "logP_regression": logP}
 
@@ -54,6 +56,8 @@ results_df = pd.DataFrame(columns=["net", "test_error"]+methods)
 # things = []
 # for net in ["densenet121","densenet169","densenet201","mobilenetv2","nasnet","resnet50","vgg16","vgg19"]:
 for net in networks:
+    if net == "nasnet": # haven't got its NTK yet
+        continue
     print(net)
     filename = "newer_arch_sweep_ce_sgd__"+net+"_EMNIST_1000_0.0_0.0_True_False_False_False_-1_True_False_False_data.h5"
 
@@ -82,7 +86,8 @@ for net in networks:
     #%%
 
     # filename = net+"_KMNIST_1000_0.0_0.0_True_False_True_4_3.0_0.0_None_0000_max_kernel.npy"
-    filename = "newer_arch_sweep_ce_sgd__"+str(net)+"_EMNIST_1000_0.0_0.0_True_False_True_4_1.414_0.0_None_0000_max_kernel.npy"
+    # filename = "newer_arch_sweep_ce_sgd__"+str(net)+"_EMNIST_1000_0.0_0.0_True_False_True_4_1.414_0.0_None_0000_max_kernel.npy"
+    filename = "newer_arch_sweep_ce_sgd__"+str(net)+"_EMNIST_1000_0.0_0.0_True_False_True_4_1.414_0.0_None_0000_max_NTK_kernel.npy"
 
     from utils import load_kernel_by_filename
     try:
@@ -118,15 +123,17 @@ for net in networks:
 
 # results_df["logP_regression"]
 
-results_df["EP"] *= -1
-results_df["exact_PB"] *= -1
+# results_df["EP"] *= -1
+# results_df["exact_PB"] *= -1
 # results_df["variational"] *= -1
 
 results_df
 
 # results_df.plot()
 
+%matplotlib
 plot_multi(results_df,results_df.columns[1:])
+plt.savefig("ntk_expected_error_prediction.png")
 
 
 def plot_multi(data, cols=None, spacing=.1, **kwargs):

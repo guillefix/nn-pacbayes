@@ -92,6 +92,8 @@ def main(_):
     sess = tf.compat.v1.Session(config=config)
     set_session(sess)  # set this TensorFlow session as the default session for Keras
 
+    activations_dict = {"relu":tf.nn.relu, "tanh":tf.nn.tanh}
+
     if network == "cnn":
         if intermediate_pooling_type=="avg":
             intermediate_pooling_layer = [keras.layers.AvgPool2D(pool_size=2, padding='same')]
@@ -108,16 +110,17 @@ def main(_):
             pooling_layer = []
         model = keras.Sequential(
             sum([
-                [keras.layers.Conv2D(input_shape=(image_height,image_width,number_channels), filters=num_filters, kernel_size=filter_size, padding=padding, strides=strides, activation=tf.nn.relu,
+                [keras.layers.Conv2D(input_shape=((image_height,image_width,number_channels) if index==0 else None), \
+                    filters=num_filters, \
+                    kernel_size=filter_size, \
+                    padding=padding, \
+                    strides=strides, \
+                    activation=activations_dict[activation],
                 data_format='channels_last',
                 kernel_initializer=weight_initializer,
                 bias_initializer=bias_initializer,)] +
                  (intermediate_pooling_layer if have_pooling else [])
-                # kernel_regularizer=keras.regularizers.l2(0.01*input_dim/(2*sigmaw**2)),
-                # bias_regularizer=keras.regularizers.l2(1/(2*sigmab**2)))
-                # kernel_regularizer=keras.regularizers.l2(0.05),
-                # bias_regularizer=keras.regularizers.l2(0.1))
-                for filter_size,padding,strides,have_pooling in zip(filter_sizes,padding,strides,pooling_in_layer)
+                for index,(filter_size,padding,strides,have_pooling,activation) in enumerate(zip(filter_sizes,padding,strides,pooling_in_layer,activations))
             ],[])
             + pooling_layer
             + [ keras.layers.Flatten() ]
@@ -126,47 +129,24 @@ def main(_):
                 keras.layers.Dense(1,#activation=tf.nn.sigmoid,)
                 kernel_initializer=weight_initializer,
                 bias_initializer=bias_initializer_last_layer,)
-                # kernel_regularizer=keras.regularizers.l2(0.01*input_dim/(2*sigmaw**2)),
-                # bias_regularizer=keras.regularizers.l2(1/(2*sigmab**2)))
-                # kernel_regularizer=keras.regularizers.l2(0.05),
-                # bias_regularizer=keras.regularizers.l2(0.1))
-            ])
+                ])
+                # ] + [keras.layers.Lambda(lambda x:x+shifted_init_shift)])
 
     elif network == "fc":
             model = keras.Sequential(
-                ([ keras.layers.Dense(layer_width, activation=tf.nn.relu,input_shape=(input_dim,),#)
-                    kernel_initializer=weight_initializer,
-                    bias_initializer=bias_initializer,)
-                    ]
-                # + [keras.layers.Lambda(lambda x: x-1/np.sqrt(2*np.pi))]
-                + [
-                keras.layers.Dense(layer_width, activation=tf.nn.relu,#)
+                ([
+                keras.layers.Dense(layer_width, activation=tf.nn.relu, input_shape=((input_dim,) if index==0 else None),#)
                     kernel_initializer=weight_initializer,
                     bias_initializer=bias_initializer)
-                    # kernel_regularizer=keras.regularizers.l2(0.01*input_dim/(2*sigmaw**2)),
-                    # bias_regularizer=keras.regularizers.l2(1/(2*sigmab**2)))
-                    # kernel_regularizer=keras.regularizers.l2(0.05),
-                    # bias_regularizer=keras.regularizers.l2(0.1))
-                    for i in range(number_layers-1)
+                    for layer_width,activation in zip(layer_widths,activations)#range(number_layers)
                 ] if number_layers > 0 else [])
                 # + [keras.layers.Lambda(lambda x: x-1/np.sqrt(2*np.pi))]
-                + ([
-                    keras.layers.Dense(1,#activation=tf.nn.sigmoid,
+                + [
+                    keras.layers.Dense(1,input_shape=((input_dim,) if number_layers==0 else None),#activation=tf.nn.sigmoid,
                     kernel_initializer=weight_initializer,
                     bias_initializer=bias_initializer_last_layer,)
-                    # kernel_regularizer=keras.regularizers.l2(0.01*input_dim/(2*sigmaw**2)),
-                    # bias_regularizer=keras.regularizers.l2(1/(2*sigmab**2)))
-                    # kernel_regularizer=keras.regularizers.l2(0.05),
-                    # bias_regularizer=keras.regularizers.l2(0.1))
-                ] if number_layers>0 else [
-                    keras.layers.Dense(1,input_shape=(input_dim,),#activation=tf.nn.sigmoid,
-                    kernel_initializer=weight_initializer,
-                    bias_initializer=bias_initializer_last_layer,)
-                    # kernel_regularizer=keras.regularizers.l2(0.01*input_dim/(2*sigmaw**2)),
-                    # bias_regularizer=keras.regularizers.l2(1/(2*sigmab**2)))
-                    # kernel_regularizer=keras.regularizers.l2(0.05),
-                    # bias_regularizer=keras.regularizers.l2(0.1))
-                ]))
+                ])
+                # ])+[keras.layers.Lambda(lambda x:x+shifted_init_shift)])
 
     elif network == "resnet":
         #from keras_contrib.applications.resnet import ResNet
