@@ -36,6 +36,9 @@ def main(_):
     if dataset == "cifar":
             image_size=32
             number_channels=3
+    elif dataset == "imagenet":
+            image_size=256
+            number_channels=3
     elif dataset == "mnist":
             image_size=28
             number_channels=1
@@ -110,7 +113,7 @@ def main(_):
             pooling_layer = []
         model = keras.Sequential(
             sum([
-                [keras.layers.Conv2D(input_shape=((image_height,image_width,number_channels) if index==0 else None), \
+                [keras.layers.Conv2D(input_shape=(image_height,image_width,number_channels) if index==0 else (None,), \
                     filters=num_filters, \
                     kernel_size=filter_size, \
                     padding=padding, \
@@ -135,14 +138,14 @@ def main(_):
     elif network == "fc":
             model = keras.Sequential(
                 ([
-                keras.layers.Dense(layer_width, activation=tf.nn.relu, input_shape=((input_dim,) if index==0 else None),#)
+                keras.layers.Dense(layer_width, activation=tf.nn.relu, input_shape=(input_dim,) if index==0 else (None,),#)
                     kernel_initializer=weight_initializer,
                     bias_initializer=bias_initializer)
-                    for layer_width,activation in zip(layer_widths,activations)#range(number_layers)
+                    for index,(layer_width,activation) in enumerate(zip(layer_widths,activations))#range(number_layers)
                 ] if number_layers > 0 else [])
                 # + [keras.layers.Lambda(lambda x: x-1/np.sqrt(2*np.pi))]
                 + [
-                    keras.layers.Dense(1,input_shape=((input_dim,) if number_layers==0 else None),#activation=tf.nn.sigmoid,
+                    keras.layers.Dense(1,input_shape=(input_dim,) if number_layers==0 else (None,),#activation=tf.nn.sigmoid,
                     kernel_initializer=weight_initializer,
                     bias_initializer=bias_initializer_last_layer,)
                 ])

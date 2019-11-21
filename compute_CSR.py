@@ -57,9 +57,7 @@ def main(_):
     from utils import load_data,load_model,load_kernel
     data,flat_data,_,_,_ = load_data(FLAGS)
     data = tf.constant(data)
-    arch_json_string = load_model(FLAGS)
-    from tensorflow.keras.models import model_from_json
-    model = model_from_json(arch_json_string)
+    model = load_model(FLAGS)
     K = load_kernel(FLAGS)
 
     def lass(model,x,r=0.01):

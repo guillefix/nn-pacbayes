@@ -11,8 +11,11 @@ results_folder = "results/"
 
 prefix = "newer_arch_sweep_ce_sgd_"
 training_results = pd.read_csv(results_folder+prefix+"nn_training_results.txt",comment="#", header='infer',sep="\t")
+training_results.columns
 
 networks = training_results["network"].unique()
+
+training_results[["network", "mean_iters"]]
 
 get_test_error = lambda net: sum(training_results[training_results["network"]==net]["test_error"])
 
@@ -20,6 +23,7 @@ get_test_error = lambda net: sum(training_results[training_results["network"]==n
 
 from GP_prob.GP_prob_gpy import GP_prob as GP_prob1
 from GP_prob.GP_prob_gpy2 import GP_prob as GP_prob2
+from GP_prob.GP_prob_ntk import GP_prob as GP_probNTK
 from GP_prob.GP_prob_MC import GP_prob as GP_prob_MC
 from GP_prob.GP_prob_VI import GP_prob as GP_prob_VI
 from GP_prob.GP_prob_regression import GP_prob as GP_prob_regresison
@@ -31,6 +35,10 @@ def logP(K,X,Y):
     thing = -0.5*(-np.matmul(Y.T,np.matmul(np.linalg.inv(Kfull),Y)) - m*np.log(np.pi) - logdet)
     return thing[0,0]
 
+def GP_probNTK_wrapper(K,theta,X,Y):
+    t=1e5
+    return GP_probNTK(K,theta,X,Y,t=t)
+
 def average_error_wrapper(K):
     sigma=1e-2
     return average_error(K,sigma)
@@ -39,8 +47,9 @@ def average_error_wrapper(K):
 
 # methods = ["EP","Laplace","importance_sampling","HMC", "Metropolis_EPproposal","variational", "logP_regression"]
 methods = ["EP","exact_PB","logP_regression"]
-methods = ["average_error_estimate"]
-funs={"average_error_estimate":lambda K,X,Y: average_error_wrapper(K)}
+# methods = ["average_error_estimate"]
+methods = ["exact_PB_NTK"]
+funs={"exact_PB_NTK":lambda K,theta,X,Y: GP_probNTK_wrapper(K,theta,X,Y)}
 funs = {"EP": lambda K,X,Y: -GP_prob1(K,X,Y, method="EP"),
         "exact_PB": lambda K,X,Y: -GP_prob2(K,X,Y,using_exactPB=True),
         "Laplace": lambda K,X,Y: -GP_prob1(K,X,Y,method="Laplace"),
@@ -54,8 +63,9 @@ funs = {"EP": lambda K,X,Y: -GP_prob1(K,X,Y, method="EP"),
 results_df = pd.DataFrame(columns=["net", "test_error"]+methods)
 
 # things = []
-# for net in ["densenet121","densenet169","densenet201","mobilenetv2","nasnet","resnet50","vgg16","vgg19"]:
-for net in networks:
+for net in ["densenet121","densenet169","densenet201","mobilenetv2","nasnet","resnet50","vgg16","vgg19"]:
+    # for net in ["mobilenetv2"]:
+    # for net in networks:
     if net == "nasnet": # haven't got its NTK yet
         continue
     print(net)
@@ -86,30 +96,46 @@ for net in networks:
     #%%
 
     # filename = net+"_KMNIST_1000_0.0_0.0_True_False_True_4_3.0_0.0_None_0000_max_kernel.npy"
-    # filename = "newer_arch_sweep_ce_sgd__"+str(net)+"_EMNIST_1000_0.0_0.0_True_False_True_4_1.414_0.0_None_0000_max_kernel.npy"
-    filename = "newer_arch_sweep_ce_sgd__"+str(net)+"_EMNIST_1000_0.0_0.0_True_False_True_4_1.414_0.0_None_0000_max_NTK_kernel.npy"
+    filename = "newer_arch_sweep_ce_sgd__"+str(net)+"_EMNIST_1000_0.0_0.0_True_False_True_4_1.414_0.0_None_0000_max_kernel.npy"
+    # filename = "newer_arch_sweep_ce_sgd__"+str(net)+"_EMNIST_1000_0.0_0.0_True_False_True_4_1.414_0.0_None_0000_max_NTK_kernel.npy"
 
+    ##NNGP kernel
+    from utils import load_kernel_by_filename
+    try:
+        theta = load_kernel_by_filename("kernels/"+filename)
+    except FileNotFoundError:
+        print("File not found :P")
+        continue
+
+    ##NTK kernel
+    filename = "newer_arch_sweep_ce_sgd__"+str(net)+"_EMNIST_1000_0.0_0.0_True_False_True_4_1.414_0.0_None_0000_max_NTK_kernel.npy"
     from utils import load_kernel_by_filename
     try:
         Kfull = load_kernel_by_filename("kernels/"+filename)
     except FileNotFoundError:
         print("File not found :P")
         continue
-    # m = 1000
-    # Kfull.max()
 
-    K = Kfull/Kfull.max()
-    K *= 1000
     # K = Kfull
-    # K
+    # K = Kfull/Kfull.max()
+    # K *= 1000
+    # K *= 1e24
+    theta = theta/Kfull.max()
+    theta *= 1000
+    # theta *= 1e24
     # Y = Y*2-1
-    # Kfull.shape
     test_error = get_test_error(net)
     results = {"net":net, "test_error": test_error}
     for method in methods:
-        results[method] = funs[method](K,X,Y)
-
+        # results[method] = funs[method](K,X,Y)
+        results[method] = funs[method](K,theta,X,Y)
+        print(results[method])
     results_df = results_df.append(results,ignore_index=True)
+
+# np.all(np.linalg.eigvals(theta)>0)
+# np.all(np.linalg.eigvals(K)>0)
+#
+# eigs_K = np.linalg.eigh(K)[0]
 
 # results
 # results_df.append(results,ignore_index=True)
@@ -131,7 +157,7 @@ results_df
 
 # results_df.plot()
 
-%matplotlib
+%matplotlib inline
 plot_multi(results_df,results_df.columns[1:])
 plt.savefig("ntk_expected_error_prediction.png")
 

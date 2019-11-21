@@ -37,7 +37,7 @@ def save_data(train_images,ys,test_images,test_ys,FLAGS):
     h5f = h5py.File(filename,"w")
     h5f.create_dataset('train_images', data=train_images)
 
-    ys = [y[0] for y in ys]
+    # ys = [y[0] for y in ys]
     h5f.create_dataset('ys', data=ys)
     if FLAGS["training"]:
         h5f.create_dataset('test_images', data=test_images)
@@ -79,11 +79,21 @@ def save_arch(json_string,FLAGS):
     with open(filename, "w") as f:
         f.write(json_string)
 
-def load_model(FLAGS):
+def load_model_json(FLAGS):
     filename = arch_filename(FLAGS)
     json_string_filename = filename
     arch_json_string = open(filename, "r") .read()
     return arch_json_string
+
+def load_model(FLAGS):
+    CauchyInit = cauchy_init_class_wrapper(FLAGS["sigmaw"])
+    ShiftedInit = shifted_init_class_wrapper(FLAGS["sigmab"],FLAGS["shifted_init_shift"])
+    custom_objects = {'cauchy_init': CauchyInit, 'shifted_init':ShiftedInit}
+    arch_json_string = load_model_json(FLAGS)
+    from tensorflow.keras.models import model_from_json
+    model = model_from_json(arch_json_string, custom_objects=custom_objects)
+    return model
+
 
 def kernel_filename(FLAGS):
     filename=kernel_folder
@@ -140,6 +150,8 @@ def define_default_flags(f):
     f.DEFINE_integer('threshold', -1, "Label above or on which to binarze as 1, and below which to binarize as 0")
     f.DEFINE_float('n_samples_repeats', 1.0, "Number of samples to compute empirical kernel, as a multiple of training set size, m")
     f.DEFINE_boolean('random_labels', True, "Whether the confusion data is constructed by randomizing the labels, or by taking a wrong label")
+    f.DEFINE_boolean('zero_one', True, "Whether to use 0,1 or -1,1, for binarized labels")
+    f.DEFINE_boolean('nn_random_labels', False, "Whether to set the labels by a random sample from the neural network which we are going to us")
     f.DEFINE_string('prefix', "", "A prefix to use for the result files")
 
 def preprocess_flags(FLAGS):
@@ -158,13 +170,19 @@ def preprocess_flags(FLAGS):
     FLAGS["padding"] = ["VALID", "SAME"]*(number_layers//2) + ["VALID"]*(number_layers%2)
     FLAGS["pooling_in_layer"] = [x=="1" for x in intermediate_pooling]
     FLAGS["strides"]=[[1, 1]] * number_layers
-    FLAGS["num_filters"] = FLAGS["layer_width"]
+    if len(FLAGS["layer_widths"].split(",")) == 1:
+        FLAGS["num_filters"] = int(FLAGS["layer_widths"])
+    else:
+        raise NotImplementedError("haven't implemented varying number of filternumbers for CNNs")
     if m is not None: FLAGS["total_samples"] = ceil(m*(1.0+confusion))
     FLAGS["training"] = not FLAGS["no_training"]
     if FLAGS["pooling"] == "none": FLAGS["pooling"] = None
 
     for layer_wise_thing in ["layer_widths","activations"]:
-        FLAGS[layer_wise_thing] = [int(w) for w in FLAGS[layer_wise_thing].split(",")]
+        if layer_wise_thing == "layer_widths":
+            FLAGS[layer_wise_thing] = [int(w) for w in FLAGS[layer_wise_thing].split(",")]
+        elif layer_wise_thing == "activations":
+            FLAGS[layer_wise_thing] = FLAGS[layer_wise_thing].split(",")
 
         if len(FLAGS[layer_wise_thing]) != number_layers:
             if len(FLAGS[layer_wise_thing]) == 1:

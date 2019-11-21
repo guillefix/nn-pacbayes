@@ -67,11 +67,13 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
     for index in tasks:
         print("sample for kernel", index)
 
-        #model = model_from_json(arch_json_string) # this resets the weights (makes sense as the json string only has architecture)
+        # model = model_from_json(arch_json_string) # this resets the weights (makes sense as the json string only has architecture)
         if local_index>0:
             reset_weights(model, initial_weights, are_norm, sigmaw, sigmab)
 
-        X = np.squeeze(func(data))
+        # print(data.min(), data.max())
+        X = np.squeeze(func(data*255))
+        # print(X)
         covs += (sigmaw**2/X.shape[1])*np.matmul(X,X.T)+(sigmab**2)*np.ones((X.shape[0],X.shape[0]))
         #outputs = model.predict(data)
         #print(outputs)
