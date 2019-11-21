@@ -157,7 +157,7 @@ def main(_):
         print(train_acc)
         test_loss, test_acc = model.evaluate(test_images, test_ys, verbose=0)
         preds = model.predict(test_images)[:,0]
-        # print(preds)
+        print(preds)
         # print(preds.shape)
         # test_false_positive_rate = test_fps/(len([x for x in test_ys if x==1]))
         def sigmoid(x):
@@ -170,16 +170,18 @@ def main(_):
             test_specificity = -1
         else:
             if threshold != -1:
-                for th in np.linspace(0,1,100):
-                    test_sensitivity = sum([(sigmoid(preds[i])>th)==x for i,x in enumerate(test_ys) if x==1])/(len([x for x in test_ys if x==1]))
-                    test_specificity = sum([(sigmoid(preds[i])>th)==x for i,x in enumerate(test_ys) if x==0])/(len([x for x in test_ys if x==0]))
+                for th in np.linspace(0,1,1000):
+                    test_specificity = sum([(sigmoid(preds[i])>th)==x for i,x in enumerate(test_ys[:100]) if x==0])/(len([x for x in test_ys[:100] if x==0]))
                     if test_specificity>0.99:
-                        break
+                        test_specificity = sum([(sigmoid(preds[i])>th)==x for i,x in enumerate(test_ys) if x==0])/(len([x for x in test_ys if x==0]))
+                        if test_specificity>0.99:
+                            test_sensitivity = sum([(sigmoid(preds[i])>th)==x for i,x in enumerate(test_ys) if x==1])/(len([x for x in test_ys if x==1]))
+                            break
             else:
                 for th in np.linspace(0,1,5): # low number of thresholds as I'm not exploring unbalanced datasets right now
-                    test_sensitivity = sum([(sigmoid(preds[i])>th)==x for i,x in enumerate(test_ys) if x==1])/(len([x for x in test_ys if x==1]))
                     test_specificity = sum([(sigmoid(preds[i])>th)==x for i,x in enumerate(test_ys) if x==0])/(len([x for x in test_ys if x==0]))
                     if test_specificity>0.99:
+                        test_sensitivity = sum([(sigmoid(preds[i])>th)==x for i,x in enumerate(test_ys) if x==1])/(len([x for x in test_ys if x==1]))
                         break
 
         print('Test accuracy:', test_acc)
