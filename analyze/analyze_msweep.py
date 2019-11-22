@@ -49,3 +49,22 @@ plt.subplots_adjust(left=0.1, right=0.9, top=0.83, bottom=0.1)
 plt.savefig("img/msweeps_mnist_fashion-mnist_cifar_log_log.png")
 # plt.savefig("err_vs_layers_cnn.png")
 # plt.savefig("err_vs_m_"+dataset+".png")
+
+################
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+%matplotlib
+results_folder = "results/"
+prefix="new_boolean_msweep_"
+training_results = pd.read_csv(results_folder+prefix+"nn_training_results.txt",comment="#", header='infer',sep="\t")
+training_results.columns
+
+training_results["train_acc_std"] #i had it wrong in NN_train.py. this is test_acc_std really
+training_results["train_acc"]
+
+# training_results.plot("m","test_error", logy=True, logx=True)
+training_results.plot("m","test_error")
+
+plt.savefig("learning_curve_outofsample_testerror_boolean.png")

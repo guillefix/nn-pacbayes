@@ -18,6 +18,7 @@ def main(_):
     from utils import preprocess_flags
     FLAGS = preprocess_flags(FLAGS)
     globals().update(FLAGS)
+    global threshold
 
     from mpi4py import MPI
     comm = MPI.COMM_WORLD
@@ -137,8 +138,8 @@ def main(_):
             if binarized:
                 threshold=1
                 num_classes = 2
-            funs_file = open(funs_filename,"a")
         ##
+        funs_file = open(funs_filename,"a")
         print(init)
         if local_index>0 or nn_random_labels:
             if network in ["cnn", "fc"]:
@@ -158,7 +159,7 @@ def main(_):
 
         '''GET DATA: weights, and errors'''
         weights, biases = get_rescaled_weights(model)
-        weights_norm, biases_norm = measure_sigmas(model)
+        weights_norm, biases_norm = measure_sigmas(model) #TODO: make sure it works with archs with norm layers etc
         print(weights_norm,biases_norm)
 
         train_loss, train_acc = model.evaluate(train_images, ys, verbose=0)
@@ -185,11 +186,13 @@ def main(_):
                             test_sensitivity = sum([(sigmoid(preds[i])>th)==x for i,x in enumerate(test_ys) if x==1])/(len([x for x in test_ys if x==1]))
                             break
             else:
-                for th in np.linspace(0,1,5): # low number of thresholds as I'm not exploring unbalanced datasets right now
-                    test_specificity = sum([(sigmoid(preds[i])>th)==x for i,x in enumerate(test_ys) if x==0])/(len([x for x in test_ys if x==0]))
-                    if test_specificity>0.99:
-                        test_sensitivity = sum([(sigmoid(preds[i])>th)==x for i,x in enumerate(test_ys) if x==1])/(len([x for x in test_ys if x==1]))
-                        break
+                # for th in np.linspace(0,1,5): # low number of thresholds as I'm not exploring unbalanced datasets right now
+                #     test_specificity = sum([(sigmoid(preds[i])>th)==x for i,x in enumerate(test_ys) if x==0])/(len([x for x in test_ys if x==0]))
+                #     if test_specificity>0.99:
+                #         test_sensitivity = sum([(sigmoid(preds[i])>th)==x for i,x in enumerate(test_ys) if x==1])/(len([x for x in test_ys if x==1]))
+                #         break
+                test_specificity = -1
+                test_sensitivity = -1
         print("Training accuracy", train_acc)
         print('Test accuracy:', test_acc)
         print('Test sensitivity:', test_sensitivity)
@@ -255,8 +258,8 @@ def main(_):
         print('Mean train accuracy:', train_acc)
         test_acc = np.mean(sum(test_accs,[]))
         train_acc = np.mean(sum(train_accs,[]))
-        train_acc_std = np.std(sum(test_accs,[]))
-        test_acc_std = np.std(sum(train_accs,[]))
+        train_acc_std = np.std(sum(train_accs,[]))
+        test_acc_std = np.std(sum(test_accs,[]))
         mean_iters = np.mean(sum(iterss,[]))
 
         useful_train_flags = ["dataset", "m", "network", "loss", "optimizer", "pooling", "epochs_after_fit", "ignore_non_fit", "test_function_size", "batch_size", "number_layers", "sigmaw", "sigmab", "init_dist","use_shifted_init","shifted_init_shift","whitening", "centering", "oversampling", "oversampling2", "channel_normalization", "training", "binarized", "confusion","filter_sizes", "gamma", "intermediate_pooling", "label_corruption", "threshold", "n_gpus", "n_samples_repeats", "layer_widths", "number_inits", "padding"]

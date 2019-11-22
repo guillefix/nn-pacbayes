@@ -70,8 +70,11 @@ def main(_):
                     [transforms.ToTensor()]
                 ))
         print(d)
-        mm = int(ceil(d.data.shape[0]*5/6))
-        (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
+        if out_of_sample_test_error:
+            mm = int(ceil(d.data.shape[0]*5/6))
+            (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
+        else:
+            (train_images,train_labels),(test_images,test_labels) = (d.data, d.targets),(d.data,d.targets)
         train_images = torch.Tensor(train_images)
         test_images = torch.Tensor(test_images)
         num_classes = 10
@@ -84,8 +87,11 @@ def main(_):
                     [transforms.ToTensor()]
                 ))
         print(d)
-        mm = int(ceil(d.data.shape[0]*5/6))
-        (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
+        if out_of_sample_test_error:
+            mm = int(ceil(d.data.shape[0]*5/6))
+            (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
+        else:
+            (train_images,train_labels),(test_images,test_labels) = (d.data, d.targets),(d.data,d.targets)
         train_images = torch.Tensor(train_images)
         test_images = torch.Tensor(test_images)
         print("ImageNet classes", train_labels.unique())
@@ -100,8 +106,11 @@ def main(_):
                     [transforms.ToTensor()]
                 ))
         print(d)
-        mm = int(ceil(d.data.shape[0]*5/6))
-        (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
+        if out_of_sample_test_error:
+            mm = int(ceil(d.data.shape[0]*5/6))
+            (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
+        else:
+            (train_images,train_labels),(test_images,test_labels) = (d.data, d.targets),(d.data,d.targets)
 
     elif dataset == "mnist-fashion":
         num_classes = 10
@@ -112,8 +121,11 @@ def main(_):
                     [transforms.ToTensor()]
                 ))
         print(d)
-        mm = int(ceil(d.data.shape[0]*5/6))
-        (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
+        if out_of_sample_test_error:
+            mm = int(ceil(d.data.shape[0]*5/6))
+            (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
+        else:
+            (train_images,train_labels),(test_images,test_labels) = (d.data, d.targets),(d.data,d.targets)
 
     elif dataset == "KMNIST":
         d = torchvision.datasets.KMNIST("./datasets",download=True,
@@ -123,8 +135,11 @@ def main(_):
                     [transforms.ToTensor()]
                 ),
             )
-        mm = ceil(d.data.shape[0]*5/6)
-        (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
+        if out_of_sample_test_error:
+            mm = int(ceil(d.data.shape[0]*5/6))
+            (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
+        else:
+            (train_images,train_labels),(test_images,test_labels) = (d.data, d.targets),(d.data,d.targets)
         num_classes = 10
 
     elif dataset == "EMNIST":
@@ -137,8 +152,11 @@ def main(_):
                 split="balanced")
                 #split="byclass")
         print(d)
-        mm = int(ceil(d.data.shape[0]*5/6))
-        (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
+        if out_of_sample_test_error:
+            mm = int(ceil(d.data.shape[0]*5/6))
+            (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
+        else:
+            (train_images,train_labels),(test_images,test_labels) = (d.data, d.targets),(d.data,d.targets)
         print(train_images.min(), train_images.max())
         num_classes = 62
 
@@ -204,7 +222,7 @@ def main(_):
     ##get random training sample##
     # and perform some more processing
 
-    np.random.seed(42069)
+    # np.random.seed(42069)
 
     '''GET TRAINING SAMPLE INDICES'''
     '''AND DO PRE-PROCESSING if it's an image dataset'''
@@ -227,7 +245,10 @@ def main(_):
             indices = np.random.choice(range(int(len(inputs))), size=int(total_samples), replace=False)
         # print(indices)
         print("train_set", "".join([("1" if i in indices else "0") for i in range(int(len(inputs)))]))
-        test_indices = np.array([i for i in range(len(inputs)) if i not in indices])
+        if out_of_sample_test_error:
+            test_indices = np.array([i for i in range(len(inputs)) if i not in indices])
+        else:
+            test_indices = np.array(range(len(inputs)))
         train_inputs = inputs[indices,:].astype(np.float32)
         train_labels = labels[indices]
         if training:
@@ -496,6 +517,7 @@ if __name__ == '__main__':
     from utils import define_default_flags
 
     define_default_flags(f)
+    f.DEFINE_boolean('out_of_sample_test_error', True, "Whether to test only on inputs outside of training data, or on whole dataset")
 
     tf.compat.v1.app.run()
     #tf.app.run()
