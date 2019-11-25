@@ -1,29 +1,30 @@
 #!/bin/bash
 
-m=100
-dataset=mnist
+m=20000
+dataset=cifar
 #dataset=EMNIST
 #dataset=$1
 #dataset=cifar
 #dataset=calabiyau
 #dataset=boolean
-#boolfun=00001110110011111001111111001111000000000000000000000000000000000000000001001100000000001101110100000000000000000000000000000000
+boolfun=00001110110011111001111111001111000000000000000000000000000000000000000001001100000000001101110100000000000000000000000000000000
 #boolfun=00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000
 #boolfun=$1
 boolfun_comp=84.0
-net=cnn
+net=vgg16
 L=4
 #optimizer=adam
 optimizer=sgd
 loss=mse
 sigmaw=1.41
+#sigmaw=2.0
 #sigmaw=100.0
-sigmab=0.0
+sigmab=0.1
 pool=none
 c=0.0
-number_inits=10
-epochs_after_fit=1
-export n_procs=5
+number_inits=20
+epochs_after_fit=0
+export n_procs=20
 t=-1
 #if [ "$dataset" == "boolean" ]; then
 #t=1
@@ -36,17 +37,18 @@ t=-1
 #prefix=new_unbalancedt${t}_${dataset}
 #prefix=test_${t}_${dataset}
 #prefix=GPEP2_logPs_
-prefix=test_boolean_again_
+prefix=new_msweep_
 
 n_gpus=0
 export n_gpus=$n_gpus
 #export n_procs=5
 
 
-for rep in `seq 1 1`; do
-echo $rep
+#for m in 1 3 9 27 81 245 736 2214 6654 20000; do
+m=$1
+echo $m
 
-  ./run_experiment2 --prefix $prefix --m $m --threshold $t --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 2.0 --boolfun_comp $boolfun_comp --boolfun $boolfun --epochs_after_fit $epochs_after_fit -loss $loss #--use_empirical_K --intermediate_pooling 1111 --intermediate_pooling_type none
+  ./run_experiment2 --prefix $prefix --m $m --threshold $t --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 2.0 --boolfun_comp $boolfun_comp --boolfun $boolfun --epochs_after_fit $epochs_after_fit -loss $loss --use_empirical_K #--intermediate_pooling 1111 --intermediate_pooling_type none
 
 
-done
+#done

@@ -23,13 +23,15 @@ pool=none
 c=0.0
 number_inits=20
 epochs_after_fit=1
+
 t=-1
 if [ "$dataset" == "boolean" ]; then
 t=1
 elif [ "$dataset" == "EMNIST" ]; then
 t=61
 else
-t=9
+t=1
+#t=9
 #t=5
 fi
 #prefix=new_unbalancedt${t}_${dataset}
@@ -41,9 +43,9 @@ prefix=shifted_init_sweep_${t}_${dataset}_
 
 n_gpus=0
 export n_gpus=$n_gpus
-export n_procs=1
+export n_procs=20
 
-for shifted_init_shift in `seq 0.0 0.5 5.0`; do
+for shifted_init_shift in `seq -2.0 0.5 5.0`; do
 #for shifted_init_shift in 1.5; do
 echo $shifted_init_shift
 prefix=shifted_init_sweep_${shifted_init_shift}_${t}_${dataset}_

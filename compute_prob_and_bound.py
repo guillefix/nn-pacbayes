@@ -1,6 +1,7 @@
 import numpy as np
 import tensorflow as tf
-import keras
+#import keras
+from tensorflow import keras
 import pickle
 import os
 
@@ -25,7 +26,7 @@ def main(_):
     config.gpu_options.allow_growth = True
 
     #tf.enable_eager_execution(config=config)
-    set_session = keras.backend.set_session
+    set_session = tf.compat.v1.keras.backend.set_session
     config.log_device_placement = False  # to log device placement (on which device the operation ran)
     sess = tf.compat.v1.Session(config=config)
     set_session(sess)  # set this TensorFlow session as the default session for Keras
@@ -44,7 +45,9 @@ def main(_):
 
     print("compute probability and bound", network, dataset)
 
-    K = load_kernel(FLAGS)
+    K_pre = load_kernel(FLAGS)
+    print(K_pre)
+    K = kernel_mult*K_pre
 
     #finding log marginal likelihood of data
     if using_EP:
@@ -114,6 +117,7 @@ if __name__ == '__main__':
     f.DEFINE_boolean('using_MC', False, "Whether to use Monte Carlo method for computing probability")
     f.DEFINE_integer('num_post_samples', int(1e5), "Number of approximate EP posterior samples in importance-sampling-based Monte Carlo estimation of marginal likelihood")
     f.DEFINE_float('cov_mult', 1.0, "Factor by which to multiply the variance of the approximate posterior, to focus the importance sampling more in the non-zero likelihood region, at the risk of biasing away from true posterior.")
+    f.DEFINE_float('kernel_mult', 1.0, "Factor by which to multiply the kernel before computing approximate marginal likelihood")
     f.DEFINE_float('mean_mult', 1.0, "Factor by which to multiply the mean of the approximate posterior, to focus the importance sampling more in the non-zero likelihood region, at the risk of biasing away from true posterior.")
 
     tf.compat.v1.app.run()
