@@ -218,7 +218,7 @@ def main(_):
     if threshold==-1:
         threshold=ceil(num_classes/2)
 
-    print(train_images.shape)
+    # print(train_images.shape)
     ##get random training sample##
     # and perform some more processing
 

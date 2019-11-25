@@ -58,10 +58,11 @@ import matplotlib.pyplot as plt
 %matplotlib
 results_folder = "results/"
 prefix="new_boolean_msweep_"
+prefix="new_boolean_msweep_full_test_error_"
 training_results = pd.read_csv(results_folder+prefix+"nn_training_results.txt",comment="#", header='infer',sep="\t")
-training_results.columns
+# training_results.columns
 
-training_results["train_acc_std"] #i had it wrong in NN_train.py. this is test_acc_std really
+# training_results["train_acc_std"] #i had it wrong for first one in NN_train.py. so that for that one, this is test_acc_std really
 training_results["train_acc"]
 
 # training_results.plot("m","test_error", logy=True, logx=True)

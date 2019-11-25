@@ -1,6 +1,7 @@
 #!/bin/bash
 
-dataset=EMNIST
+#dataset=EMNIST
+dataset=boolean
 boolfun=00001110110011111001111111001111000000000000000000000000000000000000000001001100000000001101110100000000000000000000000000000000
 #boolfun_comp=84
 #net=resnet50
@@ -19,7 +20,8 @@ number_inits=8
 epochs_after_fit=0
 #prefix=emnist_large_msweep_
 #prefix=nn_random_labels_emnist_msweep_
-prefix=new_boolean_msweep_
+#prefix=new_boolean_msweep_full_test_error_
+prefix=new_boolean_msweep_full_
 
 export n_gpus=1
 export n_procs=8
@@ -36,5 +38,5 @@ echo $m
   #./run_experiment --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 2.0 --epochs_after_fit $epochs_after_fit -loss $loss --centering --optimizer $optimizer --nn_random_labels
 
 ## msweep boolean 
-  ./run_experiment_msweep --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 2.0 --epochs_after_fit $epochs_after_fit -loss $loss --centering --optimizer $optimizer --layer_widths $layer_widths --boolfun $boolfun #--boolfun_comp $boolfun_comp
+  ./run_experiment_msweep --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 2.0 --epochs_after_fit $epochs_after_fit -loss $loss --centering --optimizer $optimizer --layer_widths $layer_widths --boolfun $boolfun #--noout_of_sample_test_error #--boolfun_comp $boolfun_comp
 done
