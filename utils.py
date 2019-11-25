@@ -37,7 +37,7 @@ def save_data(train_images,ys,test_images,test_ys,FLAGS):
     h5f = h5py.File(filename,"w")
     h5f.create_dataset('train_images', data=train_images)
 
-    ys = [y[0] for y in ys]
+    # ys = [y[0] for y in ys]
     h5f.create_dataset('ys', data=ys)
     if FLAGS["training"]:
         h5f.create_dataset('test_images', data=test_images)
@@ -79,11 +79,21 @@ def save_arch(json_string,FLAGS):
     with open(filename, "w") as f:
         f.write(json_string)
 
-def load_model(FLAGS):
+def load_model_json(FLAGS):
     filename = arch_filename(FLAGS)
     json_string_filename = filename
     arch_json_string = open(filename, "r") .read()
     return arch_json_string
+
+def load_model(FLAGS):
+    CauchyInit = cauchy_init_class_wrapper(FLAGS["sigmaw"])
+    ShiftedInit = shifted_init_class_wrapper(FLAGS["sigmab"],FLAGS["shifted_init_shift"])
+    custom_objects = {'cauchy_init': CauchyInit, 'shifted_init':ShiftedInit}
+    arch_json_string = load_model_json(FLAGS)
+    from tensorflow.keras.models import model_from_json
+    model = model_from_json(arch_json_string, custom_objects=custom_objects)
+    return model
+
 
 def kernel_filename(FLAGS):
     filename=kernel_folder
@@ -114,7 +124,8 @@ def define_default_flags(f):
     f.DEFINE_string('dataset', None, "The dataset to use")
     f.DEFINE_string('network', None, "The type of network to use")
     f.DEFINE_integer('number_layers', None, "The number of layers in the network")
-    f.DEFINE_integer('layer_width', 512, "Number of hidden neurons (fc) or filters (CNN)")
+    f.DEFINE_string('layer_widths', "512", "Number of hidden neurons (fc) or filters (CNN)")
+    f.DEFINE_string('activations', "relu", "Number of hidden neurons (fc) or filters (CNN)")
     f.DEFINE_boolean('binarized', True, "Whether to convert classification labels to binary")
     f.DEFINE_boolean('oversampling', False, "Whether to oversample the minority class from the data distribution (a standard technique when dealing with class imbalance)")
     f.DEFINE_boolean('oversampling2', False, "Whether to oversample the minority class from the empirical distribution out of an original samplo of size m (a standard technique when dealing with class imbalance)")
@@ -125,7 +136,7 @@ def define_default_flags(f):
     f.DEFINE_float('sigmaw', 1.0, "The variance parameter of the weights; their variance will be sigmaw/sqrt(number of inputs to neuron")
     f.DEFINE_float('sigmab', 1.0, "The variance of the biases")
     f.DEFINE_string('init_dist', "gaussian", "The distribution to use to initialize parameters")
-    f.DEFINE_float('shifted_init_shift',1.0,"Mean of the bias term distribution of the last layer (for some class imbalance experiments)")
+    f.DEFINE_float('shifted_init_shift',0.0,"Mean of the bias term distribution of the last layer (for some class imbalance experiments)")
     # f.DEFINE_boolean('compute_bound', False, "Whether to compute the PAC-Bayes bound or just generate the training data")
     #f.DEFINE_boolean('compute_kernel', False, "Whether to compute the kernel or just generate the training data")
     f.DEFINE_boolean('use_shifted_init', False, "Whether to use a distribution of the last layer bias term which has non-zero mean; may be useful for learning class-imbalanced data")
@@ -139,6 +150,8 @@ def define_default_flags(f):
     f.DEFINE_integer('threshold', -1, "Label above or on which to binarze as 1, and below which to binarize as 0")
     f.DEFINE_float('n_samples_repeats', 1.0, "Number of samples to compute empirical kernel, as a multiple of training set size, m")
     f.DEFINE_boolean('random_labels', True, "Whether the confusion data is constructed by randomizing the labels, or by taking a wrong label")
+    f.DEFINE_boolean('zero_one', True, "Whether to use 0,1 or -1,1, for binarized labels")
+    f.DEFINE_boolean('nn_random_labels', False, "Whether to set the labels by a random sample from the neural network which we are going to us")
     f.DEFINE_string('prefix', "", "A prefix to use for the result files")
 
 def preprocess_flags(FLAGS):
@@ -149,28 +162,33 @@ def preprocess_flags(FLAGS):
     if FLAGS["number_layers"] != len(FLAGS["intermediate_pooling"]):
         raise ValueError("length of intermediate_pooling binary string should be the same as the number of layers; you are providing whether invidiaual layers have a local maxpooling after them; 1 is maxpool; 0 no maxpool")
 
-    # if FLAGS["compute_bound"]:
-    #     FLAGS["compute_kernel"] = True
-    #     FLAGS["training"] = True
-
     number_layers = FLAGS["number_layers"]
     intermediate_pooling = FLAGS["intermediate_pooling"]
     confusion = FLAGS["confusion"]
     m = FLAGS["m"]
-    # FLAGS["filter_sizes"] = [[5,5],[2,2]]*10
     FLAGS["filter_sizes"] = [[5,5],[2,2]]*(number_layers//2) + [[5,5]]*(number_layers%2)
-    # FLAGS["filter_sizes"] = FLAGS["filter_sizes"][:number_layers]
     FLAGS["padding"] = ["VALID", "SAME"]*(number_layers//2) + ["VALID"]*(number_layers%2)
-    # FLAGS["padding"]=["VALID", "SAME"]*10
-    # FLAGS["padding"]= FLAGS["padding"][:number_layers]
     FLAGS["pooling_in_layer"] = [x=="1" for x in intermediate_pooling]
     FLAGS["strides"]=[[1, 1]] * number_layers
-    # FLAGS["strides"]= FLAGS["strides"][:number_layers]
-    FLAGS["num_filters"] = FLAGS["layer_width"]
-    #FLAGS["num_filters"] = 1024
+    if len(FLAGS["layer_widths"].split(",")) == 1:
+        FLAGS["num_filters"] = int(FLAGS["layer_widths"])
+    else:
+        raise NotImplementedError("haven't implemented varying number of filternumbers for CNNs")
     if m is not None: FLAGS["total_samples"] = ceil(m*(1.0+confusion))
     FLAGS["training"] = not FLAGS["no_training"]
     if FLAGS["pooling"] == "none": FLAGS["pooling"] = None
+
+    for layer_wise_thing in ["layer_widths","activations"]:
+        if layer_wise_thing == "layer_widths":
+            FLAGS[layer_wise_thing] = [int(w) for w in FLAGS[layer_wise_thing].split(",")]
+        elif layer_wise_thing == "activations":
+            FLAGS[layer_wise_thing] = FLAGS[layer_wise_thing].split(",")
+
+        if len(FLAGS[layer_wise_thing]) != number_layers:
+            if len(FLAGS[layer_wise_thing]) == 1:
+                FLAGS[layer_wise_thing] = FLAGS[layer_wise_thing]*number_layers
+            else:
+                raise AssertionError("Number of "+layer_wise_thing+" should be the same as number of layers")
 
     return FLAGS
 
@@ -285,7 +303,8 @@ def cauchy_init_wrapper(sigmaw):
 
 def shifted_init_wrapper(sigmab, shifted_init_shift):
     def shifted_init(shape, dtype=None):
-        return sigmab*np.random.standard_normal(shape)-shifted_init_shift
+        return 1.0*np.random.standard_normal(shape)-shifted_init_shift
+        #return sigmab*np.random.standard_normal(shape)-shifted_init_shift
     return shifted_init
 
 def cauchy_init_class_wrapper(sigmaw):

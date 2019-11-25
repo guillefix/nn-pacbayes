@@ -31,14 +31,12 @@ def main(_):
     sess = tf.compat.v1.Session(config=config)
     set_session(sess)  # set this TensorFlow session as the default session for Keras
 
+    '''GET DATA'''
     from utils import load_data,load_model,load_kernel
     train_images,flat_train_images,ys,_,_ = load_data(FLAGS)
     X = flat_train_images
     ys2 = [[y] for y in ys]
     Y = np.array(ys2)
-
-    arch_json_string = load_model(FLAGS)
-
     image_size = train_images.shape[1]
     number_channels = train_images.shape[-1]
     input_dim = flat_train_images.shape[1]

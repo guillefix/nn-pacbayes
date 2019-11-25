@@ -67,7 +67,7 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
     for index in tasks:
         print("sample for kernel", index)
 
-        #model = model_from_json(arch_json_string) # this resets the weights (makes sense as the json string only has architecture)
+        # model = model_from_json(arch_json_string) # this resets the weights (makes sense as the json string only has architecture)
         if local_index>0:
             reset_weights(model, initial_weights, are_norm, sigmaw, sigmab)
 

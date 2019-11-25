@@ -1,0 +1,25 @@
+#!/bin/bash
+
+m=10000 
+dataset=cifar
+net=vgg16 
+L=1 
+net=cnn
+L=4 
+prefix=test_
+sigmaw=1.0 
+sigmab=1.0 
+
+n_gpus=1
+c=0
+
+pool=none
+
+py=/usr/bin/python3
+
+#for c in 0.7 0.8 0.9 1 2 3 4 5; do
+#./script2 --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training -sigmaw $sigmaw -sigmab $sigmab --confusion $c --ngpus $n_gpus --compute_bound --pooling $pool --n_samples_repeats 2.0 --use_empirical_K
+	$py generate_NN_arch.py --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training -sigmaw $sigmaw -sigmab $sigmab --confusion $c --ngpus $n_gpus --compute_bound --pooling $pool --n_samples_repeats 2.0 --use_empirical_K
+	$py generate_inputs_sample.py --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training -sigmaw $sigmaw -sigmab $sigmab --confusion $c --ngpus $n_gpus --compute_bound --pooling $pool --n_samples_repeats 2.0 --use_empirical_K
+	$py NN_train.py --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training -sigmaw $sigmaw -sigmab $sigmab --confusion $c --ngpus $n_gpus --compute_bound --pooling $pool --n_samples_repeats 2.0 --use_empirical_K
+#done

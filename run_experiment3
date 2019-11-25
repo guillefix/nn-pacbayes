@@ -42,4 +42,4 @@ $py generate_inputs_sample.py $@
 /users/guillefix/anaconda3/envs/venv/bin/mpiexec -n $n_procs $py NN_train.py $@
 /users/guillefix/anaconda3/envs/venv/bin/mpiexec -n $n_procs $py sample_funs.py $@ --number_samples 1000
 #mpiexec -n $n_procs $py NN_train.py $@
-#mpiexec -n $n_procs $py sample_funs.py $@ --number_samples 10
+#mpiexec -n $n_procs $py sample_funs.py $@ 
