@@ -1,6 +1,6 @@
 import numpy as np
 import tensorflow as tf
-import keras
+import tensorflow.compat.v1.keras as keras
 import pickle
 import os
 from math import ceil

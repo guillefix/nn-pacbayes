@@ -2,6 +2,7 @@ import numpy as np
 import tensorflow as tf
 from math import *
 import tensorflow_probability as tfp
+import sys
 
 # import load_dataset
 #from gpflow import settings
@@ -156,6 +157,7 @@ def main(_):
 
         model.fit(train_images, ys, verbose=1,\
             sample_weight=sample_weights, validation_data=(train_images, ys), epochs=MAX_TRAIN_EPOCHS,callbacks=callbacks, batch_size=batch_size)
+        sys.stdout.flush()
 
         '''GET DATA: weights, and errors'''
         weights, biases = get_rescaled_weights(model)

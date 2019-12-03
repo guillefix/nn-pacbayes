@@ -267,8 +267,10 @@ def main(_):
         max2 = torch.max(test_images).item()
         print("maxs", max1,max2)
         max_val = max(max1,max2)
-        train_images  = train_images.numpy().astype(np.float32)*255.0/max_val
-        test_images = test_images.numpy().astype(np.float32)*255.0/max_val
+        #train_images  = train_images.numpy().astype(np.float32)*255.0/max_val
+        #test_images = test_images.numpy().astype(np.float32)*255.0/max_val
+        train_images  = train_images.numpy().astype(np.uint8)
+        test_images = test_images.numpy().astype(np.uint8)
 
 
         if oversampling:
@@ -354,12 +356,12 @@ def main(_):
                     #print(train_images.shape)
             if network in ["cnn","fc"]:
                 #normalize the images pixels to be in [0,1]
-                train_images = train_images.astype(np.float32)/255.0
+                train_images = train_images.astype(np.float32)/max1
                 if training:
-                    test_images = test_images.astype(np.float32)/255.0
+                    test_images = test_images.astype(np.float32)/max1
             else:
                 #note that the transformation to PIL and back to Tensor normalizes the image pixels to be in [0,1]
-                assert train_images.dtype == "uint8" #otherwise ToPILImage wants the input to be NCHW. wtff
+                assert train_images.dtype == "uint8" #otherwise ToPILImage either fails or wants the input to be NCHW. wtff
                 train_images = np.stack([d.transform(image) for image in train_images])
                 train_images = np.transpose(train_images,(0,2,3,1)) # this is because the pytorch transform changes it to NCHW for some reason :P
                 if training:

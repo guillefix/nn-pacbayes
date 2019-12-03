@@ -24,7 +24,7 @@ c=0
 #pool=avg
 pool=none
 
-#for net in resnet50; do 
+for net in vgg16; do 
 #for net in resnet50 resnet101 resnet152 resnetv2_50 resnetv2_101 resnetv2_152 resnext50 resnext101 densenet121 densenet169 densenet201 mobilenetv2 nasnet vgg19 vgg16 ; do 
 for net in resnet101 resnet152 resnetv2_50 resnetv2_101 resnetv2_152 resnext50 resnext101 nasnet; do 
 #for net in mobilenetv2; do 
