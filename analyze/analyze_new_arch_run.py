@@ -10,6 +10,7 @@ kernel_folder = "kernels/"
 results_folder = "results/"
 
 prefix = "newer_arch_sweep_ce_sgd_"
+prefix = "newer_arch_sweep_ce_sgd_unnormalized_"
 training_results = pd.read_csv(results_folder+prefix+"nn_training_results.txt",comment="#", header='infer',sep="\t")
 training_results.columns
 
@@ -71,7 +72,7 @@ for net in networks:
     if net == "nasnet": # haven't got its NTK yet
         continue
     print(net)
-    filename = "newer_arch_sweep_ce_sgd__"+net+"_EMNIST_1000_0.0_0.0_True_False_False_False_-1_True_False_False_data.h5"
+    filename = prefix+"_"+net+"_EMNIST_1000_0.0_0.0_True_False_False_False_-1_True_False_False_data.h5"
 
     from utils import load_data_by_filename
     train_images,flat_data,ys,test_images,test_ys = load_data_by_filename("data/"+filename)
@@ -99,7 +100,7 @@ for net in networks:
     # del K,theta
 
     # filename = net+"_KMNIST_1000_0.0_0.0_True_False_True_4_3.0_0.0_None_0000_max_kernel.npy"
-    filename = "newer_arch_sweep_ce_sgd__"+str(net)+"_EMNIST_1000_0.0_0.0_True_False_True_4_1.414_0.0_None_0000_max_kernel.npy"
+    filename = prefix+"_"+str(net)+"_EMNIST_1000_0.0_0.0_True_False_True_4_1.414_0.0_None_0000_max_kernel.npy"
     # filename = "newer_arch_sweep_ce_sgd__"+str(net)+"_EMNIST_1000_0.0_0.0_True_False_True_4_1.414_0.0_None_0000_max_NTK_kernel.npy"
 
     ##NNGP kernel
@@ -111,37 +112,37 @@ for net in networks:
         continue
 
     ##NTK kernel
-    filename = "newer_arch_sweep_ce_sgd__"+str(net)+"_EMNIST_1000_0.0_0.0_True_False_True_4_1.414_0.0_None_0000_max_NTK_kernel.npy"
-    from utils import load_kernel_by_filename
-    try:
-        Kfull = load_kernel_by_filename("kernels/"+filename)
-    except FileNotFoundError:
-        print("File not found :P")
-        continue
+    # filename = "newer_arch_sweep_ce_sgd__"+str(net)+"_EMNIST_1000_0.0_0.0_True_False_True_4_1.414_0.0_None_0000_max_NTK_kernel.npy"
+    # from utils import load_kernel_by_filename
+    # try:
+    #     Kfull = load_kernel_by_filename("kernels/"+filename)
+    # except FileNotFoundError:
+    #     print("File not found :P")
+    #     continue
 
     # K = Kfull
-    K = 1*Kfull
+    # K = 1*Kfull
     # K = Kfull/Kfull.max()
     # K *= 10
     # K *= 1e24
     # theta = theta/theta.max()
     # theta = K*10000
     # theta *=10000
-    # theta = 1000*K
-    theta = 1*theta
+    # theta = 1000*theta
+    # theta = 1*theta
     # theta *= 1e24
     # Y = Y*2-1
     test_error = get_test_error(net)
     results = {"net":net, "test_error": test_error}
     for method in methods:
-        # results[method] = funs[method](theta,X,Y)
-        results[method] = funs[method](K,theta,X,Y)
+        results[method] = funs[method](theta,X,Y)
+        # results[method] = funs[method](K,theta,X,Y)
         print(results[method])
         delta = 2**-10
         bound = (results[method]+2*np.log(m)+1-np.log(delta))/m
         bound = 1-np.exp(-bound)
         print(bound)
-        # results[method]=bound
+        results[method]=bound
     results_df = results_df.append(results,ignore_index=True)
 
 # np.all(np.linalg.eigvals(theta)>0)
@@ -168,6 +169,8 @@ for net in networks:
 results_df
 
 results_df.sort_values("test_error").plot.bar("net", ["test_error","EP"])
+plt.subplots_adjust(top=0.9, left=0.1, right=0.9, bottom=0.27)
+plt.savefig("img/"+prefix+"_EP_theta1.png")
 
 # results_df.plot()
 
@@ -236,3 +239,14 @@ plot_multi(results_df,results_df.columns[1:])
 
 pd.plotting._get_standard_colors
 import matplotlib
+
+############
+
+test_error_normalized = results_df["test_error"]
+test_error_unnormalized = results_df["test_error"]
+
+plt.scatter(test_error_normalized, test_error_unnormalized)
+plt.scatter(test_error_unnormalized, results_df["EP"])
+plt.xlabel("Test error (normalized inputs)")
+plt.ylabel("Test error (unnormalized inputs)")
+plt.savefig("img/new_arch_runs_test_error_normalized_vs_test_error_unnormalized.png")

@@ -35,13 +35,13 @@ def main(_):
         return 0
 
     n = m
-    #X_train = X_train_full[:n].reshape(n,784)/255.0
-    X_train = X_train_full[:n].reshape(n,784)
+    X_train = X_train_full[:n].reshape(n,784)/255.0
+    #X_train = X_train_full[:n].reshape(n,784)
     y_train = np.asarray([data_binariser(i) for i in y_train_full[:n]]).reshape(n,1)
 
     n = test_set_size
-    #X_test = X_test_full[:n].reshape(n,784)/255.0
-    X_test = X_test_full[:n].reshape(n,784)
+    X_test = X_test_full[:n].reshape(n,784)/255.0
+    #X_test = X_test_full[:n].reshape(n,784)
     y_test = np.asarray([data_binariser(i) for i in y_test_full])[:n].reshape(n,1)
 
     if not zero_one:
@@ -49,7 +49,7 @@ def main(_):
         y_train=2*y_train-1
 
     '''SAVING DATA SAMPLES'''
-    save_data(tf.cast(X_train,tf.float32),tf.cast(y_train,tf.float32),tf.cast(X_test,tf.float32),tf.cast(y_test,tf.float32),FLAGS)
+    save_data(X_train.astype(np.float32), y_train.astype(np.float32),X_test.astype(np.float32),y_test.astype(np.float32),FLAGS)
 
 
 if __name__ == '__main__':
@@ -59,8 +59,7 @@ if __name__ == '__main__':
     from utils import define_default_flags
 
     define_default_flags(f)
-    f.DEFINE_boolean('zero_one', True, "Whether to use 0,1 or -1,1, for binarized labels")
-    f.DEFINE_integer('test_set_size',-1,"Number of test samples, -1 means all of it")
+    f.DEFINE_integer('test_set_size',100,"Number of test samples, -1 means all of it")
 
     tf.compat.v1.app.run()
     #tf.app.run()

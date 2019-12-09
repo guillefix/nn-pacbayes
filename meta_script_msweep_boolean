@@ -1,0 +1,49 @@
+#!/bin/bash
+
+#dataset=EMNIST
+dataset=cifar
+dataset=boolean
+boolfun=00001110110011111001111111001111000000000000000000000000000000000000000001001100000000001101110100000000000000000000000000000000
+#boolfun_comp=84
+#net=resnet50
+#net=vgg16
+net=fc
+L=2
+layer_widths=40
+optimizer=sgd
+loss=mse
+sigmaw=1.41
+#sigmaw=50.0
+sigmab=0.0
+pool=avg
+c=0.0
+#number_inits=8
+epochs_after_fit=0
+#prefix=emnist_large_msweep_
+#prefix=new_msweep_nn_
+#prefix=nn_random_labels_emnist_msweep_
+prefix=nn_random_labels_boolean_msweep_new_sample_
+#prefix=new_boolean_msweep_full_test_error_
+#prefix=new_boolean_msweep_full_
+
+export n_gpus=0
+number_inits=1
+export n_procs=1
+#export n_procs=1
+
+
+m=$1
+#for m in 1 2 3 4 5 6 8 10 12 16 20 26 32 41 52 66 83 105 132 167 211 267 337 425 536 677 855 1079 1362 1719 2170 2739 3457 4363 5507 6951 8773 11073 13976 17639 22263 28100 35466 44763 56497 71307 90000; do
+#for m in 5000 10000 20000; do
+#for m in 1 2 3 4 5 7 9 12 16 21 27 35 46 59 76 99 127; do 
+echo $m
+
+  #./run_experiment_msweep --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 2.0 --epochs_after_fit $epochs_after_fit -loss $loss --centering --optimizer $optimizer
+  #./run_experiment_msweep --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 2.0 --epochs_after_fit $epochs_after_fit -loss $loss --centering --nobinarized
+
+## nn_random_labels
+  ./run_experiment --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 2.0 --epochs_after_fit $epochs_after_fit -loss $loss --centering --optimizer $optimizer --nn_random_regression_outputs --layer_widths $layer_widths
+
+## msweep boolean 
+  #./run_experiment_msweep --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 2.0 --epochs_after_fit $epochs_after_fit -loss $loss --centering --optimizer $optimizer --layer_widths $layer_widths --boolfun $boolfun #--noout_of_sample_test_error #--boolfun_comp $boolfun_comp
+#done
