@@ -362,9 +362,13 @@ def main(_):
                 assert train_images.dtype == "uint8" #otherwise ToPILImage wants the input to be NCHW. wtff
                 train_images = np.stack([d.transform(image) for image in train_images])
                 train_images = np.transpose(train_images,(0,2,3,1)) # this is because the pytorch transform changes it to NCHW for some reason :P
+                if unnormalized_images:
+                    train_images = train_images*255.0
                 if training:
                     test_images = np.stack([d.transform(image) for image in test_images])
                     test_images = np.transpose(test_images,(0,2,3,1))
+                    if unnormalized_images:
+                        test_images = test_images*255.0
                 print(train_images.shape)
                 print("max after transforming", train_images.max())
 
@@ -527,6 +531,7 @@ if __name__ == '__main__':
 
     define_default_flags(f)
     f.DEFINE_boolean('out_of_sample_test_error', True, "Whether to test only on inputs outside of training data, or on whole dataset")
+    f.DEFINE_boolean('unnormalized_images', False, "Whether to have the images in range [0,255.0], rather than the standard [0,1]")
 
     tf.compat.v1.app.run()
     #tf.app.run()

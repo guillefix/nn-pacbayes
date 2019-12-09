@@ -167,9 +167,9 @@ def main(_):
         weights_norm, biases_norm = measure_sigmas(model)
         print(weights_norm,biases_norm)
 
-        print(ys)
-        model.fit(train_images, ys, verbose=1,\
-            sample_weight=sample_weights, validation_data=(train_images, ys), epochs=MAX_TRAIN_EPOCHS,callbacks=callbacks, batch_size=batch_size)
+        model.fit(train_images.astype(np.float32), ys.astype(np.float32), verbose=0,\
+            sample_weight=sample_weights, validation_data=(train_images.astype(np.float32), ys.astype(np.float32)), epochs=MAX_TRAIN_EPOCHS,callbacks=callbacks, batch_size=batch_size)
+        sys.stdout.flush()
 
         '''GET DATA: weights, and errors'''
         weights, biases = get_rescaled_weights(model)
@@ -177,11 +177,11 @@ def main(_):
         print(weights_norm,biases_norm)
 
         if not doing_regression:
-            train_loss, train_acc = model.evaluate(train_images, ys, verbose=0)
-            test_loss, test_acc = model.evaluate(test_images, test_ys, verbose=0)
+            train_loss, train_acc = model.evaluate(train_images.astype(np.float32), ys.astype(np.float32), verbose=0)
+            test_loss, test_acc = model.evaluate(test_images.astype(np.float32), test_ys.astype(np.float32), verbose=0)
         else:
-            train_acc = train_loss = model.evaluate(train_images, ys, verbose=0)
-            test_acc = test_loss = model.evaluate(test_images, test_ys, verbose=0)
+            train_acc = train_loss = model.evaluate(train_images.astype(np.float32), ys, verbose=0)
+            test_acc = test_loss = model.evaluate(test_images.astype(np.float32), test_ys, verbose=0)
         preds = model.predict(test_images)[:,0]
         # print(preds)
         # print(preds.shape)
@@ -195,13 +195,22 @@ def main(_):
             test_sensitivity = -1
             test_specificity = -1
         else:
+            print("threshold", threshold)
             if threshold != -1:
                 for th in np.linspace(0,1,1000):
                     test_specificity = sum([(sigmoid(preds[i])>th)==x for i,x in enumerate(test_ys[:100]) if x==0])/(len([x for x in test_ys[:100] if x==0]))
                     if test_specificity>0.99:
-                        test_specificity = sum([(sigmoid(preds[i])>th)==x for i,x in enumerate(test_ys) if x==0])/(len([x for x in test_ys if x==0]))
+                        num_0s = len([x for x in test_ys if x==0])
+                        if num_0s > 0:
+                            test_specificity = sum([(sigmoid(preds[i])>th)==x for i,x in enumerate(test_ys) if x==0])/(num_0s)
+                        else:
+                            test_specificity = -1
                         if test_specificity>0.99:
-                            test_sensitivity = sum([(sigmoid(preds[i])>th)==x for i,x in enumerate(test_ys) if x==1])/(len([x for x in test_ys if x==1]))
+                            num_1s = len([x for x in test_ys if x==1])
+                            if num_1s > 0:
+                                test_sensitivity = sum([(sigmoid(preds[i])>th)==x for i,x in enumerate(test_ys) if x==1])/(num_1s)
+                            else:
+                                test_sensitivity = -1
                             break
             else:
                 # for th in np.linspace(0,1,5): # low number of thresholds as I'm not exploring unbalanced datasets right now
@@ -217,7 +226,7 @@ def main(_):
         print('Test specificity:', test_specificity)
         if not ignore_non_fit or train_acc == 1.0:
             print("printing function to file", funs_filename)
-            function = (model.predict(test_images[:test_function_size], verbose=0))[:,0]
+            function = (model.predict(test_images[:test_function_size].astype(np.float32), verbose=0))[:,0]
             function = function>0
             function=function.astype(int)
             function = ''.join([str(int(i)) for i in function])

@@ -16,9 +16,10 @@
 #mpi=/users/guillefix/anaconda3/bin/mpiexec
 #py=/usr/bin/python3.6
 #py=python3
-#py=python
-py=/users/guillefix/anaconda3/envs/venv/bin/python
-mpi=/users/guillefix/anaconda3/envs/venv/bin/mpiexec
+py=python
+mpi=mpiexec
+#py=/users/guillefix/anaconda3/envs/venv/bin/python
+#mpi=/users/guillefix/anaconda3/envs/venv/bin/mpiexec
 
 #echo $n_gpus
 
@@ -37,7 +38,7 @@ $mpi -n $n_procs $py compute_kernel.py $@
 # # # /usr/local/shared/openmpi/4.0.0/bin/mpiexec -n 250 $py compute_prob_and_bound.py $@ --num_post_samples 100000 --cov_mult 0.5 --using_MC
 #mpiexec -n $(nproc) $py compute_prob_and_bound.py $@ --num_post_samples 1600000 --cov_mult 0.7 --using_MC
 #mpiexec -n $(nproc) $py compute_prob_and_bound.py $@ --num_post_samples 800000 --cov_mult 1.0 --using_MC
-$mpi -n $n_procs $py compute_prob_and_bound.py $@ --using_EP
+#$mpi -n $n_procs $py compute_prob_and_bound.py $@ --using_EP
 #/usr/local/shared/openmpi/4.0.0/bin/mpiexec -n 100 $py sample_funs.py $@ --number_samples 10000
 
 #/users/guillefix/anaconda3/bin/mpiexec -n 1 $py NN_train.py $@
