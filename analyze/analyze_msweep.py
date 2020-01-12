@@ -36,6 +36,8 @@ for i,dataset in enumerate(["mnist","mnist-fashion","cifar"]):
 
 # plt.scatter(d_bounds["number_layers"], [b-0.3 for b in d_bounds["bound"]])
 
+plt.yscale("log")
+plt.xscale("log")
 plt.xlabel("Training set size",fontsize=12)
 plt.ylabel("Generalization error",fontsize=12)
 # plt.legend(loc="center right",fontsize=7)
@@ -44,6 +46,27 @@ plt.legend(bbox_to_anchor=(0,1.02,1,0.2), loc="lower left",
 
 plt.subplots_adjust(left=0.1, right=0.9, top=0.83, bottom=0.1)
 
-plt.savefig("msweeps_mnist_fashion-mnist_cifar.png")
+plt.savefig("img/msweeps_mnist_fashion-mnist_cifar_log_log.png")
 # plt.savefig("err_vs_layers_cnn.png")
 # plt.savefig("err_vs_m_"+dataset+".png")
+
+################
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+%matplotlib
+results_folder = "results/"
+prefix="new_boolean_msweep_full_"
+prefix="new_boolean_msweep_full_test_error_"
+training_results = pd.read_csv(results_folder+prefix+"nn_training_results.txt",comment="#", header='infer',sep="\t")
+# training_results.columns
+
+# training_results["train_acc_std"] #i had it wrong for first one in NN_train.py. so that for that one, this is test_acc_std really
+training_results["train_acc"]
+
+# training_results.plot("m","test_error", logy=True, logx=True)
+training_results.plot("m","test_error", logx=True, logy=True)
+
+# plt.savefig("learning_curve_outofsample_testerror_boolean.png")
+plt.savefig("learning_curve_full_testerror_boolean.png")
