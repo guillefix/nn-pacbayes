@@ -52,11 +52,6 @@ def main(_):
     sess = tf.compat.v1.Session(config=config)
     set_session(sess)  # set this TensorFlow session as the default session for Keras
 
-    '''some custom initalizers and keras setup'''
-    from utils import cauchy_init_class_wrapper, shifted_init_class_wrapper
-    CauchyInit = cauchy_init_class_wrapper(sigmaw)
-    ShiftedInit = shifted_init_class_wrapper(sigmab,shifted_init_shift)
-    custom_objects = {'cauchy_init': CauchyInit, 'shifted_init':ShiftedInit}
 
     '''LOAD DATA & ARCHITECTURE'''
 
@@ -66,9 +61,7 @@ def main(_):
     input_dim = data.shape[1]
     num_channels = data.shape[-1]
 
-    arch_json_string = load_model(FLAGS)
-    from tensorflow.keras.models import model_from_json
-    model = model_from_json(arch_json_string, custom_objects=custom_objects)
+    model = load_model(FLAGS)
 
     #K = load_kernel(FLAGS)
     #from GP_prob.GP_prob_gpy import GP_prob
@@ -105,7 +98,7 @@ def main(_):
                 simple_reset_weights(model, sigmaw, sigmab)
             else:
                 reset_weights(model, initial_weights, are_norm, sigmaw, sigmab)
-        #model = model_from_json(arch_json_string) # this resets the weights (makes sense as the json string only has architecture)
+        #model = load_model(FLAGS) # this resets the weights (makes sense as the json string only has architecture)
 
         #save weights?
         #model.save_weights("sampled_nets/"+str(index)+"_"+json_string_filename+".h5")

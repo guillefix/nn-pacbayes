@@ -67,11 +67,14 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
     for index in tasks:
         print("sample for kernel", index)
 
-        #model = model_from_json(arch_json_string) # this resets the weights (makes sense as the json string only has architecture)
+        # model = model_from_json(arch_json_string) # this resets the weights (makes sense as the json string only has architecture)
         if local_index>0:
             reset_weights(model, initial_weights, are_norm, sigmaw, sigmab)
 
         X = np.squeeze(func(data))
+        print("X",X)
+        if len(X.shape)==1:
+            X = np.expand_dims(X,0)
         covs += (sigmaw**2/X.shape[1])*np.matmul(X,X.T)+(sigmab**2)*np.ones((X.shape[0],X.shape[0]))
         #outputs = model.predict(data)
         #print(outputs)
@@ -91,7 +94,10 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
     print("--- %s seconds ---" % (time.time() - start_time))
 
     #fs = comm.gather(fs,root=0)
-    covs = comm.gather(covs/len(tasks),root=0)
+    covs_recv = None
+    if rank == 0:
+        covs_recv = np.zeros_like(covs)
+    comm.Reduce(covs, covs_recv, op=MPI.SUM, root=0)
 
     if rank == 0:
         #fs = sum(fs, [])
@@ -100,6 +106,6 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
         #fs = np.array(fs)
         #fs = np.squeeze(fs)
         #return np.cov(fs.T)
-        return np.mean(covs,axis=0)
+        return covs_recv/number_samples
     else:
         return None

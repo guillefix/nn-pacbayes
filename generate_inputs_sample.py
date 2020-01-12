@@ -18,22 +18,47 @@ def main(_):
     FLAGS = preprocess_flags(FLAGS)
     print(FLAGS)
     globals().update(FLAGS)
-    global m, total_samples
+    global m, total_samples, num_classes
 
     print("Generating input samples", dataset, m)
 
     from math import ceil
 
+    if dataset == "cifar":
+            image_size=32
+            number_channels=3
+    elif dataset == "imagenet":
+            image_size=256
+            number_channels=3
+    elif dataset == "mnist":
+            image_size=28
+            number_channels=1
+    elif dataset == "mnist-fashion":
+            image_size=28
+            number_channels=1
+    elif dataset == "KMNIST":
+            image_size=28
+            number_channels=1
+    elif dataset == "EMNIST":
+            image_size=28
+            number_channels=1
+    elif dataset == "boolean":
+        input_dim = 7
+    elif dataset == "calabiyau":
+        input_dim = 180
+    else:
+        raise NotImplementedError
+
     if network in ["cnn","fc","inception_resnet_v2", "inception_v3","xception"]:
         if network not in ["cnn","fc"]:
             if network == "xception":
-                image_size=71
+                image_size=max(image_size,71)
             else:
-                image_size=75
+                image_size=max(image_size,75)
         else:
             image_size=None
     else:
-        image_size=32
+        image_size=max(image_size,32)
 
     image_width = image_height = image_size
 
@@ -45,12 +70,32 @@ def main(_):
                     [transforms.ToTensor()]
                 ))
         print(d)
-        mm = int(ceil(d.data.shape[0]*5/6))
-        (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
+        if out_of_sample_test_error:
+            mm = int(ceil(d.data.shape[0]*5/6))
+            (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
+        else:
+            (train_images,train_labels),(test_images,test_labels) = (d.data, d.targets),(d.data,d.targets)
         train_images = torch.Tensor(train_images)
         test_images = torch.Tensor(test_images)
-        #print("HIIIII",type(train_images))
         num_classes = 10
+
+    elif dataset == "imagenet":
+        d = torchvision.datasets.ImageNet("./datasets",download=True,
+                transform=transforms.Compose(
+                    [transforms.ToPILImage()]+
+                    ([transforms.Resize(image_size)] if image_size is not None else [])+
+                    [transforms.ToTensor()]
+                ))
+        print(d)
+        if out_of_sample_test_error:
+            mm = int(ceil(d.data.shape[0]*5/6))
+            (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
+        else:
+            (train_images,train_labels),(test_images,test_labels) = (d.data, d.targets),(d.data,d.targets)
+        train_images = torch.Tensor(train_images)
+        test_images = torch.Tensor(test_images)
+        print("ImageNet classes", train_labels.unique())
+        num_classes = 1000
 
     elif dataset == "mnist":
         num_classes = 10
@@ -61,9 +106,11 @@ def main(_):
                     [transforms.ToTensor()]
                 ))
         print(d)
-        mm = int(ceil(d.data.shape[0]*5/6))
-        (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
-        #print(train_images)
+        if out_of_sample_test_error:
+            mm = int(ceil(d.data.shape[0]*5/6))
+            (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
+        else:
+            (train_images,train_labels),(test_images,test_labels) = (d.data, d.targets),(d.data,d.targets)
 
     elif dataset == "mnist-fashion":
         num_classes = 10
@@ -74,8 +121,11 @@ def main(_):
                     [transforms.ToTensor()]
                 ))
         print(d)
-        mm = int(ceil(d.data.shape[0]*5/6))
-        (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
+        if out_of_sample_test_error:
+            mm = int(ceil(d.data.shape[0]*5/6))
+            (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
+        else:
+            (train_images,train_labels),(test_images,test_labels) = (d.data, d.targets),(d.data,d.targets)
 
     elif dataset == "KMNIST":
         d = torchvision.datasets.KMNIST("./datasets",download=True,
@@ -85,8 +135,11 @@ def main(_):
                     [transforms.ToTensor()]
                 ),
             )
-        mm = ceil(d.data.shape[0]*5/6)
-        (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
+        if out_of_sample_test_error:
+            mm = int(ceil(d.data.shape[0]*5/6))
+            (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
+        else:
+            (train_images,train_labels),(test_images,test_labels) = (d.data, d.targets),(d.data,d.targets)
         num_classes = 10
 
     elif dataset == "EMNIST":
@@ -99,8 +152,11 @@ def main(_):
                 split="balanced")
                 #split="byclass")
         print(d)
-        mm = int(ceil(d.data.shape[0]*5/6))
-        (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
+        if out_of_sample_test_error:
+            mm = int(ceil(d.data.shape[0]*5/6))
+            (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
+        else:
+            (train_images,train_labels),(test_images,test_labels) = (d.data, d.targets),(d.data,d.targets)
         print(train_images.min(), train_images.max())
         num_classes = 62
 
@@ -146,7 +202,7 @@ def main(_):
         if sigmab==0 and not centering:
             labels=np.array([[int(xx)*2.0-1] for xx in list(fun)[1:]]) #start from 1 because we ignored the 0th input
         else:
-            labels=np.array([[int(xx)*2.0-1] for xx in list(fun)[0:]]) 
+            labels=np.array([[int(xx)*2.0-1] for xx in list(fun)[0:]])
     elif dataset == "calabiyau":
         assert network == "fc"
         num_classes = 2
@@ -162,13 +218,17 @@ def main(_):
     if threshold==-1:
         threshold=ceil(num_classes/2)
 
+    # print(train_images.shape)
     ##get random training sample##
     # and perform some more processing
 
-    np.random.seed(42069)
+    # np.random.seed(42069)
 
+    '''GET TRAINING SAMPLE INDICES'''
+    '''AND DO PRE-PROCESSING if it's an image dataset'''
     #for datasets that are not images, like the boolean one
     if dataset == "boolean" or dataset == "calabiyau":
+
         if oversampling:
             probs = list(map(lambda x: threshold/(num_classes*len(inputs)) if x>=threshold else (num_classes-threshold)/(num_classes*len(inputs)), inputs))
             probs = np.array(probs)
@@ -185,7 +245,10 @@ def main(_):
             indices = np.random.choice(range(int(len(inputs))), size=int(total_samples), replace=False)
         # print(indices)
         print("train_set", "".join([("1" if i in indices else "0") for i in range(int(len(inputs)))]))
-        test_indices = np.array([i for i in range(len(inputs)) if i not in indices])
+        if out_of_sample_test_error:
+            test_indices = np.array([i for i in range(len(inputs)) if i not in indices])
+        else:
+            test_indices = np.array(range(len(inputs)))
         train_inputs = inputs[indices,:].astype(np.float32)
         train_labels = labels[indices]
         if training:
@@ -204,8 +267,10 @@ def main(_):
         max2 = torch.max(test_images).item()
         print("maxs", max1,max2)
         max_val = max(max1,max2)
-        train_images  = train_images.numpy().astype(np.float32)*255.0/max_val
-        test_images = test_images.numpy().astype(np.float32)*255.0/max_val
+        #train_images  = train_images.numpy().astype(np.float32)*255.0/max_val
+        #test_images = test_images.numpy().astype(np.float32)*255.0/max_val
+        train_images  = train_images.numpy().astype(np.uint8)
+        test_images = test_images.numpy().astype(np.uint8)
 
 
         if oversampling:
@@ -291,17 +356,21 @@ def main(_):
                     #print(train_images.shape)
             if network in ["cnn","fc"]:
                 #normalize the images pixels to be in [0,1]
-                train_images = train_images.astype(np.float32)/255.0
+                train_images = train_images.astype(np.float32)/max1
                 if training:
-                    test_images = test_images.astype(np.float32)/255.0
+                    test_images = test_images.astype(np.float32)/max1
             else:
                 #note that the transformation to PIL and back to Tensor normalizes the image pixels to be in [0,1]
-                assert train_images.dtype == "uint8" #otherwise ToPILImage wants the input to be NCHW. wtff
+                assert train_images.dtype == "uint8" #otherwise ToPILImage either fails or wants the input to be NCHW. wtff
                 train_images = np.stack([d.transform(image) for image in train_images])
                 train_images = np.transpose(train_images,(0,2,3,1)) # this is because the pytorch transform changes it to NCHW for some reason :P
+                if unnormalized_images:
+                    train_images = train_images*255.0
                 if training:
                     test_images = np.stack([d.transform(image) for image in test_images])
                     test_images = np.transpose(test_images,(0,2,3,1))
+                    if unnormalized_images:
+                        test_images = test_images*255.0
                 print(train_images.shape)
                 print("max after transforming", train_images.max())
 
@@ -394,11 +463,7 @@ def main(_):
         if training:
             test_images = flat_test_images
 
-
-        input_dim = flat_train_images.shape[1]
-
     #corrupting images, and adding confusion data
-
     def binarize(label, threshold):
         return label>=threshold
 
@@ -421,17 +486,30 @@ def main(_):
             else:
                 return float(label)
 
+
+    #if the labels are to be generated by a neural network:
+    if nn_random_labels:
+        from utils import load_model
+        model = load_model(FLAGS)
+        # data = tf.constant(train_images)
+        train_labels = model.predict(train_images)[:,0]>0#, batch_size=data.shape[0], steps=1) > 0
+        # print("generated function", "".join([str(int(y)) for y in train_labels]))
+        if training:
+            # data = tf.constant(test_images)
+            test_labels = model.predict(test_images)[:,0]>0#, batch_size=data.shape[0], steps=1) > 0
+        if binarized:
+            threshold=1
+            num_classes = 2
+
     if random_labels:
         print("zero_one", zero_one)
-        ys = [[process_labels(label,label_corruption,threshold,zero_one=True,binarized=binarized)] for label in train_labels[:m]] + [[process_labels(label,1.0,threshold,zero_one=True,binarized=binarized)] for label in train_labels[m:]]
+        ys = [process_labels(label,label_corruption,threshold,zero_one=True,binarized=binarized) for label in train_labels[:m]] + [process_labels(label,1.0,threshold,zero_one=True,binarized=binarized) for label in train_labels[m:]]
     else:
-        ys = [[process_labels(label,label_corruption,threshold,zero_one=True,binarized=binarized)] for label in train_labels[:m]] + [[float(not binarize(label,threshold))] for label in train_labels[m:]]
+        ys = [process_labels(label,label_corruption,threshold,zero_one=True,binarized=binarized) for label in train_labels[:m]] + [float(not binarize(label,threshold)) for label in train_labels[m:]]
 
     if training:
         test_ys = np.array([process_labels(label,label_corruption,threshold,zero_one=True,binarized=binarized) for label in test_labels])
-
         '''SAVING DATA SAMPLES'''
-        #print(ys)
         save_data(train_images,ys,test_images,test_ys,FLAGS)
     else:
         test_images = test_ys = []
@@ -445,7 +523,8 @@ if __name__ == '__main__':
     from utils import define_default_flags
 
     define_default_flags(f)
-    f.DEFINE_boolean('zero_one', True, "Whether to use 0,1 or -1,1, for binarized labels")
+    f.DEFINE_boolean('out_of_sample_test_error', True, "Whether to test only on inputs outside of training data, or on whole dataset")
+    f.DEFINE_boolean('unnormalized_images', False, "Whether to have the images in range [0,255.0], rather than the standard [0,1]")
 
     tf.compat.v1.app.run()
     #tf.app.run()

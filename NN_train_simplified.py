@@ -80,15 +80,8 @@ def main(_):
         else:
             raise NotImplementedError("Gamma not equal to 1.0 with oversampling2 not implemented")
 
-    arch_json_string = load_model(FLAGS)
+    model = load_model(FLAGS)
     from tensorflow.keras.models import model_from_json
-
-    '''some custom initalizers and keras setup'''
-    from utils import cauchy_init_class_wrapper, shifted_init_class_wrapper
-    CauchyInit = cauchy_init_class_wrapper(sigmaw)
-    ShiftedInit = shifted_init_class_wrapper(sigmab,shifted_init_shift)
-    custom_objects = {'cauchy_init': CauchyInit, 'shifted_init':ShiftedInit}
-    model = model_from_json(arch_json_string,custom_objects=custom_objects)
 
     set_session = tf.compat.v1.keras.backend.set_session
 
@@ -117,7 +110,6 @@ def main(_):
     else:
         optim = optimizer
 
-    model = model_from_json(arch_json_string,custom_objects=custom_objects)
     model.compile(optim,
                   loss=binary_crossentropy_from_logits if loss=="ce" else loss,
                   metrics=([binary_accuracy_for_mse] if loss=="mse" else ['accuracy']))
@@ -134,18 +126,12 @@ def main(_):
             sample_weight=sample_weights, validation_data=(train_images, ys), epochs=MAX_TRAIN_EPOCHS,callbacks=callbacks, batch_size=batch_size)
 
         '''GET DATA: weights, and errors'''
-        #weights, biases = get_rescaled_weights(model)
-        #weights_norm, biases_norm = measure_sigmas(model)
         weights_norm, biases_norm = -1, -1
-        #print(weights_norm,biases_norm)
 
         train_loss, train_acc = model.evaluate(train_images, ys, verbose=0)
         print(train_acc)
         test_loss, test_acc = model.evaluate(test_images, test_ys, verbose=0)
         preds = model.predict(test_images)[:,0]
-        # print(preds)
-        # print(preds.shape)
-        # test_false_positive_rate = test_fps/(len([x for x in test_ys if x==1]))
         def sigmoid(x):
             return np.exp(x)/(1+np.exp(x))
 

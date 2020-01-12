@@ -7,22 +7,24 @@ sys.path.append(GP_prob_folder)
 import numpy as np
 from numpy.linalg import inv
 from numpy import matmul
-    import scipy
+import scipy
 
-import neural_tangents as nt
-from neural_tangents import stax
+# import neural_tangents as nt
+# from neural_tangents import stax
 
-def GP_prob(K,theta,X,Y,sigma_noise=1.0, posterior="bayes"):
+def GP_prob(K,theta,X,Y,t=1.0, posterior="bayes"):
     n = K.shape[0]
-    t = 1.0
+    # t = 1.0
     decay_matrix = np.eye(n)-scipy.linalg.expm(-t*theta)
     Sigma = K + np.matmul(decay_matrix, np.matmul(K, np.matmul(np.linalg.inv(theta), np.matmul(decay_matrix, theta))) - 2*K)
 
     alpha = np.matmul(np.linalg.inv(K), np.matmul(decay_matrix,Y))
     eigs_sigma = np.linalg.eigvals(Sigma)
-    eigs_K = np.linalg.eigvals(K)
+    # eigs_K = np.linalg.eigvals(K)
+    # eigs_sigma = np.linalg.eigh(Sigma)[0]
+    eigs_K = np.linalg.eigh(K)[0]
     KL = 0.5*(np.sum(np.log(1/eigs_sigma) + np.log(eigs_K)) + np.sum(eigs_sigma/eigs_K) + np.matmul(alpha.T,np.matmul(K,alpha)) - n)
-    return np.real(KL)
+    return np.real(KL)[0,0]
 
 '''PLAYGROUND'''
 

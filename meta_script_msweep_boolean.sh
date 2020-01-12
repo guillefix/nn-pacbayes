@@ -1,6 +1,6 @@
 #!/bin/bash -l
 echo =========================================================   
-echo Job submitted  date = Thu Oct 31 17:08:00 GMT 2019      
+echo Job submitted  date = Tue Dec  3 14:50:08 GMT 2019      
 date_start=`date +%s`
 echo $SLURM_JOB_NUM_NODES nodes \( $SMP processes per node \)        
 echo $SLURM_JOB_NUM_NODES hosts used: $SLURM_JOB_NODELIST      
@@ -16,8 +16,8 @@ ulimit -l unlimited
 export MV2_SMP_USE_CMA=0
 
 #which mpirun
-export OMP_NUM_THREADS=20
- nice -n 10 /users/guillefix/anaconda3/envs/venv/bin/python make_ntk.py --num_samples 4000 --train_size 10000
+export OMP_NUM_THEADS=1
+ nice -n 10 /users/guillefix/nn-pacbayes/./meta_script_msweep_boolean 127
 # If we've been checkpointed
 #if [ -n "${DMTCP_CHECKPOINT_DIR}" ]; then
   if [ -d "${DMTCP_CHECKPOINT_DIR}" ]; then
