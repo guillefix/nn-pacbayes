@@ -11,7 +11,7 @@ net=fc
 L=2
 layer_widths=40
 optimizer=sgd
-loss=ce
+loss=mse
 sigmaw=1.41
 #sigmaw=50.0
 sigmab=0.0
@@ -27,8 +27,8 @@ prefix=nn_random_labels_boolean_msweep_new_sample_
 #prefix=new_boolean_msweep_full_
 
 export n_gpus=0
-number_inits=200
-export n_procs=200
+number_inits=1
+export n_procs=1
 #export n_procs=1
 
 
@@ -42,6 +42,7 @@ echo $m
   #./run_experiment_msweep --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 2.0 --epochs_after_fit $epochs_after_fit -loss $loss --centering --nobinarized
 
 ## nn_random_labels
+  #./run_experiment --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 2.0 --epochs_after_fit $epochs_after_fit -loss $loss --centering --optimizer $optimizer --nn_random_regression_outputs --layer_widths $layer_widths
   ./run_experiment --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 2.0 --epochs_after_fit $epochs_after_fit -loss $loss --centering --optimizer $optimizer --nn_random_labels --layer_widths $layer_widths
 
 ## msweep boolean 
