@@ -90,16 +90,22 @@ def main(_):
 
     '''TRAINING LOOP'''
     #things to keep track off
-    functions = []
-    test_accs = []
-    test_sensitivities = []
-    test_specificities = []
-    train_accs = []
-    weightss = []
-    biasess = []
-    weights_norms = []
-    biases_norms = []
-    iterss = []
+    #functions = []
+    test_accs = 0
+    test_accs_squared = 0
+    test_sensitivities = 0
+    test_specificities = 0
+    train_accs = 0
+    train_accs_squared = 0
+    weightss = None
+    biasess = None
+    weightss_squared = None
+    biasess_squared = None
+    weights_norms = 0
+    biases_norms = 0
+    weights_norms_squared = 0
+    biases_norms_squared = 0
+    iterss = 0
     funs_filename = results_folder+prefix+"_"+str(rank)+"_nn_train_functions.txt"
 
     print("Training with",loss,"and optimizer",optimizer)
@@ -234,15 +240,27 @@ def main(_):
             funs_file.write(function+"\r\n")
             funs_file.close()
             #functions.append(function)
-            test_accs.append(test_acc)
-            test_sensitivities.append(test_sensitivity)
-            test_specificities.append(test_specificity)
-            train_accs.append(train_acc)
-            weightss.append(weights)
-            biasess.append(biases)
-            weights_norms.append(weights_norm)
-            biases_norms.append(biases_norm)
-            iterss.append(model.history.epoch[-1])
+            test_accs += test_acc
+            test_accs_squared += test_acc**2
+            test_sensitivities += test_sensitivity
+            test_specificities += test_specificity
+            train_accs += train_acc
+            train_accs_squared += train_acc**2
+            if weightss is None:
+                weightss = weights
+                biasess = biases
+                weightss_squared = weights**2
+                biasess_squared = biases**2
+            else:
+                weightss += weights
+                biasess += biases
+                weightss_squared += weights**2
+                biasess_squared += biases**2
+            weights_norms += weights_norm
+            weights_norms_squared += weights_norm**2
+            biases_norms += biases_norm
+            biases_norms_squared += biases_norm**2
+            iterss += model.history.epoch[-1]
         #keras.backend.clear_session()
 
     #print("Print functions to file")
@@ -251,44 +269,89 @@ def main(_):
     #    file.write("\r\n")
 
     # functions = comm.gather(functions, root=0)
-    test_accs = comm.gather(test_accs, root=0)
-    test_sensitivities = comm.gather(test_sensitivities, root=0)
-    test_specificities = comm.gather(test_specificities, root=0)
-    train_accs = comm.gather(train_accs, root=0)
+    if rank == 0:
+        #test_accs_recv = np.empty([size,1],dtype=np.float32)
+        #test_accs_squared_recv = np.empty([size,1],dtype=np.float32)
+        #test_sensitivities_recv = np.empty([size,1],dtype=np.float32)
+        #test_specificities_recv = np.empty([size,1],dtype=np.float32)
+        #train_accs_recv = np.empty([size,1],dtype=np.float32)
+        #train_accs_squared_recv = np.empty([size,1],dtype=np.float32)
+        
+        weights_shape = weightss.flatten().shape[0]
+        biases_shape = biasess.flatten().shape[0]
+        weightss_recv = np.zeros(weights_shape, dtype=np.float32)
+        biasess_recv = np.zeros(biases_shape, dtype=np.float32)
+        weightss_squared_recv = np.zeros(weights_shape, dtype=np.float32)
+        biasess_squared_recv = np.zeros(biases_shape, dtype=np.float32)
+        #weights_norms_recv = np.empty([size,1],dtype=np.float32)
+        #weights_norms_squared_recv = np.empty([size,1],dtype=np.float32)
+        #biases_norms_recv = np.empty([size,1],dtype=np.float32)
+        #biases_norms_squared_recv = np.empty([size,1],dtype=np.float32)
+        #iterss_recv = np.empty([size,1],dtype='i')
 
-    weightss = comm.gather(weightss, root=0)
-    biasess = comm.gather(biasess, root=0)
-    weights_norms = comm.gather(weights_norms,root=0)
-    iterss = comm.gather(iterss, root=0)
+    else:
+        #test_accs_recv = None
+        #test_accs_squared_recv = None
+        #test_sensitivities_recv = None
+        #test_specificities_recv = None
+        #train_accs_recv = None
+        #train_accs_squared_recv = None
+
+        weightss_recv = None
+        weightss_squared_recv = None
+        biasess_recv = None
+        biasess_squared_recv = None
+        #weights_norms_recv = None
+        #weights_norms_squared_recv = None
+        #biases_norms_recv = None
+        #biases_norms_squared_recv = None
+        #iterss_recv = None
+
+    test_accs_recv = comm.reduce(test_accs, root=0)
+    test_accs_squared_recv = comm.reduce(test_accs_squared, root=0)
+    test_sensitivities_recv = comm.reduce(test_sensitivities, root=0)
+    test_specificities_recv = comm.reduce(test_specificities, root=0)
+    train_accs_recv = comm.reduce(train_accs, root=0)
+    train_accs_squared_recv = comm.reduce(train_accs_squared, root=0)
+    
+    comm.Reduce(weightss.flatten(), weightss_recv, root=0)
+    comm.Reduce(biasess.flatten(), biasess_recv, root=0)
+    comm.Reduce(weightss_squared.flatten(), weightss_squared_recv, root=0)
+    comm.Reduce(biasess_squared.flatten(), biasess_squared_recv, root=0)
+    weights_norms_recv = comm.reduce(weights_norms, root=0)
+    weights_norms_squared_recv = comm.reduce(weights_norms_squared, root=0)
+    biases_norms_recv = comm.reduce(biases_norms, root=0)
+    biases_norms_squared_recv = comm.reduce(biases_norms_squared, root=0)
+    iterss_recv = comm.reduce(iterss, root=0)
 
     '''PROCESS COLLECTIVE DATA'''
     if rank == 0:
-        weightss = np.stack(sum(weightss,[]))
-        weights_norms = sum(weights_norms,[])
-        biasess = np.stack(sum(biasess,[]))
-        weights_std = np.mean(np.std(weightss,axis=0)).squeeze()
-        biases_std = np.mean(np.std(biasess,axis=0)).squeeze()
-        weights_mean = np.mean(weightss)
-        biases_mean = np.mean(biasess)
-        weights_norm_mean = np.mean(weights_norms)
-        weights_norm_std = np.std(weights_norms)
-        biases_norm_mean = np.mean(biases_norm)
-        biases_norm_std = np.std(biases_norm)
+        #weightss = np.stack(sum(weightss,[]))
+        #weights_norms = sum(weights_norms,[])
+        #biasess = np.stack(sum(biasess,[]))
+        weights_mean = np.mean(weightss_recv)/number_inits #average over dimension indexing which weight it is (we've already reduced over the number_inits dimension)
+        biases_mean = np.mean(biasess_recv)/number_inits
+        weights_std = np.mean(weightss_squared_recv)/number_inits - weights_mean
+        biases_std = np.mean(biasess_squared_recv)/number_inits - biases_mean
+        weights_norm_mean = weights_norms_recv/number_inits
+        weights_norm_std = weights_norms_squared_recv/number_inits - weights_norm_mean
+        biases_norm_mean = biases_norms_recv/number_inits
+        biases_norm_std = biases_norms_squared_recv/number_inits - biases_norm_mean
 
         # functions = sum(functions,[])
-        test_acc = np.mean(sum(test_accs,[]))
-        test_sensitivity = np.mean(sum(test_sensitivities,[]))
-        test_specificity = np.mean(sum(test_specificities,[]))
-        train_acc = np.mean(sum(train_accs,[]))
+        test_acc = test_accs_recv/number_inits
+        test_sensitivity = test_sensitivities_recv/number_inits
+        test_specificity = test_specificities_recv/number_inits
+        train_acc = train_accs_recv/number_inits
         print('Mean test accuracy:', test_acc)
         print('Mean test sensitivity:', test_sensitivity)
         print('Mean test specificity:', test_specificity)
         print('Mean train accuracy:', train_acc)
-        test_acc = np.mean(sum(test_accs,[]))
-        train_acc = np.mean(sum(train_accs,[]))
-        train_acc_std = np.std(sum(train_accs,[]))
-        test_acc_std = np.std(sum(test_accs,[]))
-        mean_iters = np.mean(sum(iterss,[]))
+        test_acc = test_accs_recv/number_inits
+        train_acc = train_accs_recv/number_inits
+        train_acc_std = train_accs_squared_recv/number_inits - train_acc
+        test_acc_std = test_accs_squared_recv/number_inits - test_acc
+        mean_iters = 1.0*iterss_recv/number_inits
 
         useful_train_flags = ["dataset", "m", "network", "loss", "optimizer", "pooling", "epochs_after_fit", "ignore_non_fit", "test_function_size", "batch_size", "number_layers", "sigmaw", "sigmab", "init_dist","use_shifted_init","shifted_init_shift","whitening", "centering", "oversampling", "oversampling2", "channel_normalization", "training", "binarized", "confusion","filter_sizes", "gamma", "intermediate_pooling", "label_corruption", "threshold", "n_gpus", "n_samples_repeats", "layer_widths", "number_inits", "padding"]
         with open(results_folder+prefix+"nn_training_results.txt","a") as file:
@@ -302,9 +365,6 @@ def main(_):
             file.write("{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t{:d}\t{:.4f}\t{:.4f}\n".format(train_acc, 1-test_acc,test_acc,\
                 test_sensitivity,test_specificity,weights_std,biases_std,\
                 weights_mean,biases_mean,weights_norm_mean,weights_norm_std,biases_norm_mean,biases_norm_std,int(mean_iters),train_acc_std,test_acc_std)) #normalized to sqrt(input_dim)
-    else:
-        assert test_accs is None
-        assert train_accs is None
 
 
 if __name__ == '__main__':

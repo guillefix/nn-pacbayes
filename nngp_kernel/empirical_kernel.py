@@ -94,7 +94,10 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
     print("--- %s seconds ---" % (time.time() - start_time))
 
     #fs = comm.gather(fs,root=0)
-    covs = comm.gather(covs,root=0)
+    covs_recv = None
+    if rank == 0:
+        covs_recv = np.zeros_like(covs)
+    comm.Reduce(covs, covs_recv, op=MPI.SUM, root=0)
 
     if rank == 0:
         #fs = sum(fs, [])
@@ -103,6 +106,6 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
         #fs = np.array(fs)
         #fs = np.squeeze(fs)
         #return np.cov(fs.T)
-        return np.sum(covs,axis=0)/number_samples
+        return covs_recv/number_samples
     else:
         return None
