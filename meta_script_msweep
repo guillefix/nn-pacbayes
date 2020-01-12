@@ -8,6 +8,7 @@ boolfun=000011101100111110011111110011110000000000000000000000000000000000000000
 #net=resnet50
 net=vgg16
 #net=fc
+#these things only matter for cnn,fc,resnet networks
 L=4
 layer_widths=40
 optimizer=sgd
@@ -15,7 +16,7 @@ loss=mse
 sigmaw=1.41
 #sigmaw=50.0
 sigmab=0.1
-pool=avg
+pool=none
 c=0.0
 #number_inits=20
 number_inits=8
@@ -44,5 +45,6 @@ echo $m
   #./run_experiment --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 2.0 --epochs_after_fit $epochs_after_fit -loss $loss --centering --optimizer $optimizer --nn_random_labels --layer_widths $layer_widths
 
 ## msweep boolean 
-  ./run_experiment_msweep --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 2.0 --epochs_after_fit $epochs_after_fit -loss $loss --centering --optimizer $optimizer --layer_widths $layer_widths --boolfun $boolfun --use_empirical_K #--noout_of_sample_test_error #--boolfun_comp $boolfun_comp
+  #./run_experiment_msweep --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 2.0 --epochs_after_fit $epochs_after_fit -loss $loss --centering --optimizer $optimizer --layer_widths $layer_widths --boolfun $boolfun --use_empirical_K #--noout_of_sample_test_error #--boolfun_comp $boolfun_comp
+  ./run_experiment_msweep --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 2.0 --epochs_after_fit $epochs_after_fit -loss $loss --optimizer $optimizer --layer_widths $layer_widths --boolfun $boolfun --use_empirical_K #--noout_of_sample_test_error #--boolfun_comp $boolfun_comp
 #done

@@ -267,8 +267,10 @@ def main(_):
         max2 = torch.max(test_images).item()
         print("maxs", max1,max2)
         max_val = max(max1,max2)
-        train_images  = train_images.numpy().astype(np.float32)*255.0/max_val
-        test_images = test_images.numpy().astype(np.float32)*255.0/max_val
+        #train_images  = train_images.numpy().astype(np.float32)*255.0/max_val
+        #test_images = test_images.numpy().astype(np.float32)*255.0/max_val
+        train_images  = train_images.numpy().astype(np.uint8)
+        test_images = test_images.numpy().astype(np.uint8)
 
 
         if oversampling:
