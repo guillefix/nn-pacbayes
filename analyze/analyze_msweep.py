@@ -57,7 +57,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 %matplotlib
 results_folder = "results/"
-prefix="new_boolean_msweep_"
+prefix="new_boolean_msweep_full_"
 prefix="new_boolean_msweep_full_test_error_"
 training_results = pd.read_csv(results_folder+prefix+"nn_training_results.txt",comment="#", header='infer',sep="\t")
 # training_results.columns
@@ -66,6 +66,7 @@ training_results = pd.read_csv(results_folder+prefix+"nn_training_results.txt",c
 training_results["train_acc"]
 
 # training_results.plot("m","test_error", logy=True, logx=True)
-training_results.plot("m","test_error")
+training_results.plot("m","test_error", logx=True, logy=True)
 
-plt.savefig("learning_curve_outofsample_testerror_boolean.png")
+# plt.savefig("learning_curve_outofsample_testerror_boolean.png")
+plt.savefig("learning_curve_full_testerror_boolean.png")

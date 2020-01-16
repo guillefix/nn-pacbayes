@@ -122,7 +122,7 @@ def main(_):
         reset_weights(model, sigmaw, sigmab)
 
         print(train_images.shape,ys.shape)
-        model.fit(train_images, ys, verbose=0,\
+        model.fit(train_images, ys, verbose=1,\
             sample_weight=sample_weights, validation_data=(train_images, ys), epochs=MAX_TRAIN_EPOCHS,callbacks=callbacks, batch_size=batch_size)
 
         '''GET DATA: weights, and errors'''
@@ -211,7 +211,6 @@ if __name__ == '__main__':
     f.DEFINE_string('loss',"ce","Which loss to use (ce/mse/etc)")
     f.DEFINE_boolean('ignore_non_fit', False, "Whether to ignore functions that don't fit data")
     f.DEFINE_integer('test_function_size',100,"Number of samples on the test set to use to evaluate the function the network has found")
-    f.DEFINE_boolean('zero_one', True, "Whether to use 0,1 or -1,1, for binarized labels")
 
     tf.compat.v1.app.run()
     import gc; gc.collect()

@@ -10,6 +10,7 @@ kernel_folder = "kernels/"
 results_folder = "results/"
 
 prefix = "newer_arch_sweep_ce_sgd_"
+prefix = "newer_arch_sweep_ce_sgd_unnormalized_"
 training_results = pd.read_csv(results_folder+prefix+"nn_training_results.txt",comment="#", header='infer',sep="\t")
 training_results.columns
 
@@ -31,12 +32,12 @@ from GP_prob.GP_prob_regression import GP_prob as GP_prob_regresison
 from GP_prob.average_error_estimate import average_error
 
 def logP(K,X,Y):
-    logdet = np.sum(np.log(np.linalg.eigh(Kfull)[0]))
-    thing = -0.5*(-np.matmul(Y.T,np.matmul(np.linalg.inv(Kfull),Y)) - m*np.log(np.pi) - logdet)
+    logdet = np.sum(np.log(np.linalg.eigh(K)[0]))
+    thing = -0.5*(-np.matmul(Y.T,np.matmul(np.linalg.inv(K),Y)) - m*np.log(np.pi) - logdet)
     return thing[0,0]
 
 def GP_probNTK_wrapper(K,theta,X,Y):
-    t=1e5
+    t=1e8
     return GP_probNTK(K,theta,X,Y,t=t)
 
 def average_error_wrapper(K):
@@ -49,6 +50,8 @@ def average_error_wrapper(K):
 methods = ["EP","exact_PB","logP_regression"]
 # methods = ["average_error_estimate"]
 methods = ["exact_PB_NTK"]
+methods = ["EP"]
+methods = ["average_error_estimate"]
 funs={"exact_PB_NTK":lambda K,theta,X,Y: GP_probNTK_wrapper(K,theta,X,Y)}
 funs = {"EP": lambda K,X,Y: -GP_prob1(K,X,Y, method="EP"),
         "exact_PB": lambda K,X,Y: -GP_prob2(K,X,Y,using_exactPB=True),
@@ -60,16 +63,16 @@ funs = {"EP": lambda K,X,Y: -GP_prob1(K,X,Y, method="EP"),
         "average_error_estimate":lambda K,X,Y: average_error_wrapper(K),
         "logP_regression": logP}
 
+m=1000
 results_df = pd.DataFrame(columns=["net", "test_error"]+methods)
-
 # things = []
-for net in ["densenet121","densenet169","densenet201","mobilenetv2","nasnet","resnet50","vgg16","vgg19"]:
+# for net in ["densenet121","densenet169","densenet201","mobilenetv2","nasnet","resnet50","vgg16","vgg19"]:
     # for net in ["mobilenetv2"]:
-    # for net in networks:
+for net in networks:
     if net == "nasnet": # haven't got its NTK yet
         continue
     print(net)
-    filename = "newer_arch_sweep_ce_sgd__"+net+"_EMNIST_1000_0.0_0.0_True_False_False_False_-1_True_False_False_data.h5"
+    filename = prefix+"_"+net+"_EMNIST_1000_0.0_0.0_True_False_False_False_-1_True_False_False_data.h5"
 
     from utils import load_data_by_filename
     train_images,flat_data,ys,test_images,test_ys = load_data_by_filename("data/"+filename)
@@ -94,9 +97,10 @@ for net in ["densenet121","densenet169","densenet201","mobilenetv2","nasnet","re
     Y = np.array(ys2)
 
     #%%
+    # del K,theta
 
     # filename = net+"_KMNIST_1000_0.0_0.0_True_False_True_4_3.0_0.0_None_0000_max_kernel.npy"
-    filename = "newer_arch_sweep_ce_sgd__"+str(net)+"_EMNIST_1000_0.0_0.0_True_False_True_4_1.414_0.0_None_0000_max_kernel.npy"
+    filename = prefix+"_"+str(net)+"_EMNIST_1000_0.0_0.0_True_False_True_4_1.414_0.0_None_0000_max_kernel.npy"
     # filename = "newer_arch_sweep_ce_sgd__"+str(net)+"_EMNIST_1000_0.0_0.0_True_False_True_4_1.414_0.0_None_0000_max_NTK_kernel.npy"
 
     ##NNGP kernel
@@ -108,28 +112,37 @@ for net in ["densenet121","densenet169","densenet201","mobilenetv2","nasnet","re
         continue
 
     ##NTK kernel
-    filename = "newer_arch_sweep_ce_sgd__"+str(net)+"_EMNIST_1000_0.0_0.0_True_False_True_4_1.414_0.0_None_0000_max_NTK_kernel.npy"
-    from utils import load_kernel_by_filename
-    try:
-        Kfull = load_kernel_by_filename("kernels/"+filename)
-    except FileNotFoundError:
-        print("File not found :P")
-        continue
+    # filename = "newer_arch_sweep_ce_sgd__"+str(net)+"_EMNIST_1000_0.0_0.0_True_False_True_4_1.414_0.0_None_0000_max_NTK_kernel.npy"
+    # from utils import load_kernel_by_filename
+    # try:
+    #     Kfull = load_kernel_by_filename("kernels/"+filename)
+    # except FileNotFoundError:
+    #     print("File not found :P")
+    #     continue
 
     # K = Kfull
+    # K = 1*Kfull
     # K = Kfull/Kfull.max()
-    # K *= 1000
+    # K *= 10
     # K *= 1e24
-    theta = theta/Kfull.max()
-    theta *= 1000
+    # theta = theta/theta.max()
+    # theta = K*10000
+    # theta *=10000
+    # theta = 1000*theta
+    # theta = 1*theta
     # theta *= 1e24
     # Y = Y*2-1
     test_error = get_test_error(net)
     results = {"net":net, "test_error": test_error}
     for method in methods:
-        # results[method] = funs[method](K,X,Y)
-        results[method] = funs[method](K,theta,X,Y)
+        results[method] = funs[method](theta,X,Y)
+        # results[method] = funs[method](K,theta,X,Y)
         print(results[method])
+        delta = 2**-10
+        bound = (results[method]+2*np.log(m)+1-np.log(delta))/m
+        bound = 1-np.exp(-bound)
+        print(bound)
+        results[method]=bound
     results_df = results_df.append(results,ignore_index=True)
 
 # np.all(np.linalg.eigvals(theta)>0)
@@ -155,11 +168,29 @@ for net in ["densenet121","densenet169","densenet201","mobilenetv2","nasnet","re
 
 results_df
 
+results_df.sort_values("test_error").plot.bar("net", ["test_error","EP"])
+plt.subplots_adjust(top=0.9, left=0.1, right=0.9, bottom=0.27)
+plt.savefig("img/"+prefix+"_EP_theta1.png")
+
 # results_df.plot()
 
 %matplotlib inline
-plot_multi(results_df,results_df.columns[1:])
-plt.savefig("ntk_expected_error_prediction.png")
+
+results_df = results_df.sort_values("test_error").reset_index()
+
+plot_multi(results_df,results_df.columns[2:])
+plt.savefig("ntk_pac_bayes_error_prediction_theta1_K1_t1e8.png")
+plt.savefig("ntk_expected_error_prediction_K1000.png")
+plt.savefig("ntk_expected_error_prediction_K10000.png")
+plt.savefig("nngp_expected_error_prediction_theta1000.png")
+plt.savefig("ntk_pac_bayes_error_prediction.png")
+plt.savefig("ntk_pac_bayes_error_prediction_theta1000.png")
+# plt.savefig("ntk_pac_bayes_error_prediction_theta1000_K1000_t1e5.png")
+plt.savefig("nngp_pac_bayes_error_prediction_theta100000.png")
+plt.savefig("ntk_EP_pac_bayes_error_prediction_theta100000.png")
+plt.savefig("logP_ntk_prediction_theta100000.png")
+
+
 
 
 def plot_multi(data, cols=None, spacing=.1, **kwargs):
@@ -174,16 +205,26 @@ def plot_multi(data, cols=None, spacing=.1, **kwargs):
     colors = prop_cycle.by_key()['color']
 
     # First axis
-    ax = data.loc[:, cols[0]].plot(label=cols[0], color=colors[0], **kwargs)
-    ax.set_ylabel(ylabel=cols[0])
+    # ax = data.loc[:, cols[0]].plot(y=cols[0], xticks=data.index, label=cols[0], color=colors[0], **kwargs)
+    ax = data.loc[:, cols[0]].plot(y=cols[0], xticks=data.index, label="test error", color=colors[0], **kwargs)
+    ax.set_xticklabels(data.net)
+    for tick in ax.get_xticklabels():
+        tick.set_rotation(90)
+    # ax = data.loc[:, cols[0]].plot(label=cols[0], color=colors[0], **kwargs)
+    # ax.set_ylabel(ylabel=cols[0])
+    ax.set_ylabel(ylabel="test error")
     lines, labels = ax.get_legend_handles_labels()
 
     for n in range(1, len(cols)):
         # Multiple y-axes
         ax_new = ax.twinx()
         ax_new.spines['right'].set_position(('axes', 1 + spacing * (n - 1)))
-        data.loc[:, cols[n]].plot(ax=ax_new, label=cols[n], color=colors[n % len(colors)])
-        ax_new.set_ylabel(ylabel=cols[n])
+        # data.loc[:, cols[n]].plot(y=cols[n], xticks=data.index, ax=ax_new, label=cols[n], color=colors[n % len(colors)])
+        data.loc[:, cols[n]].plot(y=cols[n], xticks=data.index, ax=ax_new, label="$KL(Q_{\\mathrm{NTK}}||P_{\\mathrm{NNGP}})$", color=colors[n % len(colors)])
+        # ax_new.set_xticklabels(data.net)
+        # data.loc[:, cols[n]].plot(ax=ax_new, label=cols[n], color=colors[n % len(colors)])
+        # ax_new.set_ylabel(ylabel=cols[n])
+        ax_new.set_ylabel(ylabel="$KL(Q_{\\mathrm{NTK}}||P_{\\mathrm{NNGP}})$")
 
         # Proper legend position
         line, label = ax_new.get_legend_handles_labels()
@@ -198,3 +239,14 @@ plot_multi(results_df,results_df.columns[1:])
 
 pd.plotting._get_standard_colors
 import matplotlib
+
+############
+
+test_error_normalized = results_df["test_error"]
+test_error_unnormalized = results_df["test_error"]
+
+plt.scatter(test_error_normalized, test_error_unnormalized)
+plt.scatter(test_error_unnormalized, results_df["EP"])
+plt.xlabel("Test error (normalized inputs)")
+plt.ylabel("Test error (unnormalized inputs)")
+plt.savefig("img/new_arch_runs_test_error_normalized_vs_test_error_unnormalized.png")

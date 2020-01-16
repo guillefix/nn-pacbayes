@@ -152,6 +152,8 @@ def define_default_flags(f):
     f.DEFINE_boolean('random_labels', True, "Whether the confusion data is constructed by randomizing the labels, or by taking a wrong label")
     f.DEFINE_boolean('zero_one', True, "Whether to use 0,1 or -1,1, for binarized labels")
     f.DEFINE_boolean('nn_random_labels', False, "Whether to set the labels by a random sample from the neural network which we are going to us")
+    f.DEFINE_boolean('nn_random_regression_outputs', False, "Whether to set real-valued outputs by a random sample from the neural network which we are going to us")
+    f.DEFINE_boolean('doing_regression', False, "Whether we are doing regression (rather than classification, as it's the default)")
     f.DEFINE_string('prefix', "", "A prefix to use for the result files")
 
 def preprocess_flags(FLAGS):
@@ -177,6 +179,10 @@ def preprocess_flags(FLAGS):
     if m is not None: FLAGS["total_samples"] = ceil(m*(1.0+confusion))
     FLAGS["training"] = not FLAGS["no_training"]
     if FLAGS["pooling"] == "none": FLAGS["pooling"] = None
+
+    assert not (FLAGS["nn_random_labels"] and FLAGS["nn_random_regression_outputs"])
+    if FLAGS["nn_random_regression_outputs"]:
+        FLAGS["doing_regression"]=True
 
     for layer_wise_thing in ["layer_widths","activations"]:
         if layer_wise_thing == "layer_widths":
@@ -213,6 +219,34 @@ class EarlyStoppingByAccuracy(Callback):
         if current is None:
             warnings.warn("Early stopping requires %s available!" % self.monitor, RuntimeWarning)
         if current >= self.value:
+            if self.first_time:
+                self.first_time = False
+                self.first_time_epoch = epoch
+                if self.wait_epochs == 0:
+                    if self.verbose > 0:
+                        print("Epoch %05d: early stopping THR" % epoch)
+                    self.model.stop_training = True
+            else:
+                if (epoch - self.first_time_epoch) >= self.wait_epochs:
+                    if self.verbose > 0:
+                        print("Epoch %05d: early stopping THR" % epoch)
+                    self.model.stop_training = True
+
+class EarlyStoppingByLoss(Callback):
+    def __init__(self, monitor='mse', value=1e-2, wait_epochs=0, verbose=0):
+        super(Callback, self).__init__()
+        self.monitor = monitor
+        self.value = value
+        self.verbose = verbose
+        self.wait_epochs = wait_epochs
+        self.first_time = True
+        self.epoch_after_first_time = 0
+    def on_epoch_end(self, epoch, logs=None):
+        #print(logs)
+        current = logs.get(self.monitor)
+        if current is None:
+            warnings.warn("Early stopping requires %s available!" % self.monitor, RuntimeWarning)
+        if current <= self.value:
             if self.first_time:
                 self.first_time = False
                 self.first_time_epoch = epoch

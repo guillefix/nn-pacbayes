@@ -24,7 +24,7 @@ FLAGS['confusion'] = 0.0
 FLAGS['dataset'] =  "mnist"
 FLAGS['binarized'] =  True
 FLAGS['number_layers'] =  1
-FLAGS['layer_width'] =  1024
+FLAGS['layer_widths'] =  "1024"
 FLAGS['pooling'] =  "none"
 FLAGS['intermediate_pooling'] =  "0000"
 FLAGS['sigmaw'] =  10.0
@@ -37,6 +37,9 @@ FLAGS['centering'] =  False
 FLAGS['random_labels'] =  True
 FLAGS['training'] =  True
 FLAGS['no_training'] =  False
+FLAGS['nn_random_labels'] =  False
+FLAGS['nn_random_regression_outputs'] =  False
+FLAGS['activations'] =  "relu"
 
 from utils import preprocess_flags
 FLAGS = preprocess_flags(FLAGS)
@@ -102,40 +105,43 @@ import tensorflow.keras.backend as K
 
 num_layers = len(model.trainable_weights)
 trainable_weights = model.trainable_weights
-num_layers
+# num_layers
 
-# fs = []
-#
-# for layer in range(5):
-#     print(layer)
-#     grads = model.optimizer.get_gradients(model.total_loss, trainable_weights[layer*30:(layer+1)*30])
-#     # symb_inputs = (model._feed_inputs + model._feed_targets + model._feed_sample_weights)
-#     symb_inputs = (model._feed_inputs + model._feed_targets)
-#     f = K.function(symb_inputs, grads)
-#     # x, y, sample_weight = model._standardize_user_data(inputs, outputs)
-#     fs.append(f)
-#
-# grads = model.optimizer.get_gradients(model.total_loss, trainable_weights[(5)*30:])
+fs = []
+
+num_chunks = 5
+layers_per_chunk = num_layers//num_chunks
+for layer in range(num_chunks):
+    print(layer)
+    grads = model.optimizer.get_gradients(model.total_loss, trainable_weights[layer*layers_per_chunk:(layer+1)*layers_per_chunk])
+    # symb_inputs = (model._feed_inputs + model._feed_targets + model._feed_sample_weights)
+    symb_inputs = (model._feed_inputs + model._feed_targets)
+    f = K.function(symb_inputs, grads)
+    # x, y, sample_weight = model._standardize_user_data(inputs, outputs)
+    fs.append(f)
+if num_layers%num_chunks != 0:
+    num_chunks += 1
+    grads = model.optimizer.get_gradients(model.total_loss, trainable_weights[(num_chunks-1)*layers_per_chunk:])
+    # symb_inputs = (model._feed_inputs + model._feed_targets + model._feed_sample_weights)
+    symb_inputs = (model._feed_inputs + model._feed_targets)
+    f = K.function(symb_inputs, grads)
+    # x, y, sample_weight = model._standardize_user_data(inputs, outputs)
+    fs.append(f)
+
+# grads = model.optimizer.get_gradients(model.total_loss, trainable_weights)
 # # symb_inputs = (model._feed_inputs + model._feed_targets + model._feed_sample_weights)
 # symb_inputs = (model._feed_inputs + model._feed_targets)
 # f = K.function(symb_inputs, grads)
 # # x, y, sample_weight = model._standardize_user_data(inputs, outputs)
-# fs.append(f)
-
-grads = model.optimizer.get_gradients(model.total_loss, trainable_weights)
-# symb_inputs = (model._feed_inputs + model._feed_targets + model._feed_sample_weights)
-symb_inputs = (model._feed_inputs + model._feed_targets)
-f = K.function(symb_inputs, grads)
-# x, y, sample_weight = model._standardize_user_data(inputs, outputs)
 
 
-# def get_weight_grad(model, inputs, outputs, layer_chunk_index):
-def get_weight_grad(model, inputs, outputs):
+# def get_weight_grad(model, inputs, outputs):
+def get_weight_grad(model, inputs, outputs, layer_chunk_index):
     """ Gets gradient of model for given inputs and outputs for all weights"""
     # output_grad = f(x + y + sample_weight)
     x, y, _= model._standardize_user_data(inputs, outputs)
-    # output_grad = fs[layer_chunk_index](x + y)
-    output_grad = f(x + y)
+    output_grad = fs[layer_chunk_index](x + y)
+    # output_grad = f(x + y)
     output_grad = np.concatenate([x.flatten() for x in output_grad])
     return output_grad
 
@@ -146,16 +152,17 @@ def get_weight_grad(model, inputs, outputs):
 # gradient = np.concatenate([x.flatten() for x in gradient])
 
 params_per_layer = [np.prod(x.shape) for x in trainable_weights]
-
-# params_per_chunk = [sum(params_per_layer[layer*30:(layer+1)*30]) for layer in range(5)] + [sum(params_per_layer[(5)*30:])]
-
+if num_layers%num_chunks != 0:
+    params_per_chunk = [sum(params_per_layer[layer*layers_per_chunk:(layer+1)*layers_per_chunk]) for layer in range(num_chunks-1)] + [sum(params_per_layer[(num_chunks-1)*layers_per_chunk:])]
+else:
+    params_per_chunk = [sum(params_per_layer[layer*layers_per_chunk:(layer+1)*layers_per_chunk]) for layer in range(num_chunks)]
 # gradient.shape
 tot_parameters = np.sum(params_per_layer)
 # np.concatenate([x.flatten() for x in model.trainable_weights]).shape
 
 #%%
 
-X.shape
+# X.shape
 # X = X[:100,:]
 # import cupy as cp
 NTK = np.zeros((len(X),len(X)))
@@ -163,34 +170,27 @@ NTK = np.zeros((len(X),len(X)))
 chunk1 = 500
 chunk2 = 500 # it's benefitial to chunk in j2 too, in orden to reduce the python for loop. Even though we do more on numpy/pytorch (by reducing the chunking on j1, we do more grad computaiotns), python is much slower than those, and so tradeoff is worth it I think
 # for layer in range(number_layers):
-# for layer_chunk_index in range(5):
-# jac1 = np.zeros((len(X)//chunk1,params_per_chunk[layer]))
-# jac2 = np.zeros((len(X)//chunk2,params_per_chunk[layer]))
-jac1 = np.zeros((chunk1,tot_parameters))
-jac2 = np.zeros((chunk2,tot_parameters))
-for j1 in range(len(X)//chunk1):
-    grad_features = []
-    for i in range(chunk1):
-        # print(i)
-        gradient = get_weight_grad(model, train_images[j1*chunk1+i:j1*chunk1+i+1], Y[j1*chunk1+i:j1*chunk1+i+1])
-        # gradient = get_weight_grad(model, train_images[j1*chunk1+i:j1*chunk1+i+1], Y[j1*chunk1+i:j1*chunk1+i+1], layer_chunk_index)
-        jac1[i,:] = gradient
-        # grad_features.append(gradient)
-    # X_ntk1 = np.stack(grad_features)
-    # X_ntk1 = np.stack(grad_features)
-    for j2 in range(j1,len(X)//chunk2):
-        grad_features = []
-        print(j1,j2)
-        for i in range(chunk2):
+for layer_chunk_index in range(num_chunks):
+    print(layer_chunk_index)
+    jac1 = np.zeros((chunk1,params_per_chunk[layer_chunk_index]))
+    jac2 = np.zeros((chunk2,params_per_chunk[layer_chunk_index]))
+    # jac1 = np.zeros((chunk1,tot_parameters))
+    # jac2 = np.zeros((chunk2,tot_parameters))
+    for j1 in range(len(X)//chunk1):
+        for i in range(chunk1):
             # print(i)
-            gradient = get_weight_grad(model, train_images[j2*chunk2+i:j2*chunk2+i+1], Y[j2*chunk2+i:j2*chunk2+i+1])
-            # gradient = get_weight_grad(model, train_images[j2*chunk2+i:j2*chunk2+i+1], Y[j2*chunk2+i:j2*chunk2+i+1], layer_chunk_index)
-            # grad_features.append(gradient)
-            jac2[i,:] = gradient
-        # X_ntk2 = np.stack(grad_features)
-        # X_ntk2 = np.stack(grad_features)
-        # NTK[j1*chunk1:(j1+1)*chunk1,j2*chunk2:(j2+1)*chunk2] += cp.matmul(jac1,jac2.T)
-        NTK[j1*chunk1:(j1+1)*chunk1,j2*chunk2:(j2+1)*chunk2] += np.matmul(jac1,jac2.T)
+            # gradient = get_weight_grad(model, train_images[j1*chunk1+i:j1*chunk1+i+1], Y[j1*chunk1+i:j1*chunk1+i+1])
+            gradient = get_weight_grad(model, train_images[j1*chunk1+i:j1*chunk1+i+1], Y[j1*chunk1+i:j1*chunk1+i+1], layer_chunk_index)
+            jac1[i,:] = gradient
+        for j2 in range(j1,len(X)//chunk2):
+            print(j1,j2)
+            for i in range(chunk2):
+                # print(i)
+                # gradient = get_weight_grad(model, train_images[j2*chunk2+i:j2*chunk2+i+1], Y[j2*chunk2+i:j2*chunk2+i+1])
+                gradient = get_weight_grad(model, train_images[j2*chunk2+i:j2*chunk2+i+1], Y[j2*chunk2+i:j2*chunk2+i+1], layer_chunk_index)
+                jac2[i,:] = gradient
+            # NTK[j1*chunk1:(j1+1)*chunk1,j2*chunk2:(j2+1)*chunk2] += cp.matmul(jac1,jac2.T)
+            NTK[j1*chunk1:(j1+1)*chunk1,j2*chunk2:(j2+1)*chunk2] += np.matmul(jac1,jac2.T)
 
 
 NTK = (NTK+NTK.T)/2
