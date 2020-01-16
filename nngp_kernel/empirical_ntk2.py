@@ -1,4 +1,5 @@
 import numpy as np
+import sys
 
 def empirical_NTK(model,train_images):
     model.compile("sgd",loss=lambda target, pred: pred)
@@ -30,6 +31,7 @@ def empirical_NTK(model,train_images):
     jac2 = np.zeros((chunk2,tot_parameters))
     for j1 in range(len(X)//chunk1):
         print("chunk",j1,"out of",len(X)//chunk1)
+        sys.stdout.flush()
         grad_features = []
         for i in range(chunk1):
             # print(i)

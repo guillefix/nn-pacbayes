@@ -60,3 +60,13 @@ mnist	fc	50	0.0	0.0	2	2.0	0.0	True	none	00	False	True	1	0.30299389378293207
 mnist	fc	50	0.0	0.0	4	2.0	0.0	True	none	0000	False	True	1	0.2996473946759508
 #dataset	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound
 mnist	fc	50	0.0	0.0	4	2.0	0.0	True	none	0000	False	True	1	0.29944214395684665
+#dataset	boolfun_comp	boolfun	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound	logP
+mnist	none	none	fc	100	0.0	0.0	2	1.41	0.1	True	None	00	False	True	1	0.5517252961910402	-63.0930934563301
+#dataset	boolfun_comp	boolfun	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound	logP
+mnist	none	none	fc	500	0.0	0.0	2	1.41	0.1	True	None	00	False	True	1	0.4225097891663582	-254.1712058311931
+#dataset	boolfun_comp	boolfun	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound	logP
+mnist	none	none	fc	500	0.0	0.0	2	1.41	0.1	True	None	00	False	True	0	0.47655531163154785	-303.30126780782206
+#dataset	boolfun_comp	boolfun	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound	logP
+mnist	none	none	resnet50	500	0.0	0.0	2	1.41	0.1	True	None	00	False	True	0	0.5192824177809208	-345.8769762317803
+#dataset	boolfun_comp	boolfun	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound	logP
+mnist	none	none	resnet50	500	0.0	0.0	2	1.41	0.1	True	None	00	False	True	1	0.43468301480982574	-264.8236467088476

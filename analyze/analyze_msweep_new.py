@@ -10,11 +10,12 @@ nets = training_data["network"].unique()
 datasets = training_data["dataset"].unique()
 
 #%%
-net="fc"
-# net="resnet50"
-dataset="cifar"
+# net="fc"
+net="resnetv2_50"
+dataset="EMNIST"
 # for net in nets:
-for dataset in datasets:
+# for dataset in datasets:
+for ii in [1]:
     pool="avg"
     if net=="fc":
         pool="None"
@@ -25,9 +26,11 @@ for dataset in datasets:
 
     # bounds["bound"] = pd.to_numeric(bounds["bound"])
     tdata.columns
+    bdata.columns
 
     color = np.random.rand(3,)
-    # plt.plot(bdata["m"], bdata["bound"], c=color)
+    plt.plot(bdata["m"], bdata["bound"], c=color)
+    # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color)
     plt.plot(tdata["m"], tdata["test_error"], "--", c=color)
     plt.plot(tdata["m"], tdata["train_acc"])
     plt.yscale("log")
