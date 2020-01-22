@@ -1,2 +1,2 @@
 #!/bin/bash
-./meta_script mnist
+./meta_script_msweep mnist fc none 8
