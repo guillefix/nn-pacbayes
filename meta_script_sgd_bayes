@@ -3,36 +3,38 @@
 #export PYTHONPATH="/home_directory/.local/lib/python3.5/site-packages/:/usr/local/lib/python3.5/dist-packages/"
 #export PYTHONPATH=""
 
-m=10000
-dataset=mnist
-#prefix=sgd_vs_bayes_
-prefix=test_langevin_ce_run_
+#m=10000
+m=32
+#dataset=mnist
+boolfun=10001000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+prefix=2sgd_vs_bayes_
+#prefix=test_langevin_ce_run_
 sigmaw=1.0
-sigmab=0.0357
-#sigmab=1.0
+#sigmab=0.0357
+sigmab=1.0
 #optimizer=adam
-#optimizer=sgd
-optimizer=langevin
+optimizer=sgd
+#optimizer=langevin
 loss=ce
 L=2 # number of layers
-batch_size=128
-layer_width=512
+batch_size=8
+layer_width=40
 #epochs_after_fit=64
 epochs_after_fit=0
-number_inits=10
+number_inits=200000
 prefix=${prefix}${m}_${layer_width}_${L}_${batch_size}_${optimizer}_${loss}_${epochs_after_fit}_
 
 pool=none
 net=fc
 c=0
-export n_gpus=1
-#export n_procs=600
-export n_procs=1
+export n_gpus=0
+export n_procs=100
+#export n_procs=1
 
 #for net in resnet50; do 
 #for net in vgg19 vgg16 resnet50 resnet101 resnet152 resnetv2_50 resnetv2_101 resnetv2_152 resnext50 resnext101 densenet121 densenet169 densenet201 mobilenetv2 nasnet; do 
     #echo $net
-./run_experiment_sgd_bayes --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --label_corruption $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --optimizer ${optimizer} --loss $loss --zero_one --ignore_non_fit --batch_size $batch_size --layer_width $layer_width --epochs_after_fit $epochs_after_fit $@
+./run_experiment_sgd_bayes --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --label_corruption $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --optimizer ${optimizer} --loss $loss --zero_one --ignore_non_fit --batch_size $batch_size --layer_width $layer_width --epochs_after_fit $epochs_after_fit --boolfun $boolfun $@
 
 #addqueue -n $n_procs -m 3 -s './run_experiment_sgd_bayes --prefix '${prefix}' --m '${m}' --dataset '${dataset}' --network '${net}' --number_layers '${L}' --training --sigmaw '${sigmaw}' --sigmab '${sigmab}' --n_gpus '${n_gpus}' --pooling '${pool}' --loss '${loss}' --optimizer '${optimizer}' --number_inits '${number_inits}' --ignore_non_fit --batch_size '${batch_size}' --layer_width '${layer_width}' --epochs_after_fit '${epochs_after_fit}' --zero_one'
 #done

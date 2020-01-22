@@ -24,10 +24,11 @@ mpi=mpiexec
 
 $py generate_NN_arch.py $@
 
-$py generate_inputs_sample_tmp.py $@
-#$py generate_inputs_sample.py $@
+#$py generate_inputs_sample_tmp.py $@
+$py generate_inputs_sample.py $@
 
 #/users/guillefix/anaconda3/envs/venv/bin/mpiexec -n ${n_procs} $py NN_train.py $@
-$mpi -n ${n_procs} $py NN_train_simplified.py $@
+#$mpi -n ${n_procs} $py NN_train_simplified.py $@
+$mpi -n ${n_procs} $py NN_train.py $@
 #mpiexec -n ${n_procs} $py NN_train_simplified.py $@
 #mpiexec -n ${n_procs} $py NN_train.py $@
