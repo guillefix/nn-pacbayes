@@ -1,4 +1,4 @@
-dataset	boolfun_comp	boolfun	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound	logP
+#dataset	boolfun_comp	boolfun	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound	logP
 mnist	none	none	resnet50	1	0.0	0.0	2	1.41	0.0	True	avg	00	False	True	0	0.9998203713666155	-0.6931471805599453
 #dataset	boolfun_comp	boolfun	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound	logP
 mnist	none	none	resnet50	3	0.0	0.0	2	1.41	0.0	True	avg	00	False	True	0	0.9829126708619754	-2.0795578457238233
@@ -1412,3 +1412,7 @@ KMNIST	none	none	vgg16	4516	0.0	0.0	2	1.41	0.0	True	avg	00	False	True	0	0.502735
 EMNIST	none	none	vgg16	4516	0.0	0.0	2	1.41	0.0	True	avg	00	False	True	0	0.5006779957777965	-3111.618245188847
 #dataset	boolfun_comp	boolfun	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound	logP
 EMNIST	none	none	vgg19	4516	0.0	0.0	2	1.41	0.0	True	avg	00	False	True	0	0.5026437801958636	-3129.432407732933
+#dataset	boolfun_comp	boolfun	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound	logP
+cifar	none	none	vgg16	4516	0.0	0.0	2	1.41	0.0	True	avg	00	False	True	0	0.5027202551728329	-3130.1268547647214
+#dataset	boolfun_comp	boolfun	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound	logP
+cifar	none	none	vgg19	4516	0.0	0.0	2	1.41	0.0	True	avg	00	False	True	0	0.5027342189871982	-3130.253667633593

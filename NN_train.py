@@ -13,7 +13,7 @@ import sys
 from utils import binary_crossentropy_from_logits, EarlyStoppingByAccuracy, get_biases, get_weights, measure_sigmas, get_rescaled_weights, results_folder, EarlyStoppingByLoss
 
 def main(_):
-    MAX_TRAIN_EPOCHS=3000
+    MAX_TRAIN_EPOCHS=5000
 
     FLAGS = tf.compat.v1.app.flags.FLAGS.flag_values_dict()
     from utils import preprocess_flags
