@@ -45,6 +45,8 @@ def main(_):
 
     K_pre = load_kernel(FLAGS)
     print(K_pre)
+    if normalize_kernel:
+        K_pre = K_pre/K_pre.max()
     K = kernel_mult*K_pre
 
     #finding log marginal likelihood of data
@@ -113,6 +115,7 @@ if __name__ == '__main__':
     f.DEFINE_boolean('using_regression', False, "Whether to use the exact relative entropy for MSE GP regression")
     f.DEFINE_boolean('using_exactPB', False, "Whether using exact PAC-Bayes on approximate posterior rather than approximate PAC-Bayes on exact postierior")
     f.DEFINE_boolean('using_MC', False, "Whether to use Monte Carlo method for computing probability")
+    f.DEFINE_boolean('normalize_kernel', False, "Whether to normalize the kernel (by dividing by max value) or not")
     f.DEFINE_integer('num_post_samples', int(1e5), "Number of approximate EP posterior samples in importance-sampling-based Monte Carlo estimation of marginal likelihood")
     f.DEFINE_float('cov_mult', 1.0, "Factor by which to multiply the variance of the approximate posterior, to focus the importance sampling more in the non-zero likelihood region, at the risk of biasing away from true posterior.")
     f.DEFINE_float('kernel_mult', 1.0, "Factor by which to multiply the kernel before computing approximate marginal likelihood")
