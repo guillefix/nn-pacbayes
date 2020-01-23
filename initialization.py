@@ -16,7 +16,7 @@ def is_normalization_layer(l):
     return isinstance(l,tf.keras.layers.BatchNormalization) or isinstance(l,tf.keras.layers.LayerNormalization)
 
 from scipy.stats import truncnorm
-def reset_weights(model, weights, are_norm,sigmaw,sigmab):
+def reset_weights(model, weights, are_norm,sigmaw,sigmab,truncated=False):
     #initial_weights = model.get_weights()
     def initialize_var(w, is_norm):
         if is_norm:
@@ -29,8 +29,12 @@ def reset_weights(model, weights, are_norm,sigmaw,sigmab):
             else:
                 #return tf.random.normal(shape,stddev=1.0/np.sqrt(np.prod(shape[:-1]))).eval(session=sess)
                 #return np.random.normal(0,1.0/np.sqrt(np.prod(shape[:-1])),shape)
+                #return np.random.normal(0,sigmaw/np.sqrt(np.prod(shape[-1:])),shape) #assumes NHWC so that we divide by number of channels as in GP limit
                 #return np.random.normal(0,sigmaw/np.sqrt(shape[-2]),shape) #assumes NHWC so that we divide by number of channels as in GP limit
-                return (sigmaw/np.sqrt(np.prod(shape[:-1])))*truncnorm.rvs(-np.sqrt(2),np.sqrt(2),size=shape) #assumes NHWC so that we divide by number of channels as in GP limit, and also works for fully connected
+                if truncated:
+                    return (sigmaw/np.sqrt(np.prod(shape[-1:])))*truncnorm.rvs(-np.sqrt(2),np.sqrt(2),size=shape) #assumes NHWC so that we divide by number of channels as in GP limit, and also works for fully connected
+                else:
+                    return np.random.normal(0,sigmaw/np.sqrt(np.prod(shape[-1:])),shape) #assumes NHWC so that we divide by number of channels as in GP limit
 
     new_weights = [initialize_var(w,are_norm[i]) for i,w in enumerate(weights)]
     model.set_weights(new_weights)

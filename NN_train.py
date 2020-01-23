@@ -149,7 +149,7 @@ def main(_):
                 if network in ["cnn", "fc"]:
                     simple_reset_weights(model, sigmaw, sigmab)
                 else:
-                    reset_weights(model, initial_weights, are_norm, sigmaw, sigmab)
+                    reset_weights(model, initial_weights, are_norm, sigmaw, sigmab, truncated_init_dist)
             if nn_random_labels:
                 ys = model.predict(train_images)[:,0]>0
                 if training:

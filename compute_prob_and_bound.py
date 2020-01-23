@@ -14,6 +14,9 @@ def main(_):
     FLAGS = preprocess_flags(FLAGS)
     globals().update(FLAGS)
 
+    if init_dist != "gaussian":
+        raise NotImplementedError("Initialization distributions other than Gaussian are not implemented for computing pac bayes bounds!")
+
     from mpi4py import MPI
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()

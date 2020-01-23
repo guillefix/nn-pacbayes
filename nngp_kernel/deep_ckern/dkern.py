@@ -1,175 +1,97 @@
-import gpflow
-from gpflow import settings
-from typing import List
-import numpy as np
+from gpflow.params import Parameterized
 import tensorflow as tf
-import abc
+import numpy as np
 
-from .exkern import ElementwiseExKern
+__all__ = ['ElementwiseExKern', 'ExReLU', 'ExErf']
 
 
-class DeepKernelBase(gpflow.kernels.Kernel, metaclass=abc.ABCMeta):
-    "General kernel for deep networks"
-    def __init__(self,
-                 input_shape: List[int],
-                 recurse_kern: ElementwiseExKern,
-                 active_dims: slice = None,
-                 data_format: str = "NCHW",
-                 input_type = None,
-                 name: str = None):
-        input_dim = np.prod(input_shape)
-        super(DeepKernelBase, self).__init__(input_dim, active_dims, name=name)
+class ElementwiseExKern(Parameterized):
+    def K(self, cov, var1, var2=None):
+        raise NotImplementedError
 
-        self.input_shape = list(np.copy(input_shape))
-        self.recurse_kern = recurse_kern
-        if input_type is None:
-            input_type = settings.float_type
-        self.input_type = input_type
-        self.data_format = data_format
+    def Kdiag(self, var):
+        raise NotImplementedError
 
-    @gpflow.decors.params_as_tensors
-    @gpflow.decors.name_scope()
-    def K(self, X, X2=None):
-        # Concatenate the covariance between X and X2 and their respective
-        # variances. Only 1 variance is needed if X2 is None.
-        if X.dtype != self.input_type or (
-                X2 is not None and X2.dtype != self.input_type):
-            raise TypeError("Input dtypes are wrong: {} or {} are not {}"
-                            .format(X.dtype, X2.dtype, self.input_type))
-        if X2 is None:
-            N = N2 = tf.shape(X)[0]
-            var_z_list = [
-                tf.reshape(tf.square(X), [N] + self.input_shape),
-                tf.reshape(X[:, None, :] * X, [N*N] + self.input_shape)]
-            cross_start = N
-
-            @gpflow.decors.name_scope("rec_K_X_X")
-            def rec_K(var_a_all, concat_outputs=True):
-                var_a_1 = var_a_all[:N]
-                var_a_cross = var_a_all[cross_start:]
-                vz = [self.recurse_kern.Kdiag(var_a_1),
-                      self.recurse_kern.K(var_a_cross, var_a_1, None)]
-                if concat_outputs:
-                    return tf.concat(vz, axis=0)
-                return vz
-
-        else:
-            N, N2 = tf.shape(X)[0], tf.shape(X2)[0]
-            var_z_list = [
-                tf.reshape(tf.square(X), [N] + self.input_shape),
-                tf.reshape(tf.square(X2), [N2] + self.input_shape),
-                tf.reshape(X[:, None, :] * X2, [N*N2] + self.input_shape)]
-            cross_start = N + N2
-
-            @gpflow.decors.name_scope("rec_K_X_X2")
-            def rec_K(var_a_all, concat_outputs=True):
-                var_a_1 = var_a_all[:N]
-                var_a_2 = var_a_all[N:cross_start]
-                var_a_cross = var_a_all[cross_start:]
-                vz = [self.recurse_kern.Kdiag(var_a_1),
-                      self.recurse_kern.Kdiag(var_a_2),
-                      self.recurse_kern.K(var_a_cross, var_a_1, var_a_2)]
-                if concat_outputs:
-                    return tf.concat(vz, axis=0)
-                return vz
-        inputs = tf.concat(var_z_list, axis=0)
-        if self.data_format == "NHWC":
-            # Transpose NCHW -> NHWC
-            inputs = tf.transpose(inputs, [0, 2, 3, 1])
-
-        inputs = self.specific_K(inputs, rec_K, lambda v: rec_K(v, False)[-1], cross_start)
-        return self.postprocess_result(inputs, shape=[N, N2])
-
-    def postprocess_result(self, inputs, shape=None):
+    def nlin(self, x):
         """
-        It is possible that `self.specific_K` returns a list of kernel matrices
-        rather than a single matrix. We handle both cases here.
-        """
-        def postprocess(i, result):
-            with tf.name_scope("postprocess_{}".format(i)):
-                if shape is not None:
-                    result = tf.reshape(result, shape)
-
-                if self.input_type != settings.float_type:
-                    print("Casting kernel from {} to {}"
-                        .format(self.input_type, settings.float_type))
-                    return tf.cast(result, settings.float_type, name="cast_result")
-                return result
-
-        if isinstance(inputs, list):
-            return list(postprocess(i, r) for (i, r) in enumerate(inputs))
-        return postprocess(0, inputs)
-
-    @gpflow.decors.params_as_tensors
-    @gpflow.decors.name_scope()
-    def Kdiag(self, X):
-        if X.dtype != self.input_type:
-            raise TypeError("Input dtype is wrong: {} is not {}"
-                            .format(X.dtype, self.input_type))
-        inputs = tf.reshape(tf.square(X), [-1] + self.input_shape)
-        if self.data_format == "NHWC":
-            # Transpose NCHW -> NHWC
-            inputs = tf.transpose(inputs, [0, 2, 3, 1])
-        inputs = self.specific_K(
-            inputs, self.recurse_kern.Kdiag, self.recurse_kern.Kdiag, 0)
-        return self.postprocess_result(inputs)
-
-    @abc.abstractmethod
-    def specific_K(self, inputs, rec_K, rec_K_last, cross_start):
-        """
-        Apply the network that this kernel defines, except the last dense layer.
-        The last dense layer is different for K and Kdiag.
+        The nonlinearity that this is computing the expected inner product of.
+        Used for testing.
         """
         raise NotImplementedError
 
 
-class DeepKernelTesting(DeepKernelBase):
-    """
-    Reimplement original DeepKernel to test ResNet
-    """
-    def __init__(self,
-                 input_shape: List[int],
-                 hidden_layers: int,
-                 kernel_size: int,
-                 recurse_kern: ElementwiseExKern,
-                 var_weight: float = 1.0,
-                 var_bias: float = 1.0,
-                 active_dims: slice = None,
-                 data_format: str = "NCHW",
-                 input_type = None,
-                 name: str = None):
-        super(DeepKernelTesting, self).__init__(
-            input_shape=input_shape, recurse_kern=recurse_kern,
-            active_dims=active_dims, data_format=data_format,
-            input_type=input_type, name=name)
+class ExReLU(ElementwiseExKern):
+    def __init__(self, exponent=1, multiply_by_sqrt2=False, name=None):
+        super(ExReLU, self).__init__(name=name)
+        self.multiply_by_sqrt2 = multiply_by_sqrt2
+        if exponent in {0, 1}:
+            self.exponent = exponent
+        else:
+            raise NotImplementedError
 
-        if hidden_layers == 0:
-            raise NotImplementedError("0 hidden layers not supported")
-        self.hidden_layers = hidden_layers
-        self.kernel_size = kernel_size
-        self.var_weight = gpflow.params.Parameter(
-            var_weight, gpflow.transforms.positive, dtype=self.input_type)
-        self.var_bias = gpflow.params.Parameter(
-            var_bias, gpflow.transforms.positive, dtype=self.input_type)
+    def K(self, cov, var1, var2=None):
+        if var2 is None:
+            sqrt1 = sqrt2 = tf.sqrt(var1)
+        else:
+            sqrt1, sqrt2 = tf.sqrt(var1), tf.sqrt(var2)
 
-    @gpflow.decors.params_as_tensors
-    @gpflow.decors.name_scope()
-    def specific_K(self, inputs, rec_K, rec_K_last, cross_start):
-        in_chans = int(inputs.shape[self.data_format.index("C")])
-        W_init = tf.fill([self.kernel_size, self.kernel_size, in_chans, 1],
-                        self.var_weight / in_chans)  # No dividing by receptive field
-        inputs = tf.nn.conv2d(
-            inputs, W_init, strides=[1,1,1,1], padding="SAME",
-            data_format=self.data_format) + self.var_bias
+        norms_prod = sqrt1[:, None, ...] * sqrt2
+        norms_prod = tf.reshape(norms_prod, tf.shape(cov))
 
-        W = tf.fill([self.kernel_size, self.kernel_size, 1, 1],
-                    self.var_weight)  # No dividing by fan_in
-        for _ in range(1, self.hidden_layers):
-            inputs = rec_K(inputs)
-            inputs = tf.nn.conv2d(
-                inputs, W, strides=[1,1,1,1], padding="SAME", data_format=self.data_format)
-            inputs = inputs + self.var_bias
-        inputs = rec_K_last(inputs)
+        cos_theta = tf.clip_by_value(cov / norms_prod, -1., 1.)
+        theta = tf.acos(cos_theta)  # angle wrt the previous RKHS
 
-        inputs = tf.reduce_mean(inputs, axis=(1, 2, 3))
-        return self.var_bias + self.var_weight * inputs
+        if self.exponent == 0:
+            return .5 - theta/(2*np.pi)
+
+        sin_theta = tf.sqrt(1. - cos_theta**2)
+        J = sin_theta + (np.pi - theta) * cos_theta
+        if self.multiply_by_sqrt2:
+            div = np.pi
+        else:
+            div = 2*np.pi
+        return norms_prod / div * J
+
+    def Kdiag(self, var):
+        if self.multiply_by_sqrt2:
+            if self.exponent == 0:
+                return tf.ones_like(var)
+            else:
+                return var
+        else:
+            if self.exponent == 0:
+                return tf.ones_like(var)/2
+            else:
+                return var/2
+
+    def nlin(self, x):
+        if self.multiply_by_sqrt2:
+            if self.exponent == 0:
+                return ((1 + tf.sign(x))/np.sqrt(2))
+            elif self.exponent == 1:
+                return tf.nn.relu(x) * np.sqrt(2)
+        else:
+            if self.exponent == 0:
+                return ((1 + tf.sign(x))/2)
+            elif self.exponent == 1:
+                return tf.nn.relu(x)
+
+
+class ExErf(ElementwiseExKern):
+    """The Gaussian error function as a nonlinearity. It's very similar to the
+    tanh. Williams 1997"""
+    def K(self, cov, var1, var2=None):
+        if var2 is None:
+            t1 = t2 = 1+2*var1
+        else:
+            t1, t2 = 1+2*var1, 1+2*var2
+        vs = tf.reshape(t1[:, None, ...] * t2, tf.shape(cov))
+        sin_theta = 2*cov / tf.sqrt(vs)
+        return (2/np.pi) * tf.asin(sin_theta)
+
+    def Kdiag(self, var):
+        v2 = 2*var
+        return (2/np.pi) * tf.asin(v2 / (1 + v2))
+
+    def nlin(self, x):
+        return tf.erf(x)

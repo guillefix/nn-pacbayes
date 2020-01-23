@@ -16,7 +16,7 @@ data_folder = "data/"
 kernel_folder = "kernels/"
 results_folder = "results/"
 
-def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_gpus=1,sess=None):
+def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_gpus=1,sess=None, truncated_init_dist=False):
 
     from mpi4py import MPI
     comm = MPI.COMM_WORLD
@@ -69,7 +69,7 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
 
         # model = model_from_json(arch_json_string) # this resets the weights (makes sense as the json string only has architecture)
         if local_index>0:
-            reset_weights(model, initial_weights, are_norm, sigmaw, sigmab)
+            reset_weights(model, initial_weights, are_norm, sigmaw, sigmab, truncated_init_dist)
 
         X = np.squeeze(func(data))
         print("X",X)

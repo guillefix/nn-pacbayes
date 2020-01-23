@@ -25,7 +25,7 @@ def kernel_matrix(X,X2=None,image_size=28,number_channels=1,filter_sizes=[[5, 5]
             #[number_channels, image_size, image_size],
             ([number_channels, image_size, image_size] if n_gpus>0 else [image_size,image_size,number_channels]),
             filter_sizes=filter_sizes,
-            recurse_kern=dkern.ExReLU(multiply_by_sqrt2=True),
+            recurse_kern=dkern.ExReLU(multiply_by_sqrt2=False),
             var_weight=sigmaw**2,
             var_bias=sigmab**2,
             padding=padding,
