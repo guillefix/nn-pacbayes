@@ -1,97 +1,160 @@
-from gpflow.params import Parameterized
-import tensorflow as tf
+import gpflow
+from gpflow import settings
+from typing import List
 import numpy as np
+import tensorflow as tf
+import abc
 
-__all__ = ['ElementwiseExKern', 'ExReLU', 'ExErf']
+from .exkern import ElementwiseExKern
 
 
-class ElementwiseExKern(Parameterized):
-    def K(self, cov, var1, var2=None):
-        raise NotImplementedError
+class DeepKernelBase(gpflow.kernels.Kernel, metaclass=abc.ABCMeta):
+    "General kernel for deep networks"
+    def __init__(self,
+                 input_shape: List[int],
+                 block_sizes: List[int],
+                 block_strides: List[int],
+                 kernel_size: int,
+                 recurse_kern: ElementwiseExKern,
+                 var_weight: float = 1.0,
+                 var_bias: float = 1.0,
+                 conv_stride: int = 1,
+                 active_dims: slice = None,
+                 data_format: str = "NCHW",
+                 input_type = None,
+                 name: str = None):
+        input_dim = np.prod(input_shape)
+        super(DeepKernelBase, self).__init__(input_dim, active_dims, name=name)
 
-    def Kdiag(self, var):
-        raise NotImplementedError
+        self.input_shape = list(np.copy(input_shape))
+        self.block_sizes = np.copy(block_sizes).astype(np.int32)
+        self.block_strides = np.copy(block_strides).astype(np.int32)
+        self.kernel_size = kernel_size
+        self.recurse_kern = recurse_kern
+        self.conv_stride = conv_stride
+        self.data_format = data_format
+        if input_type is None:
+            input_type = settings.float_type
+        self.input_type = input_type
 
-    def nlin(self, x):
+        self.var_weight = gpflow.params.Parameter(
+            var_weight, gpflow.transforms.positive, dtype=self.input_type)
+        self.var_bias = gpflow.params.Parameter(
+            var_bias, gpflow.transforms.positive, dtype=self.input_type)
+
+    @gpflow.decors.params_as_tensors
+    @gpflow.decors.name_scope()
+    def K(self, X, X2=None):
+        # Concatenate the covariance between X and X2 and their respective
+        # variances. Only 1 variance is needed if X2 is None.
+        if X.dtype != self.input_type or (
+                X2 is not None and X2.dtype != self.input_type):
+            raise TypeError("Input dtypes are wrong: {} or {} are not {}"
+                            .format(X.dtype, X2.dtype, self.input_type))
+        if X2 is None:
+            N = N2 = tf.shape(X)[0]
+            var_z_list = [
+                tf.reshape(tf.square(X), [N] + self.input_shape),
+                tf.reshape(X[:, None, :] * X, [N*N] + self.input_shape)]
+
+            @gpflow.decors.name_scope("apply_recurse_kern_X_X")
+            def apply_recurse_kern(var_a_all, concat_outputs=True):
+                var_a_1 = var_a_all[:N]
+                var_a_cross = var_a_all[N:]
+                vz = [self.recurse_kern.Kdiag(var_a_1),
+                      self.recurse_kern.K(var_a_cross, var_a_1, None)]
+                if concat_outputs:
+                    return tf.concat(vz, axis=0)
+                return vz
+
+        else:
+            N, N2 = tf.shape(X)[0], tf.shape(X2)[0]
+            var_z_list = [
+                tf.reshape(tf.square(X), [N] + self.input_shape),
+                tf.reshape(tf.square(X2), [N2] + self.input_shape),
+                tf.reshape(X[:, None, :] * X2, [N*N2] + self.input_shape)]
+            cross_start = N + N2
+
+            @gpflow.decors.name_scope("apply_recurse_kern_X_X2")
+            def apply_recurse_kern(var_a_all, concat_outputs=True):
+                var_a_1 = var_a_all[:N]
+                var_a_2 = var_a_all[N:cross_start]
+                var_a_cross = var_a_all[cross_start:]
+                vz = [self.recurse_kern.Kdiag(var_a_1),
+                      self.recurse_kern.Kdiag(var_a_2),
+                      self.recurse_kern.K(var_a_cross, var_a_1, var_a_2)]
+                if concat_outputs:
+                    return tf.concat(vz, axis=0)
+                return vz
+        inputs = tf.concat(var_z_list, axis=0)
+        if self.data_format == "NHWC":
+            # Transpose NCHW -> NHWC
+            inputs = tf.transpose(inputs, [0, 2, 3, 1])
+
+        if len(self.block_sizes) > 0:
+            # Define almost all the network
+            inputs = self.headless_network(inputs, apply_recurse_kern)
+            # Last nonlinearity before final dense layer
+            var_z_list = apply_recurse_kern(inputs, concat_outputs=False)
+        # averaging for the final dense layer
+        var_z_cross = tf.reshape(var_z_list[-1], [N, N2, -1])
+        var_z_cross_last = tf.reduce_mean(var_z_cross, axis=2)
+        result = self.var_bias + self.var_weight * var_z_cross_last
+        if self.input_type != settings.float_type:
+            print("Casting kernel from {} to {}"
+                  .format(self.input_type, settings.float_type))
+            return tf.cast(result, settings.float_type, name="cast_result")
+        return result
+
+    @gpflow.decors.params_as_tensors
+    @gpflow.decors.name_scope()
+    def Kdiag(self, X):
+        if X.dtype != self.input_type:
+            raise TypeError("Input dtype is wrong: {} is not {}"
+                            .format(X.dtype, self.input_type))
+        inputs = tf.reshape(tf.square(X), [-1] + self.input_shape)
+        if len(self.block_sizes) > 0:
+            inputs = self.headless_network(inputs, self.recurse_kern.Kdiag)
+            # Last dense layer
+            inputs = self.recurse_kern.Kdiag(inputs)
+
+        all_except_first = np.arange(1, len(inputs.shape))
+        var_z_last = tf.reduce_mean(inputs, axis=all_except_first)
+        result = self.var_bias + self.var_weight * var_z_last
+        if self.input_type != settings.float_type:
+            print("Casting kernel from {} to {}"
+                  .format(self.input_type, settings.float_type))
+            return tf.cast(result, settings.float_type, name="cast_result")
+        return result
+
+    @abc.abstractmethod
+    def headless_network(self, inputs, apply_recurse_kern):
         """
-        The nonlinearity that this is computing the expected inner product of.
-        Used for testing.
+        Apply the network that this kernel defines, except the last dense layer.
+        The last dense layer is different for K and Kdiag.
         """
         raise NotImplementedError
 
 
-class ExReLU(ElementwiseExKern):
-    def __init__(self, exponent=1, multiply_by_sqrt2=False, name=None):
-        super(ExReLU, self).__init__(name=name)
-        self.multiply_by_sqrt2 = multiply_by_sqrt2
-        if exponent in {0, 1}:
-            self.exponent = exponent
-        else:
-            raise NotImplementedError
+class DeepKernelTesting(DeepKernelBase):
+    """
+    Reimplement original DeepKernel to test ResNet
+    """
+    @gpflow.decors.params_as_tensors
+    @gpflow.decors.name_scope()
+    def headless_network(self, inputs, apply_recurse_kern):
+        in_chans = int(inputs.shape[self.data_format.index("C")])
+        W_init = tf.fill([self.kernel_size, self.kernel_size, in_chans, 1],
+                          self.var_weight / in_chans)  # No dividing by receptive field
+        inputs = tf.nn.conv2d(
+            inputs, W_init, strides=[1,1,1,1], padding="SAME",
+            data_format=self.data_format) + self.var_bias
 
-    def K(self, cov, var1, var2=None):
-        if var2 is None:
-            sqrt1 = sqrt2 = tf.sqrt(var1)
-        else:
-            sqrt1, sqrt2 = tf.sqrt(var1), tf.sqrt(var2)
-
-        norms_prod = sqrt1[:, None, ...] * sqrt2
-        norms_prod = tf.reshape(norms_prod, tf.shape(cov))
-
-        cos_theta = tf.clip_by_value(cov / norms_prod, -1., 1.)
-        theta = tf.acos(cos_theta)  # angle wrt the previous RKHS
-
-        if self.exponent == 0:
-            return .5 - theta/(2*np.pi)
-
-        sin_theta = tf.sqrt(1. - cos_theta**2)
-        J = sin_theta + (np.pi - theta) * cos_theta
-        if self.multiply_by_sqrt2:
-            div = np.pi
-        else:
-            div = 2*np.pi
-        return norms_prod / div * J
-
-    def Kdiag(self, var):
-        if self.multiply_by_sqrt2:
-            if self.exponent == 0:
-                return tf.ones_like(var)
-            else:
-                return var
-        else:
-            if self.exponent == 0:
-                return tf.ones_like(var)/2
-            else:
-                return var/2
-
-    def nlin(self, x):
-        if self.multiply_by_sqrt2:
-            if self.exponent == 0:
-                return ((1 + tf.sign(x))/np.sqrt(2))
-            elif self.exponent == 1:
-                return tf.nn.relu(x) * np.sqrt(2)
-        else:
-            if self.exponent == 0:
-                return ((1 + tf.sign(x))/2)
-            elif self.exponent == 1:
-                return tf.nn.relu(x)
-
-
-class ExErf(ElementwiseExKern):
-    """The Gaussian error function as a nonlinearity. It's very similar to the
-    tanh. Williams 1997"""
-    def K(self, cov, var1, var2=None):
-        if var2 is None:
-            t1 = t2 = 1+2*var1
-        else:
-            t1, t2 = 1+2*var1, 1+2*var2
-        vs = tf.reshape(t1[:, None, ...] * t2, tf.shape(cov))
-        sin_theta = 2*cov / tf.sqrt(vs)
-        return (2/np.pi) * tf.asin(sin_theta)
-
-    def Kdiag(self, var):
-        v2 = 2*var
-        return (2/np.pi) * tf.asin(v2 / (1 + v2))
-
-    def nlin(self, x):
-        return tf.erf(x)
+        W = tf.fill([self.kernel_size, self.kernel_size, 1, 1],
+                    self.var_weight)  # No dividing by fan_in
+        for _ in range(1, len(self.block_sizes)):
+            inputs = apply_recurse_kern(inputs)
+            inputs = tf.nn.conv2d(
+                inputs, W, strides=[1,1,1,1], padding="SAME", data_format=self.data_format)
+            inputs = inputs + self.var_bias
+        return inputs
