@@ -27,6 +27,8 @@ epochs_after_fit=0
 #prefix=analytical_2jade_new_msweep_
 #prefix=big_b_3jade_new_msweep_
 prefix=new_small_b_3jade_new_msweep_
+#prefix=3jade_new_msweep_
+#prefix=analytical_2jade_new_msweep_
 #prefix=test_msweep_
 
 export n_gpus=8

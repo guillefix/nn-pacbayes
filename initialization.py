@@ -32,9 +32,11 @@ def reset_weights(model, weights, are_norm,sigmaw,sigmab,truncated=False):
                 #return np.random.normal(0,sigmaw/np.sqrt(np.prod(shape[-1:])),shape) #assumes NHWC so that we divide by number of channels as in GP limit
                 #return np.random.normal(0,sigmaw/np.sqrt(shape[-2]),shape) #assumes NHWC so that we divide by number of channels as in GP limit
                 if truncated:
-                    return (sigmaw/np.sqrt(np.prod(shape[-1:])))*truncnorm.rvs(-np.sqrt(2),np.sqrt(2),size=shape) #assumes NHWC so that we divide by number of channels as in GP limit, and also works for fully connected
+                    return (sigmaw/np.sqrt(np.prod(shape[:-1])))*truncnorm.rvs(-np.sqrt(2),np.sqrt(2),size=shape) #assumes NHWC so that we divide by number of channels as in GP limit, and also works for fully connected
+                    # return (sigmaw/np.sqrt(np.prod(shape[-2])))*truncnorm.rvs(-np.sqrt(2),np.sqrt(2),size=shape) #assumes NHWC so that we divide by number of channels as in GP limit, and also works for fully connected
                 else:
-                    return np.random.normal(0,sigmaw/np.sqrt(np.prod(shape[-1:])),shape) #assumes NHWC so that we divide by number of channels as in GP limit
+                    return np.random.normal(0,sigmaw/np.sqrt(np.prod(shape[:-1])),shape) #assumes NHWC so that we divide by number of channels as in GP limit
+                    # return np.random.normal(0,sigmaw/np.sqrt(np.prod(shape[-2])),shape) #assumes NHWC so that we divide by number of channels as in GP limit
 
     new_weights = [initialize_var(w,are_norm[i]) for i,w in enumerate(weights)]
     model.set_weights(new_weights)
