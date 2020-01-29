@@ -32,7 +32,8 @@ export n_gpus=1
 #export n_procs=$number_inits
 export n_procs=1
 
-for m in 1 3 11 36 122 407 1357 4516 15026 49999; do
+#for m in 1 3 11 36 122 407 1357 4516 15026 49999; do
+for m in 1000 3000 6000 10000 20000 40000; do
 #for m in 15026 49999; do
 #for m in 1 ; do
 echo $m

@@ -24,7 +24,8 @@ sigmab=0.0
 c=0.0
 epochs_after_fit=0
 #prefix=new_mother_of_all_msweeps_
-prefix=analytical_2jade_new_msweep_
+prefix=3jade_new_msweep_
+#prefix=analytical_2jade_new_msweep_
 #prefix=test_msweep_
 
 export n_gpus=8
