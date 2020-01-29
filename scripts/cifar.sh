@@ -1,2 +1,2 @@
 #!/bin/bash
-./meta_script_msweep cifar fc none 8
+./meta_script_msweep cifar cnn none 8

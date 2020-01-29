@@ -53,7 +53,7 @@ def main(_):
         print("n_samples_repeats",n_samples_repeats)
         print(ceil(int(train_images.shape[0])*n_samples_repeats))
         arch_json_string = load_model_json(FLAGS)
-        K = empirical_K(arch_json_string,train_images,ceil(int(train_images.shape[0])*n_samples_repeats),sigmaw=sigmaw,sigmab=sigmab,n_gpus=n_gpus,sess=sess, truncated_init_dist=truncated_init_dist)
+        K = empirical_K(arch_json_string,train_images,ceil(int(train_images.shape[0])*n_samples_repeats),sigmaw=sigmaw,sigmab=sigmab,n_gpus=n_gpus,sess=sess, truncated_init_dist=truncated_init_dist,data_parallelism=False)
     if rank == 0:
         if not (use_empirical_K or use_empirical_NTK):
             if network=="cnn":
