@@ -3,27 +3,33 @@ import pandas as pd
 import matplotlib.pyplot as plt
 %matplotlib
 
+#%%
 # training_data = pd.read_csv("results/new_mother_of_all_msweeps_nn_training_results.txt", sep="\t", comment="#")
-training_data = pd.read_csv("results/gpu_msweep_nn_training_results.txt", sep="\t", comment="#")
+# training_data = pd.read_csv("results/gpu_msweep_nn_training_results.txt", sep="\t", comment="#")
+training_data = pd.read_csv("results/gpu_msweep_nn_training_results_cnn.txt", sep="\t", comment="#")
+# training_data = pd.read_csv("results/2jade_new_msweep_nn_training_results.txt", sep="\t", comment="#")
 # bounds = pd.read_csv("results/new_mother_of_all_msweeps_bounds.txt", sep="\t", comment="#")
 # bounds = pd.read_csv("results/2new_mother_of_all_msweeps_bounds.txt", sep="\t", comment="#")
-bounds = pd.read_csv("results/gpu_msweep_bounds.txt", sep="\t", comment="#")
+# bounds = pd.read_csv("results/gpu_msweep_bounds.txt", sep="\t", comment="#")
+bounds = pd.read_csv("results/gpu_msweep_bounds_cnn.txt", sep="\t", comment="#")
+# bounds = pd.read_csv("results/2jade_new_msweep_bounds.txt", sep="\t", comment="#")
 
 nets = training_data["network"].unique()
 datasets = training_data["dataset"].unique()
 
 #%%
-# net="cnn"
+net="cnn"
+# net="fc"
 # net="resnetv2_50"
 # net="resnext101"
 # net="densenet121"
 # net="resnet50"
-net="fc"
 # dataset="mnist"
 # for net in nets:
 for dataset in datasets:
 # for ii in [1]:
-    pool="avg"
+    pool="None"
+    # pool="avg"
     if net=="fc":
         pool="None"
     bdata=bounds[(bounds["network"]==net) & (bounds["dataset"]==dataset) & (bounds["pooling"]==pool)]

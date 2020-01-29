@@ -59,135 +59,85 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
     from initialization import get_all_layers, is_normalization_layer, reset_weights
 
     #fs = []
-    if data_parallelism:
-        m=len(data)
-        samples_per_process = m//size
-        extra_samples = m%size
-        if rank < extra_samples:
-            i1 = rank*samples_per_process+rank
-            data = data[i1:i1+samples_per_process+1]
-        else:
-            i1 = rank*samples_per_process+extra_samples
-            data = data[i1:i1+samples_per_process]
-        if rank == 0:
-            covs = np.zeros((m,m))
-        last_layer = model.layers[-1].input
-        print(last_layer.shape)
-        func = K.function(model.input,last_layer)
-        local_index = 0
-        layers = get_all_layers(model)
-        are_norm = [is_normalization_layer(l) for l in layers for w in l.get_weights()]
-        initial_weights = model.get_weights()
-        X_recv = None
-        if rank == 0:
-            X_recv = np.zeros([size,samples_per_process+1,last_layer.shape[-1]])
-        for index in tasks:
-            print("sample for kernel", index)
+    covs = np.zeros((len(data),len(data)),dtype=np.float32)
+    #last_layer = model.layers[-1].input
+    #print(last_layer.shape)
+    #func = K.function(model.input,last_layer)
+    #from keras.models import Model, Input
+    ##model = Model(inputs=model.input, outputs=last_layer)
+    #input_tensor = Input(batch_shape=model.input.shape)
+    #output_tensor = model(input_tensor)
+    #model = Model(inputs=input_tensor, outputs=output_tensor)
+    #model.layers.pop(-1)
+    #from keras.models import Sequential
+    #new_model = Sequential()
+    #for layer in model.layers[:-1]:
+    #    new_model.add(layer)
+    #model = new_model
+    model.pop()
+    local_index = 0
+    layers = get_all_layers(model)
+    are_norm = [is_normalization_layer(l) for l in layers for w in l.get_weights()]
+    initial_weights = model.get_weights()
+    update_chunk = 20000
+    for index in tasks:
+        print("sample for kernel", index)
 
-            if index == 0:
-                if rank == 0:
-                    seed = np.random.randint(0,2147483647)
-                else:
-                    seed = None
-                seed = comm.bcast(seed,root=0)
-                np.random.seed(seed)
-
-            # model = model_from_json(arch_json_string) # this resets the weights (makes sense as the json string only has architecture)
+        # model = model_from_json(arch_json_string) # this resets the weights (makes sense as the json string only has architecture)
+        if local_index>0:
             reset_weights(model, initial_weights, are_norm, sigmaw, sigmab, truncated_init_dist)
 
-            X = np.squeeze(func(data))
-            print("X",X)
-            if len(X.shape)==1:
-                X = np.expand_dims(X,0)
-                if rank >= extra_samples:
-                    X = np.concatenate([X,np.ones((1,X.shape[1]))])
-            #outputs = model.predict(data)
-            #print(outputs)
-
-            # print(outputs)
-            #fs.append(outputs)
-            #if index % save_freq == save_freq-1:
-            #    fs_tmp = comm.gather(fs,root=0)
-            #    if rank == 0:
-            #        fs_tmp = sum(fs_tmp, [])
-            #        fs_tmp += fs_init
-            #        pickle.dump(fs_tmp,open("fs.p","wb"))
-            #        pickle.dump(len(fs_tmp),open("checkpoint.p","wb"))
-            sys.stdout.flush()
-            local_index += 1
-            comm.Gather(X, X_recv, root=0)
-            #comm.gather(X, root=0)
-            if rank == 0:
-                for i,x in enumerate(X_recv):
-                    if i >= extra_samples:
-                        x = x[:-1]
-                    if i==0:
-                        X = x
-                    else:
-                        X = np.concatenate([X,x])
-                #X = np.concatenate(X,0)
-                #print(X.shape,X)
-                covs += (sigmaw**2/X.shape[1])*np.matmul(X,X.T)+(sigmab**2)*np.ones((X.shape[0],X.shape[0]))
-        if rank == 0:
-            return covs/number_samples
+        #X = np.squeeze(func(data))
+        X = model.predict(data, batch_size=1024).astype(np.float32)
+        print("X",X)
+        if len(X.shape)==1:
+            X = np.expand_dims(X,0)
+        #covs += (sigmaw**2/X.shape[1])*np.matmul(X,X.T)+(sigmab**2)*np.ones((X.shape[0],X.shape[0]), dtype=np.float32)
+        if covs.shape[0] > update_chunk:
+            num_chunks = covs.shape[0]//update_chunk
+            for i in range(num_chunks):
+                covs[i:i+update_chunk] += (sigmaw**2/X.shape[1])*np.matmul(X[i:i+update_chunk],X.T)+(sigmab**2)*np.ones((update_chunk,X.shape[0]), dtype=np.float32)
+            last_bits = slice(update_chunk*num_chunks,covs.shape[0])
+            covs[last_bits] += (sigmaw**2/X.shape[1])*np.matmul(X[last_bits],X.T)+(sigmab**2)*np.ones((last_bits.stop-last_bits.start,X.shape[0]), dtype=np.float32)
         else:
-            return None
-    else:
-        covs = np.zeros((len(data),len(data)))
-        #last_layer = model.layers[-1].input
-        print(last_layer.shape)
-        #func = K.function(model.input,last_layer)
-        local_index = 0
-        layers = get_all_layers(model)
-        are_norm = [is_normalization_layer(l) for l in layers for w in l.get_weights()]
-        initial_weights = model.get_weights()
-        for index in tasks:
-            print("sample for kernel", index)
+            covs += (sigmaw**2/X.shape[1])*np.matmul(X,X.T)+(sigmab**2)*np.ones((X.shape[0],X.shape[0]), dtype=np.float32)
+        #outputs = model.predict(data)
+        #print(outputs)
 
-            # model = model_from_json(arch_json_string) # this resets the weights (makes sense as the json string only has architecture)
-            if local_index>0:
-                reset_weights(model, initial_weights, are_norm, sigmaw, sigmab, truncated_init_dist)
-
-            #X = np.squeeze(func(data))
-            X = model.predict(data)
-            print("X",X)
-            if len(X.shape)==1:
-                X = np.expand_dims(X,0)
-            covs += (sigmaw**2/X.shape[1])*np.matmul(X,X.T)+(sigmab**2)*np.ones((X.shape[0],X.shape[0]))
-            #outputs = model.predict(data)
-            #print(outputs)
-
-            # print(outputs)
-            #fs.append(outputs)
-            #if index % save_freq == save_freq-1:
-            #    fs_tmp = comm.gather(fs,root=0)
-            #    if rank == 0:
-            #        fs_tmp = sum(fs_tmp, [])
-            #        fs_tmp += fs_init
-            #        pickle.dump(fs_tmp,open("fs.p","wb"))
-            #        pickle.dump(len(fs_tmp),open("checkpoint.p","wb"))
-            sys.stdout.flush()
-            local_index += 1
+        # print(outputs)
+        #fs.append(outputs)
+        #if index % save_freq == save_freq-1:
+        #    fs_tmp = comm.gather(fs,root=0)
+        #    if rank == 0:
+        #        fs_tmp = sum(fs_tmp, [])
+        #        fs_tmp += fs_init
+        #        pickle.dump(fs_tmp,open("fs.p","wb"))
+        #        pickle.dump(len(fs_tmp),open("checkpoint.p","wb"))
+        sys.stdout.flush()
+        local_index += 1
 
         print("--- %s seconds ---" % (time.time() - start_time))
 
         #fs = comm.gather(fs,root=0)
-        covs1_recv = None
-        covs2_recv = None
-        if rank == 0:
-            covs1_recv = np.zeros_like(covs[:25000,:])
-            covs2_recv = np.zeros_like(covs[25000:,:])
-        comm.Reduce(covs[:25000,:], covs1_recv, op=MPI.SUM, root=0)
-        comm.Reduce(covs[25000:,:], covs2_recv, op=MPI.SUM, root=0)
+        if size > 1:
+            covs1_recv = None
+            covs2_recv = None
+            if rank == 0:
+                covs1_recv = np.zeros_like(covs[:25000,:])
+                covs2_recv = np.zeros_like(covs[25000:,:])
+            comm.Reduce(covs[:25000,:], covs1_recv, op=MPI.SUM, root=0)
+            comm.Reduce(covs[25000:,:], covs2_recv, op=MPI.SUM, root=0)
 
-        if rank == 0:
-            #fs = sum(fs, [])
-            #covs = sum(covs, [])
-            #fs += fs_init
-            #fs = np.array(fs)
-            #fs = np.squeeze(fs)
-            #return np.cov(fs.T)
-            covs_recv = np.concatenate([covs1_recv,covs2_recv],0)
-            return covs_recv/number_samples
+            if rank == 0:
+                #fs = sum(fs, [])
+                #covs = sum(covs, [])
+                #fs += fs_init
+                #fs = np.array(fs)
+                #fs = np.squeeze(fs)
+                #return np.cov(fs.T)
+                covs_recv = np.concatenate([covs1_recv,covs2_recv],0)
+                return covs_recv/number_samples
+            else:
+                return None
         else:
-            return None
+            return covs/number_samples
