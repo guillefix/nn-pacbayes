@@ -80,6 +80,7 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
     are_norm = [is_normalization_layer(l) for l in layers for w in l.get_weights()]
     initial_weights = model.get_weights()
     update_chunk = 20000
+    print(num_tasks,tasks)
     for index in tasks:
         print("sample for kernel", index)
 
@@ -119,25 +120,25 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
         print("--- %s seconds ---" % (time.time() - start_time))
 
         #fs = comm.gather(fs,root=0)
-        if size > 1:
-            covs1_recv = None
-            covs2_recv = None
-            if rank == 0:
-                covs1_recv = np.zeros_like(covs[:25000,:])
-                covs2_recv = np.zeros_like(covs[25000:,:])
-            comm.Reduce(covs[:25000,:], covs1_recv, op=MPI.SUM, root=0)
-            comm.Reduce(covs[25000:,:], covs2_recv, op=MPI.SUM, root=0)
+    if size > 1:
+        covs1_recv = None
+        covs2_recv = None
+        if rank == 0:
+            covs1_recv = np.zeros_like(covs[:25000,:])
+            covs2_recv = np.zeros_like(covs[25000:,:])
+        comm.Reduce(covs[:25000,:], covs1_recv, op=MPI.SUM, root=0)
+        comm.Reduce(covs[25000:,:], covs2_recv, op=MPI.SUM, root=0)
 
-            if rank == 0:
-                #fs = sum(fs, [])
-                #covs = sum(covs, [])
-                #fs += fs_init
-                #fs = np.array(fs)
-                #fs = np.squeeze(fs)
-                #return np.cov(fs.T)
-                covs_recv = np.concatenate([covs1_recv,covs2_recv],0)
-                return covs_recv/number_samples
-            else:
-                return None
+        if rank == 0:
+            #fs = sum(fs, [])
+            #covs = sum(covs, [])
+            #fs += fs_init
+            #fs = np.array(fs)
+            #fs = np.squeeze(fs)
+            #return np.cov(fs.T)
+            covs_recv = np.concatenate([covs1_recv,covs2_recv],0)
+            return covs_recv/number_samples
         else:
-            return covs/number_samples
+            return None
+    else:
+        return covs/number_samples

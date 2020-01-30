@@ -174,7 +174,7 @@ def main(_):
         weights_norm, biases_norm = measure_sigmas(model)
         print(weights_norm,biases_norm)
 
-        model.fit(train_images.astype(np.float32), ys.astype(np.float32), verbose=0,\
+        model.fit(train_images.astype(np.float32), ys.astype(np.float32), verbose=1,\
             sample_weight=sample_weights, validation_data=(train_images.astype(np.float32), ys.astype(np.float32)), epochs=MAX_TRAIN_EPOCHS,callbacks=callbacks, batch_size=batch_size)
         sys.stdout.flush()
 
