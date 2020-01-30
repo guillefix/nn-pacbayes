@@ -7,7 +7,7 @@ from typing import List
 
 from .exkern import ElementwiseExKern, ExReLU, ExErf
 from .resnet import ResnetKernel
-from .allconvnet import AllConvKernel
+#from .allconvnet import AllConvKernel
 
 
 class DeepKernel(gpflow.kernels.Kernel):
@@ -123,15 +123,14 @@ class DeepKernel(gpflow.kernels.Kernel):
                               self.recurse_kern.Kdiag(var_a_2),
                               self.recurse_kern.K(var_a_cross, var_a_1, var_a_2)]
         # The final layer
-        elem_size = tf.reduce_prod(tf.shape(var_z_list[-1])[1:])
-        var_z_cross = tf.reshape(var_z_list[-1], [N, N2, elem_size])
+        var_z_cross = tf.reshape(var_z_list[-1], [N, N2, -1])
         var_z_cross_last = tf.reduce_mean(var_z_cross, axis=2)
         return self.var_bias + self.var_weight * var_z_cross_last
 
     @gpflow.decors.params_as_tensors
     @gpflow.decors.name_scope()
     def Kdiag(self, X):
-        X_sq = tf.reshape(tf.square(X), [tf.shape(X)[0]] + self.input_shape)
+        X_sq = tf.reshape(tf.square(X), [-1] + self.input_shape)
         var_z = tf.reduce_mean(X_sq, axis=1, keepdims=True)
         for i in range(self.n_layers):
             var_a = self.lin_step(i, var_z)

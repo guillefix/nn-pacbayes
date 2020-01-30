@@ -11,9 +11,9 @@ mpi=mpiexec
 
 $py generate_NN_arch.py $@
 
-$py generate_inputs_sample.py $@
-
-$mpi -n $n_procs $py compute_kernel.py $@
+#$py generate_inputs_sample.py $@
+#
+#$mpi -n $n_procs $py compute_kernel.py $@
 $mpi -n 1 $py compute_prob_and_bound.py $@ --using_EP
 
 #$mpi -n $n_procs $py NN_train.py $@

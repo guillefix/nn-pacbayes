@@ -97,7 +97,7 @@ def main(_):
             if network in ["cnn", "fc"]:
                 simple_reset_weights(model, sigmaw, sigmab)
             else:
-                reset_weights(model, initial_weights, are_norm, sigmaw, sigmab)
+                reset_weights(model, initial_weights, are_norm, sigmaw, sigmab, truncated_init_dist)
         #model = load_model(FLAGS) # this resets the weights (makes sense as the json string only has architecture)
 
         #save weights?

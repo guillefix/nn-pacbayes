@@ -30,41 +30,27 @@ class ExReLU(ElementwiseExKern):
             raise NotImplementedError
 
     def K(self, cov, var1, var2=None):
-        """
-        cov: (N1*N2) x Dim1 x Dim2 x ...
-        var1: N1 x Dim1 x Dim2 x ...
-        var2: N2 x Dim1 x Dim2 x ...
-        """
         if var2 is None:
-            rsqrt1 = rsqrt2 = tf.rsqrt(var1)
-            var2 = var1
+            sqrt1 = sqrt2 = tf.sqrt(var1)
         else:
-            rsqrt1, rsqrt2 = tf.rsqrt(var1), tf.rsqrt(var2)
+            sqrt1, sqrt2 = tf.sqrt(var1), tf.sqrt(var2)
 
-        inv_norms_prod = rsqrt1[:, None, ...] * rsqrt2  # N1 x N2 x ...
-        shape_cov = tf.shape(cov)  # (N1*N2) x ...
-        cos_theta = cov * tf.reshape(inv_norms_prod, shape_cov)
-        theta = tf.acos(tf.clip_by_value(cos_theta, -1., 1., name="prevent_infty"))
+        norms_prod = sqrt1[:, None, ...] * sqrt2
+        norms_prod = tf.reshape(norms_prod, tf.shape(cov))
+
+        cos_theta = tf.clip_by_value(cov / norms_prod, -1., 1.)
+        theta = tf.acos(cos_theta)  # angle wrt the previous RKHS
 
         if self.exponent == 0:
             return .5 - theta/(2*np.pi)
 
-        """
-        (if on Emacs: use M-x org-toggle-latex-fragment and enjoy!)
-        We need to calculate (cov, var1, var2 == $c, v_1, v_2$):
-        $$ \frac{\sqrt{v_1 v_2}}{2\pi} \left( \sqrt{1 - \frac{c^2}{v_1 v_2}} + (\pi - \theta) \frac{c}{\sqrt{v_1}\sqrt{v_2}} \right) $$
-        which is equivalent to:
-        $$ \frac{1}{2\pi} \left( \sqrt{v_1 v_2 - c^2} + (\pi - \theta) c\right) $$
-        """
-        sq_norms_prod = tf.reshape(var1[:, None, ...] * var2, shape_cov)
-        a = tf.nn.relu(sq_norms_prod - tf.square(cov), name="keep_positive")
-        sin_theta_vv = tf.sqrt(a)
-        J_vv = sin_theta_vv + (np.pi - theta) * cov
+        sin_theta = tf.sqrt(1. - cos_theta**2)
+        J = sin_theta + (np.pi - theta) * cos_theta
         if self.multiply_by_sqrt2:
             div = np.pi
         else:
             div = 2*np.pi
-        return J_vv / div
+        return norms_prod / div * J
 
     def Kdiag(self, var):
         if self.multiply_by_sqrt2:
