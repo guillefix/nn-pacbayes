@@ -31,6 +31,7 @@ def main(_):
 
     set_session = keras.backend.set_session
     config.log_device_placement = False  # to log device placement (on which device the operation ran)
+    config.allow_soft_placement = True  # so that it uses any other existing and supported devices, if the requested GPU:0 isn't found
     sess = tf.compat.v1.Session(config=config)
     set_session(sess)  # set this TensorFlow session as the default session for Keras
 

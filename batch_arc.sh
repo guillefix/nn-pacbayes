@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # set the number of nodes
-#SBATCH --time=01:00:00
+#SBATCH --time=24:00:00
 #SBATCH --job-name=single_core
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
@@ -49,12 +49,12 @@ vars=(mnist cifar)
 #echo './meta_script_msweep '${vars[$SLURM_ARRAY_TASK_ID]}' fc none 4' >> $filename
 #chmod +x $filename
 module load anaconda3/2019.03
-module load gpu/cuda/9.0.176
-module load gpu/cudnn/7.3.1__cuda-9.0
+module load gpu/cuda/10.0.130
+module load gpu/cudnn/7.5.0__cuda-10.0
 module load mpi
  
 source activate $DATA/tensor-env
-./meta_script_msweep ${vars[$SLURM_ARRAY_TASK_ID]} fc none 1
+./meta_script_msweep_arc ${vars[$SLURM_ARRAY_TASK_ID]} fc none 1
 
 #/jmain01/apps/docker/tensorflow-batch -v 18.07-py3 -c ./densenet201.sh
 #/jmain01/apps/docker/tensorflow-batch -v 18.07-py3 -c ./meta_script
