@@ -63,12 +63,19 @@ def main(_):
     image_width = image_height = image_size
 
     if dataset == "cifar":
-        d = torchvision.datasets.CIFAR10("./datasets",download=True,
+        d1 = torchvision.datasets.CIFAR10("./datasets",download=True,
                 transform=transforms.Compose(
                     [transforms.ToPILImage()]+
                     ([transforms.Resize(image_size)] if image_size is not None else [])+
                     [transforms.ToTensor()]
                 ))
+        d2 = torchvision.datasets.CIFAR10("./datasets",download=True,
+                transform=transforms.Compose(
+                    [transforms.ToPILImage()]+
+                    ([transforms.Resize(image_size)] if image_size is not None else [])+
+                    [transforms.ToTensor()]
+                ), train=False)
+        d = torch.utils.data.ConcatDataset([d1,d2])
         print(d)
         if out_of_sample_test_error:
             mm = int(ceil(d.data.shape[0]*5/6))
