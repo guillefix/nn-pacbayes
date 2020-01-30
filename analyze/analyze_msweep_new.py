@@ -5,21 +5,29 @@ import matplotlib.pyplot as plt
 
 #%%
 # training_data = pd.read_csv("results/new_mother_of_all_msweeps_nn_training_results.txt", sep="\t", comment="#")
-# training_data = pd.read_csv("results/gpu_msweep_nn_training_results.txt", sep="\t", comment="#")
-training_data = pd.read_csv("results/gpu_msweep_nn_training_results_cnn.txt", sep="\t", comment="#")
+# training_data.columns
+# training_data["sigmaw"]
+# training_data["sigmab"]
+training_data = pd.read_csv("results/gpu_msweep_nn_training_results.txt", sep="\t", comment="#")
+# training_data = pd.read_csv("results/2gpu_msweep_nn_training_results.txt", sep="\t", comment="#")
+# training_data = pd.read_csv("results/gpu_msweep_nn_training_results_cnn.txt", sep="\t", comment="#")
 # training_data = pd.read_csv("results/2jade_new_msweep_nn_training_results.txt", sep="\t", comment="#")
 # bounds = pd.read_csv("results/new_mother_of_all_msweeps_bounds.txt", sep="\t", comment="#")
 # bounds = pd.read_csv("results/2new_mother_of_all_msweeps_bounds.txt", sep="\t", comment="#")
 # bounds = pd.read_csv("results/gpu_msweep_bounds.txt", sep="\t", comment="#")
-bounds = pd.read_csv("results/gpu_msweep_bounds_cnn.txt", sep="\t", comment="#")
+bounds = pd.read_csv("results/2gpu_msweep_bounds.txt", sep="\t", comment="#")
+# bounds = pd.read_csv("results/gpu_msweep_bounds_cnn.txt", sep="\t", comment="#")
 # bounds = pd.read_csv("results/2jade_new_msweep_bounds.txt", sep="\t", comment="#")
 
 nets = training_data["network"].unique()
 datasets = training_data["dataset"].unique()
 
+training_data = training_data.sort_values("m")
+bounds = bounds.sort_values("m")
+
 #%%
-net="cnn"
-# net="fc"
+# net="cnn"
+net="fc"
 # net="resnetv2_50"
 # net="resnext101"
 # net="densenet121"
