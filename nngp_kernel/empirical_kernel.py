@@ -80,6 +80,8 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
     are_norm = [is_normalization_layer(l) for l in layers for w in l.get_weights()]
     initial_weights = model.get_weights()
     update_chunk = 20000
+    num_chunks = covs.shape[0]//update_chunk
+    print("num_chunks",num_chunks)
     for index in tasks:
         print("sample for kernel", index)
 
@@ -88,15 +90,14 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
             reset_weights(model, initial_weights, are_norm, sigmaw, sigmab, truncated_init_dist)
 
         #X = np.squeeze(func(data))
-        X = model.predict(data, batch_size=1024).astype(np.float32)
+        X = model.predict(data, batch_size=256).astype(np.float32)
         print("X",X)
         if len(X.shape)==1:
             X = np.expand_dims(X,0)
         #covs += (sigmaw**2/X.shape[1])*np.matmul(X,X.T)+(sigmab**2)*np.ones((X.shape[0],X.shape[0]), dtype=np.float32)
         if covs.shape[0] > update_chunk:
-            num_chunks = covs.shape[0]//update_chunk
             for i in range(num_chunks):
-                covs[i:i+update_chunk] += (sigmaw**2/X.shape[1])*np.matmul(X[i:i+update_chunk],X.T)+(sigmab**2)*np.ones((update_chunk,X.shape[0]), dtype=np.float32)
+                covs[i*update_chunk:(i+1)*update_chunk] += (sigmaw**2/X.shape[1])*np.matmul(X[i*update_chunk:(i+1)*update_chunk],X.T)+(sigmab**2)*np.ones((update_chunk,X.shape[0]), dtype=np.float32)
             last_bits = slice(update_chunk*num_chunks,covs.shape[0])
             covs[last_bits] += (sigmaw**2/X.shape[1])*np.matmul(X[last_bits],X.T)+(sigmab**2)*np.ones((last_bits.stop-last_bits.start,X.shape[0]), dtype=np.float32)
         else:
@@ -118,26 +119,27 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
 
         print("--- %s seconds ---" % (time.time() - start_time))
 
-        #fs = comm.gather(fs,root=0)
-        if size > 1:
-            covs1_recv = None
-            covs2_recv = None
-            if rank == 0:
-                covs1_recv = np.zeros_like(covs[:25000,:])
-                covs2_recv = np.zeros_like(covs[25000:,:])
-            comm.Reduce(covs[:25000,:], covs1_recv, op=MPI.SUM, root=0)
-            comm.Reduce(covs[25000:,:], covs2_recv, op=MPI.SUM, root=0)
+    #fs = comm.gather(fs,root=0)
+    if size > 1:
+        covs1_recv = None
+        covs2_recv = None
+        if rank == 0:
+            covs1_recv = np.zeros_like(covs[:25000,:])
+            covs2_recv = np.zeros_like(covs[25000:,:])
+        print(covs[25000:,:])
+        comm.Reduce(covs[:25000,:], covs1_recv, op=MPI.SUM, root=0)
+        comm.Reduce(covs[25000:,:], covs2_recv, op=MPI.SUM, root=0)
 
-            if rank == 0:
-                #fs = sum(fs, [])
-                #covs = sum(covs, [])
-                #fs += fs_init
-                #fs = np.array(fs)
-                #fs = np.squeeze(fs)
-                #return np.cov(fs.T)
-                covs_recv = np.concatenate([covs1_recv,covs2_recv],0)
-                return covs_recv/number_samples
-            else:
-                return None
+        if rank == 0:
+            #fs = sum(fs, [])
+            #covs = sum(covs, [])
+            #fs += fs_init
+            #fs = np.array(fs)
+            #fs = np.squeeze(fs)
+            #return np.cov(fs.T)
+            covs_recv = np.concatenate([covs1_recv,covs2_recv],0)
+            return covs_recv/number_samples
         else:
-            return covs/number_samples
+            return None
+    else:
+        return covs/number_samples

@@ -19,7 +19,7 @@
 #SBATCH --mail-user=guillefix@gmail.com
 
 ##SBATCH --array=0-2
-#SBATCH --array=0-1
+#SBATCH --array=0-0
 
 #Launching the commands within script.sh
 
@@ -47,7 +47,8 @@ filename=scripts/${vars[$SLURM_ARRAY_TASK_ID]}.sh
 rm $filename
 echo '#!/bin/bash' > $filename
 #echo './meta_script '${net}' '${vars[$SLURM_ARRAY_TASK_ID]} >> $filename
-echo './meta_script_msweep '${vars[$SLURM_ARRAY_TASK_ID]}' cnn none 8' >> $filename
+#echo './meta_script_msweep_jade '${vars[$SLURM_ARRAY_TASK_ID]}' cnn none 8' >> $filename
+echo './meta_script_msweep_jade '${vars[$SLURM_ARRAY_TASK_ID]}' fc none 8' >> $filename
 chmod +x $filename
 
 #/jmain01/apps/docker/tensorflow-batch -v 18.07-py3 -c ./densenet201.sh
