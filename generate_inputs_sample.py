@@ -234,7 +234,9 @@ def main(_):
     #for datasets that are not images, like the boolean one
     if dataset == "boolean" or dataset == "calabiyau":
 
-        if oversampling:
+        if booltrain_set is not None:
+            indices = [i for i,x in enumerate(booltrain_set) if x == "1"]
+        elif oversampling:
             probs = list(map(lambda x: threshold/(num_classes*len(inputs)) if x>=threshold else (num_classes-threshold)/(num_classes*len(inputs)), inputs))
             probs = np.array(probs)
             probs /= np.sum(probs)
@@ -539,6 +541,7 @@ if __name__ == '__main__':
     define_default_flags(f)
     f.DEFINE_boolean('out_of_sample_test_error', True, "Whether to test only on inputs outside of training data, or on whole dataset")
     f.DEFINE_boolean('unnormalized_images', False, "Whether to have the images in range [0,255.0], rather than the standard [0,1]")
+    f.DEFINE_string('booltrain_set', None, "an optional training set to provide (instead of random sample) when using boolean dataset")
 
     tf.compat.v1.app.run()
     #tf.app.run()
