@@ -1,12 +1,12 @@
 #!/bin/bash
 
-m=30000
+m=49999
 dataset=mnist
 #boolfun=00001110110011111001111111001111000000000000000000000000000000000000000001001100000000001101110100000000000000000000000000000000
 boolfun_comp=84.0
 #net=cnn
-net=densenet121
-L=4
+net=fc
+L=2
 optimizer=sgd
 loss=ce
 sigmaw=1.41
@@ -33,5 +33,5 @@ export n_procs=1
   #./run_experiment --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 0.1 --epochs_after_fit $epochs_after_fit -loss $loss
 
   #./run_experiment --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --sigmaw $sigmaw --sigmab $sigmab --n_gpus $n_gpus --pooling $pool --n_samples_repeats 0.1 
-  ./run_experiment --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --sigmaw $sigmaw --sigmab $sigmab --n_gpus $n_gpus --pooling $pool --n_samples_repeats 0.0005 --use_empirical_K --kernel_mult 10000
+  ./run_experiment --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --sigmaw $sigmaw --sigmab $sigmab --n_gpus $n_gpus --pooling $pool --n_samples_repeats 0.1 --use_empirical_K --kernel_mult 10000
 #done

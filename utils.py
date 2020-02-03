@@ -68,7 +68,7 @@ def load_data_by_filename(filename, training=True):
 '''ARCHITECTURE FUNCTIONS'''
 def arch_filename(FLAGS):
     filename=arch_folder
-    for flag in ["network","binarized","number_layers","pooling","intermediate_pooling","intermediate_pooling_type","init_dist"]:
+    for flag in ["network","dataset","binarized","number_layers","pooling","intermediate_pooling","intermediate_pooling_type","init_dist"]:
         filename+=str(FLAGS[flag])+"_"
     filename += "model"
     return filename
