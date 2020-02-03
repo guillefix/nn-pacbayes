@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export PYTHONPATH="/home_directory/.local/lib/python3.6/site-packages/:/usr/local/lib/python3.6/dist-packages/"
+#export PYTHONPATH="/home_directory/.local/lib/python3.6/site-packages/:/usr/local/lib/python3.6/dist-packages/"
 
 #py=/usr/bin/python3
 #py=/users/guillefix/anaconda3/bin/python3
@@ -11,11 +11,11 @@ mpi=mpiexec
 #py=/users/guillefix/anaconda3/envs/venv/bin/python
 #mpi=/users/guillefix/anaconda3/envs/venv/bin/mpiexec
 
-$py generate_NN_arch.py $@
-
-$py generate_inputs_sample.py $@
-
-$mpi -n $n_procs $py compute_kernel.py $@
+#$py generate_NN_arch.py $@
+#
+#$py generate_inputs_sample.py $@
+#
+#$mpi -n $n_procs $py compute_kernel.py $@
 $mpi -n $n_procs $py compute_prob_and_bound.py $@ --using_EP
 
 #$mpi -n $n_procs $py NN_train.py $@
