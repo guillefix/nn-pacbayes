@@ -182,7 +182,7 @@ def main(_):
         print(weights_norm,biases_norm)
 
         #batch_size = min(batch_size, m)
-        model.fit(train_images.astype(np.float32), ys.astype(np.float32), verbose=1,\
+        model.fit(train_images.astype(np.float32), ys.astype(np.float32), verbose=0,\
             sample_weight=sample_weights, validation_data=(train_images.astype(np.float32), ys.astype(np.float32)), epochs=MAX_TRAIN_EPOCHS,callbacks=callbacks, batch_size=min(m,batch_size))
         sys.stdout.flush()
 
@@ -339,12 +339,12 @@ def main(_):
         #biasess = np.stack(sum(biasess,[]))
         weights_mean = np.mean(weightss_recv)/number_inits #average over dimension indexing which weight it is (we've already reduced over the number_inits dimension)
         biases_mean = np.mean(biasess_recv)/number_inits
-        weights_std = np.mean(weightss_squared_recv)/number_inits - weights_mean
-        biases_std = np.mean(biasess_squared_recv)/number_inits - biases_mean
+        weights_std = np.mean(weightss_squared_recv)/number_inits - weights_mean**2
+        biases_std = np.mean(biasess_squared_recv)/number_inits - biases_mean**2
         weights_norm_mean = weights_norms_recv/number_inits
-        weights_norm_std = weights_norms_squared_recv/number_inits - weights_norm_mean
+        weights_norm_std = weights_norms_squared_recv/number_inits - weights_norm_mean**2
         biases_norm_mean = biases_norms_recv/number_inits
-        biases_norm_std = biases_norms_squared_recv/number_inits - biases_norm_mean
+        biases_norm_std = biases_norms_squared_recv/number_inits - biases_norm_mean**2
 
         # functions = sum(functions,[])
         test_acc = test_accs_recv/number_inits
@@ -357,8 +357,8 @@ def main(_):
         print('Mean train accuracy:', train_acc)
         test_acc = test_accs_recv/number_inits
         train_acc = train_accs_recv/number_inits
-        train_acc_std = train_accs_squared_recv/number_inits - train_acc
-        test_acc_std = test_accs_squared_recv/number_inits - test_acc
+        train_acc_std = train_accs_squared_recv/number_inits - train_acc**2
+        test_acc_std = test_accs_squared_recv/number_inits - test_acc**2
         mean_iters = 1.0*iterss_recv/number_inits
 
         useful_train_flags = ["dataset", "m", "network", "loss", "optimizer", "pooling", "epochs_after_fit", "ignore_non_fit", "test_function_size", "batch_size", "number_layers", "sigmaw", "sigmab", "init_dist","use_shifted_init","shifted_init_shift","whitening", "centering", "oversampling", "oversampling2", "channel_normalization", "training", "binarized", "confusion","filter_sizes", "gamma", "intermediate_pooling", "label_corruption", "threshold", "n_gpus", "n_samples_repeats", "layer_widths", "number_inits", "padding"]
