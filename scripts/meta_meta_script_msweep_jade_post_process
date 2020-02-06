@@ -1,0 +1,42 @@
+#!/bin/bash
+
+n=20
+a='sbatch batch.sh '
+lol=(`seq 452876 452970`)
+j=0
+export j=$j
+#for dataset in mnist; do
+for dataset in mnist mnist-fashion EMNIST KMNIST cifar; do
+    for net in resnet50 resnet101 resnet152 resnetv2_50 resnetv2_101 resnetv2_152 resnext50 resnext101 densenet121 densenet169 densenet201 mobilenetv2 nasnet vgg19 vgg16 ; do 
+        if [ $(wc -l slurm-${lol[$j]}.out | cut -d ' ' -f 1) -gt 2 ]
+        then
+            $a $dataset $net avg $n
+        fi
+        j=$(($j+1))
+        export j=$j
+    done
+    if [ $(wc -l slurm-${lol[$j]}.out | cut -d ' ' -f 1) -gt 2 ]
+    then
+        $a $dataset fc none $n
+    fi
+    j=$(($j+1))
+    export j=$j
+    if [ $(wc -l slurm-${lol[$j]}.out | cut -d ' ' -f 1) -gt 2 ]
+    then
+        $a $dataset cnn none $n
+    fi
+    j=$(($j+1))
+    export j=$j
+    if [ $(wc -l slurm-${lol[$j]}.out | cut -d ' ' -f 1) -gt 2 ]
+    then
+        $a $dataset cnn avg $n
+    fi
+    j=$(($j+1))
+    export j=$j
+    if [ $(wc -l slurm-${lol[$j]}.out | cut -d ' ' -f 1) -gt 2 ]
+    then
+        $a $dataset cnn max $n
+    fi
+    j=$(($j+1))
+    export j=$j
+done

@@ -1,2 +1,2 @@
 #!/bin/bash
-./meta_script_msweep_jade mnist fc none 8
+./meta_script_msweep_jade2 mnist resnet50 max 8
