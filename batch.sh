@@ -19,7 +19,7 @@
 #SBATCH --mail-user=guillefix@gmail.com
 
 ##SBATCH --array=0-2
-#SBATCH --array=0-0
+##SBATCH --array=0-0
 
 #Launching the commands within script.sh
 
@@ -35,19 +35,31 @@
 #vars=(500 1000 5000 10000 20000 30000 40000)
 #vars=(20000 30000 40000)
 #vars=(none max avg)
-vars=(mnist cifar)
+#vars=(mnist cifar)
 #vars=(EMNIST)
 
 #net=vgg16
 #net=cnn
 
-echo ${vars[$SLURM_ARRAY_TASK_ID]}.sh
-#filename=scripts/${net}_${vars[$SLURM_ARRAY_TASK_ID]}.sh
-filename=scripts/${vars[$SLURM_ARRAY_TASK_ID]}.sh
+#echo ${vars[$SLURM_ARRAY_TASK_ID]}.sh
+##filename=scripts/${net}_${vars[$SLURM_ARRAY_TASK_ID]}.sh
+#filename=scripts/${vars[$SLURM_ARRAY_TASK_ID]}.sh
+#rm $filename
+#echo '#!/bin/bash' > $filename
+##echo './meta_script '${net}' '${vars[$SLURM_ARRAY_TASK_ID]} >> $filename
+##echo './meta_script_msweep_jade '${vars[$SLURM_ARRAY_TASK_ID]}' cnn none 8' >> $filename
+##echo './meta_script_msweep_jade '${vars[$SLURM_ARRAY_TASK_ID]}' fc none 8' >> $filename
+#echo './meta_script_msweep_jade2 '${vars[$SLURM_ARRAY_TASK_ID]}' resnet50 max 8' >> $filename
+#chmod +x $filename
+
+dataset=$1
+network=$2
+pool=$3
+
+filename=scripts/${dataset}_${network}_${pool}.sh
 rm $filename
 echo '#!/bin/bash' > $filename
-#echo './meta_script '${net}' '${vars[$SLURM_ARRAY_TASK_ID]} >> $filename
-echo './meta_script_msweep '${vars[$SLURM_ARRAY_TASK_ID]}' fc none 8' >> $filename
+echo './meta_script_msweep_jade2 '${dataset}' '${network}' '${pool}' 8' >> $filename
 chmod +x $filename
 
 #/jmain01/apps/docker/tensorflow-batch -v 18.07-py3 -c ./densenet201.sh

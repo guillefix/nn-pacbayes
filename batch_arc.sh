@@ -1,14 +1,15 @@
 #!/bin/bash
 
 # set the number of nodes
-#SBATCH --time=01:00:00
+#SBATCH --time=24:00:00
 #SBATCH --job-name=single_core
-#SBATCH --nodes=1
-#SBATCH --ntasks-per-node=1
+#SBATCH --nodes=2
+#SBATCH --ntasks-per-node=4
 #SBATCH --partition=htc
+##SBATCH --mem=32768
 
 # set number of GPUs
-#SBATCH --gres=gpu:k80:1
+#SBATCH --gres=gpu:p100:4
 
 # mail alert at start, end and abortion of execution
 #SBATCH --mail-type=ALL
@@ -17,7 +18,7 @@
 #SBATCH --mail-user=guillefix@gmail.com
 
 ##SBATCH --array=0-2
-#SBATCH --array=0-1
+##SBATCH --array=0-0
 
 #Launching the commands within script.sh
 
@@ -33,7 +34,7 @@
 #vars=(500 1000 5000 10000 20000 30000 40000)
 #vars=(20000 30000 40000)
 #vars=(none max avg)
-vars=(mnist cifar)
+#vars=(mnist cifar)
 #vars=(mnist)
 #vars=(EMNIST)
 
@@ -49,12 +50,13 @@ vars=(mnist cifar)
 #echo './meta_script_msweep '${vars[$SLURM_ARRAY_TASK_ID]}' fc none 4' >> $filename
 #chmod +x $filename
 module load anaconda3/2019.03
-module load gpu/cuda/9.0.176
-module load gpu/cudnn/7.3.1__cuda-9.0
+module load gpu/cuda/10.0.130
+module load gpu/cudnn/7.5.0__cuda-10.0
 module load mpi
  
 source activate $DATA/tensor-env
-./meta_script_msweep ${vars[$SLURM_ARRAY_TASK_ID]} fc none 1
+#./meta_script_msweep_arc ${vars[$SLURM_ARRAY_TASK_ID]} fc none 1
+./meta_script_msweep_arc mnist fc none 1
 
 #/jmain01/apps/docker/tensorflow-batch -v 18.07-py3 -c ./densenet201.sh
 #/jmain01/apps/docker/tensorflow-batch -v 18.07-py3 -c ./meta_script

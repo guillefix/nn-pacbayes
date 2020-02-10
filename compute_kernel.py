@@ -31,6 +31,7 @@ def main(_):
 
     set_session = keras.backend.set_session
     config.log_device_placement = False  # to log device placement (on which device the operation ran)
+    config.allow_soft_placement = True  # so that it uses any other existing and supported devices, if the requested GPU:0 isn't found
     sess = tf.compat.v1.Session(config=config)
     set_session(sess)  # set this TensorFlow session as the default session for Keras
 
@@ -53,7 +54,7 @@ def main(_):
         print("n_samples_repeats",n_samples_repeats)
         print(ceil(int(train_images.shape[0])*n_samples_repeats))
         arch_json_string = load_model_json(FLAGS)
-        K = empirical_K(arch_json_string,train_images,ceil(int(train_images.shape[0])*n_samples_repeats),sigmaw=sigmaw,sigmab=sigmab,n_gpus=n_gpus,sess=sess, truncated_init_dist=truncated_init_dist)
+        K = empirical_K(arch_json_string,train_images,ceil(int(train_images.shape[0])*n_samples_repeats),sigmaw=sigmaw,sigmab=sigmab,n_gpus=n_gpus,sess=sess, truncated_init_dist=truncated_init_dist,data_parallelism=False)
     if rank == 0:
         if not (use_empirical_K or use_empirical_NTK):
             if network=="cnn":
