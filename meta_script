@@ -5,8 +5,8 @@ dataset=mnist
 #boolfun=00001110110011111001111111001111000000000000000000000000000000000000000001001100000000001101110100000000000000000000000000000000
 boolfun_comp=84.0
 #net=cnn
-net=densenet121
-L=4
+net=fc
+L=2
 optimizer=sgd
 loss=ce
 sigmaw=1.41
@@ -19,7 +19,7 @@ epochs_after_fit=0
 prefix=test_
 
 export n_gpus=0
-export n_procs=6
+export n_procs=1
 
 
 #for m in 4 16 32 64 128 256 512 1024 2048 4096 8192; do
