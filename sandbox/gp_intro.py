@@ -94,7 +94,6 @@ kernel = GPy.kern.RBF(input_dim=1, variance=1, lengthscale=2.)
 # m = GPy.models.GPRegression(X,Y,kernel)
 # m.parameters
 
-
 inference_method = GPy.inference.latent_function_inference.exact_gaussian_inference.ExactGaussianInference()
 lik=GPy.likelihoods.gaussian.Gaussian(variance=0.002)
 m = GPy.core.GP(X=X,Y=Y,kernel=kernel,inference_method=inference_method, likelihood=lik)
@@ -106,7 +105,7 @@ fig = m.plot()
 
 
 
-
+lik = GPy.likelihoods.Bernoulli()
 inference_method = GPy.inference.latent_function_inference.expectation_propagation.EP(parallel_updates=parallel_updates)
 m = GPy.core.GP(X=X,
                 Y=Y,

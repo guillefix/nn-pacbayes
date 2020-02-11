@@ -17,7 +17,7 @@ kernel_folder = "kernels/"
 #RUN this if no data file found
 # python3 generate_inputs_sample.py --m 100 --dataset mnist --sigmaw 10.0 --sigmab 10.0 --network fc --prefix test --random_labels --training --number_layers 1
 FLAGS = {}
-FLAGS['m'] = 100
+FLAGS['m'] = 1000
 FLAGS['dataset'] =  "mnist"
 FLAGS['network'] =  "fc"
 FLAGS['number_inits'] = 1
@@ -78,7 +78,6 @@ Y = np.array(ys2)
 from nngp_kernel.fc_kernel import kernel_matrix
 Kfull = kernel_matrix(Xfull,number_layers=number_layers,sigmaw=sigmaw,sigmab=sigmab)
 
-
 # FLAGS["m"] = 1500
 #Kfull = load_kernel(FLAGS)
 K = Kfull[0:m,0:m]
@@ -90,8 +89,31 @@ K = Kfull[0:m,0:m]
 # np.save(open(filename,"wb"),Kfull)
 #
 
+import GPy
+from GP_prob.custom_kernel_matrix.custom_kernel_matrix import CustomMatrix
+lik = GPy.likelihoods.Bernoulli()
+inference_method = GPy.inference.latent_function_inference.expectation_propagation.EP(parallel_updates=False)
+m = GPy.core.GP(X=X,
+                Y=Y,
+                kernel=CustomMatrix(Xfull.shape[1],Xfull,Kfull),
+                inference_method=inference_method,
+                likelihood=lik)
 
 
+# m.predict(test_images[0:1])
+m.predict(test_images)[0]>0.5
+
+inference_method = GPy.inference.latent_function_inference.exact_gaussian_inference.ExactGaussianInference()
+lik=GPy.likelihoods.gaussian.Gaussian(variance=0.002)
+m = GPy.core.GP(X=X,
+                Y=Y,
+                kernel=CustomMatrix(Xfull.shape[1],Xfull,Kfull),
+                inference_method=inference_method,
+                likelihood=lik)
+
+
+# m.predict(test_images[0:1])
+m.predict(test_images)[0]>0.5
 
 ########################################################
 
