@@ -40,6 +40,7 @@ LZ_freq_1e6_7_40_40_1_relu.txt
 results/*_train_functions.txt
 results/index_funs*.txt
 results/*.txt
+results/sgd_vs_bayes/*
 !results/new_mother_of_all_msweeps_bounds.txt
 !results/new_mother_of_all_msweeps_nn_training_results.txt
 

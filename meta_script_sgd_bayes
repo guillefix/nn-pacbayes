@@ -7,9 +7,9 @@
 m=32
 #dataset=mnist
 dataset=boolean
-boolfun=10001000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+boolfun=$1
 booltrain_set=01001100010100101100001000100010000010010011000010000010001010010000000001100000010000100000000000100010010000011000100011000000
-prefix=2sgd_vs_bayes_
+prefix=${2}_sgd_vs_bayes_
 #prefix=test_langevin_ce_run_
 sigmaw=1.0
 #sigmab=0.0357
@@ -21,8 +21,8 @@ loss=ce
 L=2 # number of layers
 batch_size=8
 layer_width=40
-#epochs_after_fit=64
-epochs_after_fit=0
+epochs_after_fit=64
+#epochs_after_fit=0
 number_inits=1000000
 prefix=${prefix}${m}_${layer_width}_${L}_${batch_size}_${optimizer}_${loss}_${epochs_after_fit}_
 
@@ -30,7 +30,7 @@ pool=none
 net=fc
 c=0
 export n_gpus=0
-export n_procs=300
+export n_procs=100
 #export n_procs=1
 
 #for net in resnet50; do 

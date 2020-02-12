@@ -44,6 +44,7 @@ def main(_):
             number_channels=1
     elif dataset == "boolean":
         input_dim = 7
+        image_size = None
     elif dataset == "calabiyau":
         input_dim = 180
     else:
@@ -58,7 +59,8 @@ def main(_):
     else:
         image_size=max(image_size,32)
 
-    image_width = image_height = image_size
+    if dataset is not "boolean" or dataset is not "calabiyau":
+        image_width = image_height = image_size
 
     if dataset == "cifar":
         d1 = torchvision.datasets.CIFAR10("./datasets",download=True,
