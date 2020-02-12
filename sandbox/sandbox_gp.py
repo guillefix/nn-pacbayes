@@ -17,21 +17,23 @@ kernel_folder = "kernels/"
 #RUN this if no data file found
 # python3 generate_inputs_sample.py --m 100 --dataset mnist --sigmaw 10.0 --sigmab 10.0 --network fc --prefix test --random_labels --training --number_layers 1
 FLAGS = {}
-FLAGS['m'] = 100
+FLAGS['m'] = 1000
+FLAGS['dataset'] =  "mnist"
+FLAGS['network'] =  "fc"
 FLAGS['number_inits'] = 1
 FLAGS['label_corruption'] =  0.0
 FLAGS['confusion'] = 0.0
-FLAGS['dataset'] =  "mnist"
 FLAGS['binarized'] =  True
-FLAGS['number_layers'] =  32
+FLAGS['number_layers'] =  2
+FLAGS['layer_widths'] =  "512"
+FLAGS['activations'] =  "relu"
 FLAGS['pooling'] =  "none"
 FLAGS['intermediate_pooling'] =  "0"*FLAGS['number_layers']
 FLAGS['intermediate_pooling_type'] =  "max"
 FLAGS['init_dist'] =  "gaussian"
-FLAGS['sigmaw'] =  np.sqrt(2)
+FLAGS['sigmaw'] =  1.41
 FLAGS['sigmab'] =  0.0
-FLAGS['network'] =  "resnet50"
-FLAGS['prefix'] =  "test"
+FLAGS['prefix'] =  "test_"
 FLAGS['whitening'] =  False
 FLAGS['random_labels'] =  True
 FLAGS['training'] =  True
@@ -45,6 +47,75 @@ FLAGS['no_training'] =  False
 FLAGS['threshold'] =  -1
 FLAGS['oversampling'] =  False
 FLAGS['oversampling2'] =  False
+FLAGS['nn_random_labels'] =  False
+FLAGS['nn_random_regression_outputs'] =  False
+
+#%%
+
+from utils import preprocess_flags
+FLAGS = preprocess_flags(FLAGS)
+globals().update(FLAGS)
+
+from utils import load_data,load_model,load_kernel
+train_images,flat_train_images,ys,test_images,test_ys = load_data(FLAGS)
+input_dim = train_images.shape[1]
+num_channels = train_images.shape[-1]
+# tp_order = np.concatenate([[0,len(train_images.shape)-1], np.arange(1, len(train_images.shape)-1)])
+# train_images = tf.constant(train_images)
+
+test_images = test_images[:50]
+test_ys = test_ys[:50]
+
+plt.imshow(train_images[0].reshape(28,28))
+
+X = train_images
+Xfull =  np.concatenate([train_images,test_images])
+ys2 = [[y] for y in ys]
+ysfull = ys2 + [[y] for y in test_ys]
+Yfull = np.array(ysfull)
+Y = np.array(ys2)
+
+from nngp_kernel.fc_kernel import kernel_matrix
+Kfull = kernel_matrix(Xfull,number_layers=number_layers,sigmaw=sigmaw,sigmab=sigmab)
+
+# FLAGS["m"] = 1500
+#Kfull = load_kernel(FLAGS)
+K = Kfull[0:m,0:m]
+
+# filename=kernel_folder
+# for flag in ["network","dataset","m","confusion","label_corruption","binarized","whitening","random_labels","number_layers","sigmaw","sigmab"]:
+#     filename+=str(FLAGS[flag])+"_"
+# filename += "kernel.npy"
+# np.save(open(filename,"wb"),Kfull)
+#
+
+import GPy
+from GP_prob.custom_kernel_matrix.custom_kernel_matrix import CustomMatrix
+lik = GPy.likelihoods.Bernoulli()
+inference_method = GPy.inference.latent_function_inference.expectation_propagation.EP(parallel_updates=False)
+m = GPy.core.GP(X=X,
+                Y=Y,
+                kernel=CustomMatrix(Xfull.shape[1],Xfull,Kfull),
+                inference_method=inference_method,
+                likelihood=lik)
+
+
+# m.predict(test_images[0:1])
+m.predict(test_images)[0]>0.5
+
+inference_method = GPy.inference.latent_function_inference.exact_gaussian_inference.ExactGaussianInference()
+lik=GPy.likelihoods.gaussian.Gaussian(variance=0.002)
+m = GPy.core.GP(X=X,
+                Y=Y,
+                kernel=CustomMatrix(Xfull.shape[1],Xfull,Kfull),
+                inference_method=inference_method,
+                likelihood=lik)
+
+
+# m.predict(test_images[0:1])
+m.predict(test_images)[0]>0.5
+
+########################################################
 
 #%%
 
@@ -128,45 +199,3 @@ def reset_weights(model):
     # new_weights = [initialize_var(w.shape) for w in initial_weights]
     # new_weights = [k_eval(lecun_normal()(w.shape)) for w in initial_weights]
     # model.set_weights(new_weights)
-
-
-#%%
-
-from utils import preprocess_flags
-FLAGS = preprocess_flags(FLAGS)
-globals().update(FLAGS)
-
-from utils import load_data,load_model,load_kernel
-train_images,flat_train_images,ys,test_images,test_ys = load_data(FLAGS)
-input_dim = train_images.shape[1]
-num_channels = train_images.shape[-1]
-# tp_order = np.concatenate([[0,len(train_images.shape)-1], np.arange(1, len(train_images.shape)-1)])
-# train_images = tf.constant(train_images)
-
-test_images = test_images[:50]
-test_ys = test_ys[:50]
-
-
-X = train_images
-Xfull =  np.concatenate([train_images,test_images])
-ys2 = [[y] for y in ys]
-ysfull = ys2 + [[y] for y in test_ys]
-Yfull = np.array(ysfull)
-Y = np.array(ys2)
-
-from fc_kernel import kernel_matrix
-Kfull = kernel_matrix(Xfull,number_layers=number_layers,sigmaw=sigmaw,sigmab=sigmab)
-
-
-# FLAGS["m"] = 1500
-#Kfull = load_kernel(FLAGS)
-K = Kfull[0:m,0:m]
-
-# filename=kernel_folder
-# for flag in ["network","dataset","m","confusion","label_corruption","binarized","whitening","random_labels","number_layers","sigmaw","sigmab"]:
-#     filename+=str(FLAGS[flag])+"_"
-# filename += "kernel.npy"
-# np.save(open(filename,"wb"),Kfull)
-#
-
-#%%

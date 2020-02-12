@@ -1,6 +1,23 @@
 #!/bin/bash
 
-m=49999
+export n_gpus=0
+export n_procs=1
+export train_method=GP
+export generate_arch=0
+export generate_data=0
+export compute_kernel=0
+export compute_bound=0
+export train=0
+export sample_funs=0
+
+
+export py=python3
+export mpi=mpiexec
+#export py=/users/guillefix/anaconda3/envs/venv/bin/python
+#export mpi=/users/guillefix/anaconda3/envs/venv/bin/mpiexec
+
+
+m=500
 dataset=mnist
 #boolfun=00001110110011111001111111001111000000000000000000000000000000000000000001001100000000001101110100000000000000000000000000000000
 boolfun_comp=84.0
@@ -8,7 +25,8 @@ boolfun_comp=84.0
 net=fc
 L=2
 optimizer=sgd
-loss=ce
+#loss=ce
+loss=mse
 sigmaw=1.41
 #sigmaw=50.0
 sigmab=0.0
@@ -16,22 +34,16 @@ pool=none
 c=0.0
 number_inits=1
 epochs_after_fit=0
+#epochs_after_fit=64
 prefix=test_
 
-export n_gpus=1
-export n_procs=1
-
+if [ $loss = ce ]; then
+    kern_mult=10000
+else
+    kern_mult=1
+fi
 
 #for m in 4 16 32 64 128 256 512 1024 2048 4096 8192; do
-#for m in 8; do
 #echo $m
-
-  #./run_experiment2 --prefix $prefix --m $m --threshold $t --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 2.0 --boolfun_comp $boolfun_comp --boolfun $boolfun --epochs_after_fit $epochs_after_fit -loss $loss #--use_empirical_K --intermediate_pooling 1111 --intermediate_pooling_type none
-  #./run_experiment --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 2.0 --epochs_after_fit $epochs_after_fit -loss $loss --centering --nn_random_labels
-  #./run_experiment --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 2.0 --epochs_after_fit $epochs_after_fit -loss $loss --use_empirical_NTK
-  #./run_experiment --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 0.1 --epochs_after_fit $epochs_after_fit -loss $loss --use_empirical_K
-  #./run_experiment --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 0.1 --epochs_after_fit $epochs_after_fit -loss $loss
-
-  #./run_experiment --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --sigmaw $sigmaw --sigmab $sigmab --n_gpus $n_gpus --pooling $pool --n_samples_repeats 0.1 
-  ./run_experiment --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --sigmaw $sigmaw --sigmab $sigmab --n_gpus $n_gpus --pooling $pool --n_samples_repeats 0.1 --use_empirical_K --kernel_mult 10000
+  ./run_experiment --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --sigmaw $sigmaw --sigmab $sigmab --n_gpus $n_gpus --pooling $pool -loss $loss --n_samples_repeats 0.1 --kernel_mult $kern_mult
 #done

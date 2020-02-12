@@ -19,8 +19,10 @@ fi
 optimizer=adam
 #optimizer=sgd
 loss=ce
-sigmaw=1.41
-sigmab=0.0
+#sigmaw=1.41
+sigmaw=10.0
+#sigmab=0.0
+sigmab=10.0
 c=0.0
 epochs_after_fit=0
 #prefix=new_mother_of_all_msweeps_
@@ -40,7 +42,9 @@ for m in 40000; do
 #for m in 1 ; do
 echo $m
 ## msweep boolean 
-  ./run_experiment_msweep --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 0.1 --epochs_after_fit $epochs_after_fit -loss $loss --optimizer $optimizer --use_empirical_K --intermediate_pooling $intermediate_pooling --kernel_mult 10000
+  #./run_experiment_msweep --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 0.1 --epochs_after_fit $epochs_after_fit -loss $loss --optimizer $optimizer --use_empirical_K --intermediate_pooling $intermediate_pooling --kernel_mult 10000
+  ./run_experiment_msweep --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 0.1 --epochs_after_fit $epochs_after_fit -loss $loss --optimizer $optimizer --use_empirical_K --intermediate_pooling $intermediate_pooling --kernel_mult 1
+
   #./run_experiment_msweep2 --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 0.1 --epochs_after_fit $epochs_after_fit -loss $loss --optimizer $optimizer --use_empirical_K --intermediate_pooling $intermediate_pooling --kernel_mult 100
   #./run_experiment_msweep2 --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 0.1 --epochs_after_fit $epochs_after_fit -loss $loss --optimizer $optimizer --intermediate_pooling $intermediate_pooling --kernel_mult 10
 done

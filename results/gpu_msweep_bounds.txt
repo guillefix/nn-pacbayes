@@ -7,6 +7,7 @@
 ##dataset	boolfun_comp	boolfun	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound	logP
 #mnist	none	none	fc	36	0.0	0.0	2	1.41	0.0	True	None	00	False	True	1	0.6497699649288147	-22.671433821288375
 #dataset	boolfun_comp	boolfun	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound	logP
+dataset	boolfun_comp	boolfun	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound	logP
 mnist	none	none	fc	1	0.0	0.0	2	1.41	0.0	True	None	00	False	True	1	0.9998203713666155	-0.693147180559945
 #dataset	boolfun_comp	boolfun	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	bound	logP
 mnist	none	none	fc	3	0.0	0.0	2	1.41	0.0	True	None	00	False	True	1	0.9841927879731585	-2.3131705741618296

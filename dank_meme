@@ -1,0 +1,13 @@
+#!/bin/bash
+echo Ive been called $1 times
+export ME
+while [ $(squeue -u $ME | wc -l) -gt 3 ]
+do
+    sleep 10
+done
+./meta_meta_script_msweep_jade2
+sleep 1
+if [ $1 -lt 10000 ]
+then
+    ./dank_meme $(($1+1))
+fi
