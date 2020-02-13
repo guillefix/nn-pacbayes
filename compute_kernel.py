@@ -35,40 +35,48 @@ def main(_):
     sess = tf.compat.v1.Session(config=config)
     set_session(sess)  # set this TensorFlow session as the default session for Keras
 
-    train_images,flat_train_images,ys,_,_ = load_data(FLAGS)
-    image_size = train_images.shape[1]
-    number_channels = train_images.shape[-1]
-    input_dim = flat_train_images.shape[1]
+    train_images,flat_train_images,_,test_images,_ = load_data(FLAGS)
+    X = train_images
+    flat_X = flat_train_images
+    if compute_for_GP_train:
+        test_images = test_images[:1000]
+        data = test_images
+        tp_order = np.concatenate([[0,len(data.shape)-1], np.arange(1, len(data.shape)-1)])
+        print(data.shape,tp_order)
+        flat_data = np.transpose(data, tp_order)  # NHWC -> NCHW # this is because the cnn GP kernels assume this
+        flat_test_images = np.array([test_image.flatten() for test_image in flat_data])
+        Xfull =  np.concatenate([flat_train_images,flat_test_images])
+        flat_X = Xfull
+        X = np.concatenate([train_images,test_images])
 
     print("compute kernel", network, dataset)
 
     # COMPUTE KERNEL
     if use_empirical_NTK:
         from nngp_kernel.empirical_ntk import empirical_NTK
-        # from nngp_kernel.empirical_ntk2 import empirical_NTK
-        print(ceil(int(train_images.shape[0])*n_samples_repeats))
+        print(ceil(int(X.shape[0])*n_samples_repeats))
         from tensorflow.keras.models import model_from_json
         model = load_model(FLAGS)
-        K = empirical_NTK(model,train_images)#,sess=sess)
+        K = empirical_NTK(model,X)#,sess=sess)
     elif use_empirical_K:
         from nngp_kernel.empirical_kernel import empirical_K
         print("n_samples_repeats",n_samples_repeats)
-        print(ceil(int(train_images.shape[0])*n_samples_repeats))
+        print(ceil(int(X.shape[0])*n_samples_repeats))
         arch_json_string = load_model_json(FLAGS)
-        K = empirical_K(arch_json_string,train_images,ceil(int(train_images.shape[0])*n_samples_repeats),sigmaw=sigmaw,sigmab=sigmab,n_gpus=n_gpus,sess=sess, truncated_init_dist=truncated_init_dist,data_parallelism=False)
+        K = empirical_K(arch_json_string,X,ceil(int(X.shape[0])*n_samples_repeats),sigmaw=sigmaw,sigmab=sigmab,n_gpus=n_gpus,sess=sess, truncated_init_dist=truncated_init_dist,data_parallelism=False)
     if rank == 0:
         if not (use_empirical_K or use_empirical_NTK):
             if network=="cnn":
                 from nngp_kernel.cnn_kernel import kernel_matrix
-                K = kernel_matrix(flat_train_images,image_size=image_size,number_channels=number_channels,filter_sizes=filter_sizes,padding=padding,strides=strides,sigmaw=sigmaw,sigmab=sigmab,n_gpus=n_gpus)
+                K = kernel_matrix(flat_X,image_size=image_size,number_channels=number_channels,filter_sizes=filter_sizes,padding=padding,strides=strides,sigmaw=sigmaw,sigmab=sigmab,n_gpus=n_gpus)
 
             elif network=="resnet":
                 from nngp_kernel.resnet_kernel import kernel_matrix
-                K = kernel_matrix(flat_train_images,depth=number_layers,image_size=image_size,number_channels=number_channels,n_blocks=3,sigmaw=sigmaw,sigmab=sigmab,n_gpus=n_gpus)
+                K = kernel_matrix(flat_X,depth=number_layers,image_size=image_size,number_channels=number_channels,n_blocks=3,sigmaw=sigmaw,sigmab=sigmab,n_gpus=n_gpus)
 
             elif network == "fc":
                 from nngp_kernel.fc_kernel import kernel_matrix
-                K = kernel_matrix(flat_train_images,number_layers=number_layers,sigmaw=sigmaw,sigmab=sigmab,n_gpus=n_gpus)
+                K = kernel_matrix(flat_X,number_layers=number_layers,sigmaw=sigmaw,sigmab=sigmab,n_gpus=n_gpus)
 
         print(K)
 
@@ -83,5 +91,6 @@ if __name__ == '__main__':
     from utils import define_default_flags
 
     define_default_flags(f)
+    f.DEFINE_boolean('compute_for_GP_train', False, "Whether to add a bit of test set to kernel, to be able to use it for GP training")
 
     tf.compat.v1.app.run()

@@ -1,6 +1,6 @@
 #!/bin/bash -l
 echo =========================================================   
-echo Job submitted  date = Mon Feb  3 14:26:19 GMT 2020      
+echo Job submitted  date = Tue Feb  4 22:31:00 GMT 2020      
 date_start=`date +%s`
 echo $SLURM_JOB_NUM_NODES nodes \( $SMP processes per node \)        
 echo $SLURM_JOB_NUM_NODES hosts used: $SLURM_JOB_NODELIST      
@@ -16,8 +16,8 @@ ulimit -l unlimited
 export MV2_SMP_USE_CMA=0
 
 #which mpirun
-export OMP_NUM_THREADS=20
- nice -n 10 /users/guillefix/nn-pacbayes/./meta_script_msweep mnist fc none 1
+export OMP_NUM_THEADS=1
+ nice -n 10 /users/guillefix/nn-pacbayes/./meta_script_msweep cifar cnn max 20
 # If we've been checkpointed
 #if [ -n "${DMTCP_CHECKPOINT_DIR}" ]; then
   if [ -d "${DMTCP_CHECKPOINT_DIR}" ]; then

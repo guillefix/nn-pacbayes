@@ -44,6 +44,7 @@ def main(_):
             number_channels=1
     elif dataset == "boolean":
         input_dim = 7
+        image_size = None
     elif dataset == "calabiyau":
         input_dim = 180
     else:
@@ -58,166 +59,98 @@ def main(_):
     else:
         image_size=max(image_size,32)
 
-    image_width = image_height = image_size
+    if dataset is not "boolean" or dataset is not "calabiyau":
+        image_width = image_height = image_size
 
-    if dataset == "cifar":
-        d1 = torchvision.datasets.CIFAR10("./datasets",download=True,
-                transform=transforms.Compose(
-                    [transforms.ToPILImage()]+
-                    ([transforms.Resize(image_size)] if image_size is not None else [])+
-                    [transforms.ToTensor()]
-                ))
-        d2 = torchvision.datasets.CIFAR10("./datasets",download=True,
-                transform=transforms.Compose(
-                    [transforms.ToPILImage()]+
-                    ([transforms.Resize(image_size)] if image_size is not None else [])+
-                    [transforms.ToTensor()]
-                ), train=False)
-        d = torch.utils.data.ConcatDataset([d1,d2])
-        print(d)
-        if out_of_sample_test_error:
-            mm = int(ceil(d.data.shape[0]*5/6))
-            (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
+    #image datasets
+    aliases = {"cifar":"CIFAR10","mnist":"MNIST","mnist-fashion":"FashionMNIST","imagenet":"ImageNet"}
+    if dataset in ["cifar","mnist","mnist-fashion","KMNIST","EMNIST","imagenet"]:
+        if dataset in aliases:
+            dataset_attr = aliases[dataset]
         else:
-            (train_images,train_labels),(test_images,test_labels) = (d.data, d.targets),(d.data,d.targets)
-        train_images = torch.Tensor(train_images)
-        test_images = torch.Tensor(test_images)
-        num_classes = 10
-
-    elif dataset == "imagenet":
-        d = torchvision.datasets.ImageNet("./datasets",download=True,
-                transform=transforms.Compose(
-                    [transforms.ToPILImage()]+
-                    ([transforms.Resize(image_size)] if image_size is not None else [])+
-                    [transforms.ToTensor()]
-                ))
-        print(d)
+            dataset_attr = dataset
+        dataset_constructor = getattr(torchvision.datasets,dataset_attr)
+        transformation = transforms.Compose(
+            [transforms.ToPILImage()]+
+            ([transforms.Resize(image_size)] if image_size is not None else [])+
+            [transforms.ToTensor()]
+        ) 
+        extra_kwargs = {}
+        if dataset == "EMNIST":
+            extra_kwargs = {"split":"balanced"}
+        d1 = dataset_constructor("./datasets",download=True,
+                transform=transformation, train=True, **extra_kwargs)
+        d2 = dataset_constructor("./datasets",download=True,
+                transform=transformation, train=False, **extra_kwargs)
+        num_classes = len(d1.classes)
+        #mm = int(ceil(d.data.shape[0]*5/6))
+        full_data = np.concatenate([d1.data,d2.data])
+        full_targets = np.concatenate([d1.targets,d2.targets])
         if out_of_sample_test_error:
-            mm = int(ceil(d.data.shape[0]*5/6))
-            (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
+            #if extended_test_set:
+            #    (train_images,train_labels),(test_images,test_labels) = (data[:mm], targets[:mm]),(data[mm:],targets[mm:])
+            #else:
+            (train_images,train_labels),(test_images,test_labels) = (d1.data, d1.targets),(d2.data,d2.targets)
         else:
-            (train_images,train_labels),(test_images,test_labels) = (d.data, d.targets),(d.data,d.targets)
-        train_images = torch.Tensor(train_images)
-        test_images = torch.Tensor(test_images)
-        print("ImageNet classes", train_labels.unique())
-        num_classes = 1000
-
-    elif dataset == "mnist":
-        num_classes = 10
-        d = torchvision.datasets.MNIST("./datasets",download=True,
-                transform=transforms.Compose(
-                    [transforms.ToPILImage()]+
-                    ([transforms.Resize(image_size)] if image_size is not None else [])+
-                    [transforms.ToTensor()]
-                ))
-        print(d)
-        if out_of_sample_test_error:
-            mm = int(ceil(d.data.shape[0]*5/6))
-            (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
-        else:
-            (train_images,train_labels),(test_images,test_labels) = (d.data, d.targets),(d.data,d.targets)
-
-    elif dataset == "mnist-fashion":
-        num_classes = 10
-        d = torchvision.datasets.FashionMNIST("./datasets",download=True,
-                transform=transforms.Compose(
-                    [transforms.ToPILImage()]+
-                    ([transforms.Resize(image_size)] if image_size is not None else [])+
-                    [transforms.ToTensor()]
-                ))
-        print(d)
-        if out_of_sample_test_error:
-            mm = int(ceil(d.data.shape[0]*5/6))
-            (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
-        else:
-            (train_images,train_labels),(test_images,test_labels) = (d.data, d.targets),(d.data,d.targets)
-
-    elif dataset == "KMNIST":
-        d = torchvision.datasets.KMNIST("./datasets",download=True,
-                transform=transforms.Compose(
-                    [transforms.ToPILImage()]+
-                    ([transforms.Resize((image_size,image_size))] if image_size is not None else [])+
-                    [transforms.ToTensor()]
-                ),
-            )
-        if out_of_sample_test_error:
-            mm = int(ceil(d.data.shape[0]*5/6))
-            (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
-        else:
-            (train_images,train_labels),(test_images,test_labels) = (d.data, d.targets),(d.data,d.targets)
-        num_classes = 10
-
-    elif dataset == "EMNIST":
-        d = torchvision.datasets.EMNIST("./datasets",download=True,
-                transform=transforms.Compose(
-                    [transforms.ToPILImage()]+
-                    ([transforms.Resize(image_size)] if image_size is not None else [])+
-                    [transforms.ToTensor()]
-                ),
-                split="balanced")
-                #split="byclass")
-        print(d)
-        if out_of_sample_test_error:
-            mm = int(ceil(d.data.shape[0]*5/6))
-            (train_images,train_labels),(test_images,test_labels) = (d.data[:mm], d.targets[:mm]),(d.data[mm:],d.targets[mm:])
-        else:
-            (train_images,train_labels),(test_images,test_labels) = (d.data, d.targets),(d.data,d.targets)
+            (train_images,train_labels),(test_images,test_labels) = (d1.data, d1.targets),(full_data,full_targets)
+        #train_images = torch.Tensor(train_images)
+        #test_images = torch.Tensor(test_images)
         print(train_images.min(), train_images.max())
-        num_classes = 62
 
     #TODO: add custom datasets
 
     #non-image-like datasets:
-    elif dataset == "boolean":
-        assert network == "fc"
-        num_classes = 2
-        #we ignore the 0 input, because it casues problems when computing the kernel matrix :P when sigmab==0 though
-        if centering:
-            inputs = np.array([[float(l)*2.0-1 for l in "{0:07b}".format(i)] for i in range(0,2**7)])
-        else:
-            if sigmab==0:
-                inputs = np.array([[float(l) for l in "{0:07b}".format(i)] for i in range(1,2**7)])
-            else:
-                inputs = np.array([[float(l) for l in "{0:07b}".format(i)] for i in range(0,2**7)])
-
-        if boolfun is not "none":
-            fun = boolfun
-        elif boolfun_comp is not "none":
-            # open("boolfun_comps.txt","w").write("\n".join(list(funs.keys())))
-            funs = pickle.load(open("funs_per_complexity.p","rb"))
-            fun = np.random.choice(funs[boolfun_comp])
-            print("complexity", boolfun_comp)
-        else:
-            funs = pickle.load(open("funs_per_complexity.p","rb"))
-            comp = np.random.choice(list(funs.keys()))
-            print("complexity", comp)
-            fun = np.random.choice(funs[comp])
-            # funs = {}
-            # with open("LZ_freq_1e6_7_40_40_1_relu.txt","r") as f:
-            #     for line in f.readlines():
-            #         fun,comp,freq = line.strip().split("\t")
-            #         if comp not in funs:
-            #             funs[comp] = [fun]
-            #         else:
-            #             funs[comp].append(fun)
-            # pickle.dump(funs,open("funs_per_complexity.p","wb"))
-
-        print("fun",fun)
-
-        if sigmab==0 and not centering:
-            labels=np.array([[int(xx)*2.0-1] for xx in list(fun)[1:]]) #start from 1 because we ignored the 0th input
-        else:
-            labels=np.array([[int(xx)*2.0-1] for xx in list(fun)[0:]])
-    elif dataset == "calabiyau":
-        assert network == "fc"
-        num_classes = 2
-        #we ignore the 0 input, because it casues problems when computing the kernel matrix :P
-        data = np.load("datasets/calabiyau.npz")
-        inputs, labels = data["inputs"], data["targets"]
-        if whitening:
-            inputs = inputs - inputs.mean(0)
     else:
-        raise NotImplementedError
+        if dataset == "boolean":
+            assert network == "fc"
+            num_classes = 2
+            #we ignore the 0 input, because it casues problems when computing the kernel matrix :P when sigmab==0 though
+            if centering:
+                inputs = np.array([[float(l)*2.0-1 for l in "{0:07b}".format(i)] for i in range(0,2**7)])
+            else:
+                if sigmab==0:
+                    inputs = np.array([[float(l) for l in "{0:07b}".format(i)] for i in range(1,2**7)])
+                else:
+                    inputs = np.array([[float(l) for l in "{0:07b}".format(i)] for i in range(0,2**7)])
+
+            if boolfun is not "none":
+                fun = boolfun
+            elif boolfun_comp is not "none":
+                # open("boolfun_comps.txt","w").write("\n".join(list(funs.keys())))
+                funs = pickle.load(open("funs_per_complexity.p","rb"))
+                fun = np.random.choice(funs[boolfun_comp])
+                print("complexity", boolfun_comp)
+            else:
+                funs = pickle.load(open("funs_per_complexity.p","rb"))
+                comp = np.random.choice(list(funs.keys()))
+                print("complexity", comp)
+                fun = np.random.choice(funs[comp])
+                # funs = {}
+                # with open("LZ_freq_1e6_7_40_40_1_relu.txt","r") as f:
+                #     for line in f.readlines():
+                #         fun,comp,freq = line.strip().split("\t")
+                #         if comp not in funs:
+                #             funs[comp] = [fun]
+                #         else:
+                #             funs[comp].append(fun)
+                # pickle.dump(funs,open("funs_per_complexity.p","wb"))
+
+            print("fun",fun)
+
+            if sigmab==0 and not centering:
+                labels=np.array([[int(xx)*2.0-1] for xx in list(fun)[1:]]) #start from 1 because we ignored the 0th input
+            else:
+                labels=np.array([[int(xx)*2.0-1] for xx in list(fun)[0:]])
+        elif dataset == "calabiyau":
+            assert network == "fc"
+            num_classes = 2
+            #we ignore the 0 input, because it casues problems when computing the kernel matrix :P
+            data = np.load("datasets/calabiyau.npz")
+            inputs, labels = data["inputs"], data["targets"]
+            if whitening:
+                inputs = inputs - inputs.mean(0)
+        else:
+            raise NotImplementedError
 
     global threshold
     if threshold==-1:
@@ -280,19 +213,23 @@ def main(_):
         test_images = test_images.numpy().astype(np.uint8)
 
 
-        if oversampling:
-            probs = list(map(lambda x: threshold/(num_classes) if x>=threshold else (num_classes-threshold)/(num_classes), train_labels))
-            probs = np.array(probs)
-            probs /= np.sum(probs)
-            indices = np.random.choice(range(len(train_images)), size=int(total_samples), replace=False, p=probs)
-        elif oversampling2:
-            indices = np.random.choice(range(len(train_images)), size=int(total_samples), replace=False)
-            indices = sum([[i]*(num_classes-threshold) for i in indices if train_labels[i]<threshold] \
-                + [[i]*threshold for i in indices if train_labels[i]>=threshold],[])
+        #GET TRAINIG SAMPLE INDICES
+        if random_training_set:
+            if oversampling:
+                probs = list(map(lambda x: threshold/(num_classes) if x>=threshold else (num_classes-threshold)/(num_classes), train_labels))
+                probs = np.array(probs)
+                probs /= np.sum(probs)
+                indices = np.random.choice(range(len(train_images)), size=int(total_samples), replace=False, p=probs)
+            elif oversampling2:
+                indices = np.random.choice(range(len(train_images)), size=int(total_samples), replace=False)
+                indices = sum([[i]*(num_classes-threshold) for i in indices if train_labels[i]<threshold] \
+                    + [[i]*threshold for i in indices if train_labels[i]>=threshold],[])
 
-            m*=int((2*(num_classes-threshold)*threshold/(num_classes)))
+                m*=int((2*(num_classes-threshold)*threshold/(num_classes)))
+            else:
+                indices = np.random.choice(range(len(train_images)), size=int(total_samples), replace=False)
         else:
-            indices = np.random.choice(range(len(train_images)), size=int(total_samples), replace=False)
+            indices = np.arange(int(total_samples))
         # print(indices)
 
         #if network == "nasnet":
@@ -541,6 +478,8 @@ if __name__ == '__main__':
     define_default_flags(f)
     f.DEFINE_boolean('out_of_sample_test_error', True, "Whether to test only on inputs outside of training data, or on whole dataset")
     f.DEFINE_boolean('unnormalized_images', False, "Whether to have the images in range [0,255.0], rather than the standard [0,1]")
+    #f.DEFINE_boolean('extended_test_set', True, "Whether to extend the test set by the part of the training set not in the sample")
+    f.DEFINE_boolean('random_training_set', True, "Whether to make the training set by sampling random instances from the full training set of the dataset, rather than just taking the m initial samples")
     f.DEFINE_string('booltrain_set', None, "an optional training set to provide (instead of random sample) when using boolean dataset")
 
     tf.compat.v1.app.run()

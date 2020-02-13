@@ -40,6 +40,6 @@ LZ_freq_1e6_7_40_40_1_relu.txt
 results/*_train_functions.txt
 results/index_funs*.txt
 results/*.txt
-!results/*_bounds*.txt
-!results/*_nn_training_results*.txt
-results/sgd_vs_bayes/
+results/sgd_vs_bayes/*
+!results/*_bounds.txt
+!results/*_nn_training_results.txt
