@@ -8,3 +8,4 @@ for f in 00110011001100110011001100110011001100110011001100110011001100110011001
     i=$(($i+1))
 done
 #for i in `seq 1 5`; do cat results/${i}_sgd_vs_bayes_32_40_2_8_sgd_ce_64__*_nn_train_functions.txt > results/sgd_vs_bayes/${i}_sgd_vs_bayes_32_40_2_8_sgd_ce_64__nn_train_functions.txt; done
+#for i in `seq 6 6`; do cat results/${i}_sgd_vs_bayes_32_40_2_8_sgd_ce_64__*_nn_train_functions.txt > results/sgd_vs_bayes/${i}_sgd_vs_bayes_32_40_2_8_sgd_ce_64__nn_train_functions.txt; done
