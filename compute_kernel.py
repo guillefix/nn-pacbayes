@@ -45,6 +45,7 @@ def main(_):
     # COMPUTE KERNEL
     if use_empirical_NTK:
         from nngp_kernel.empirical_ntk import empirical_NTK
+        # from nngp_kernel.empirical_ntk2 import empirical_NTK
         print(ceil(int(train_images.shape[0])*n_samples_repeats))
         from tensorflow.keras.models import model_from_json
         model = load_model(FLAGS)

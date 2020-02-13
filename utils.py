@@ -109,6 +109,7 @@ def save_kernel(K,FLAGS):
 
 def load_kernel(FLAGS):
     filename = kernel_filename(FLAGS)
+    print("loading kernel ",filename)
     return load_kernel_by_filename(filename)
 
 def load_kernel_by_filename(filename):

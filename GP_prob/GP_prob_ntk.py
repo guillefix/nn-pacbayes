@@ -24,7 +24,7 @@ def GP_prob(K,theta,X,Y,t=1.0, posterior="bayes"):
     # eigs_sigma = np.linalg.eigh(Sigma)[0]
     eigs_K = np.linalg.eigh(K)[0]
     KL = 0.5*(np.sum(np.log(1/eigs_sigma) + np.log(eigs_K)) + np.sum(eigs_sigma/eigs_K) + np.matmul(alpha.T,np.matmul(K,alpha)) - n)
-    return np.real(KL)[0,0]
+    return -np.real(KL)[0,0]
 
 '''PLAYGROUND'''
 

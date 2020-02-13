@@ -1,0 +1,14 @@
+#dataset	boolfun_comp	boolfun	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	kernel_mult	bound	logP
+mnist	none	none	resnet50	125	0.0	0.0	2	1.41	0.1	True	avg	00	False	True	1	1.0	0.5451496727857091	-80.88525888540543
+#dataset	boolfun_comp	boolfun	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	kernel_mult	bound	logP
+mnist	none	none	resnet50	128	0.0	0.0	2	1.41	0.1	True	avg	00	False	True	1	1.0	0.5571956674893213	-86.63676127864392
+#dataset	boolfun_comp	boolfun	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	kernel_mult	bound	logP
+mnist	none	none	resnet50	128	0.0	0.0	2	1.41	0.1	True	avg	00	False	True	1	1.0	0.6037395619100865	-100.85196999678195
+#dataset	boolfun_comp	boolfun	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	kernel_mult	bound	logP
+mnist	none	none	resnet50	128	0.0	0.0	2	1.41	0.1	True	avg	00	False	True	1	1.0	0.5983792216589982	-99.13208021646355
+#dataset	boolfun_comp	boolfun	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	kernel_mult	bound	logP
+mnist	none	none	resnet50	128	0.0	0.0	2	1.41	0.1	True	avg	00	False	True	1	1.0	0.5889428305663913	-96.15940856647491
+#dataset	boolfun_comp	boolfun	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	kernel_mult	bound	logP
+EMNIST	none	none	resnet50	125	0.0	0.0	2	1.41	0.0	True	max	00	False	True	1	0.001	-0.9261372247411797	99.52766920588729
+#dataset	boolfun_comp	boolfun	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	kernel_mult	bound	logP
+EMNIST	none	none	resnet50	125	0.0	0.0	2	1.41	0.0	True	max	00	False	True	1	0.001	0.6081695851161227	-99.52766920588729
