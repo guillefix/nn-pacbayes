@@ -408,22 +408,25 @@ def main(_):
             test_images = flat_test_images
 
     #corrupting images, and adding confusion data
-    def binarize(label, threshold):
-        return label>=threshold
+    def binarize(label, threshold,method="threshold"):
+        if method=="threshold":
+            return label>=threshold
+        elif method=="oddeven":
+            return (label+1)%2
 
     # %%
-    def process_labels(label,label_corruption,threshold,zero_one=False,binarized=True):
+    def process_labels(label,label_corruption,threshold,zero_one=False,binarized=True, binarization_method="threshold"):
         if binarized:
             if zero_one:
                 if np.random.rand() < label_corruption:
                     return np.random.choice([0,1])
                 else:
-                    return float(binarize(label,threshold))
+                    return float(binarize(label,threshold,binarization_method))
             else:
                 if np.random.rand() < label_corruption:
                     return np.random.choice([-1.0,1.0])
                 else:
-                    return float(binarize(label,threshold))*2.0-1
+                    return float(binarize(label,threshold,binarization_method))*2.0-1
         else:
             if np.random.rand() < label_corruption:
                 return np.random.choice(range(num_classes))
@@ -454,12 +457,12 @@ def main(_):
 
         if random_labels:
             print("zero_one", zero_one)
-            ys = [process_labels(label,label_corruption,threshold,zero_one=True,binarized=binarized) for label in train_labels[:m]] + [process_labels(label,1.0,threshold,zero_one=True,binarized=binarized) for label in train_labels[m:]]
+            ys = [process_labels(label,label_corruption,threshold,zero_one=True,binarized=binarized, binarization_method=binarization_method) for label in train_labels[:m]] + [process_labels(label,1.0,threshold,zero_one=True,binarized=binarized, binarization_method=binarization_method) for label in train_labels[m:]]
         else: #confusion/attack labels
-            ys = [process_labels(label,label_corruption,threshold,zero_one=True,binarized=binarized) for label in train_labels[:m]] + [float(not binarize(label,threshold)) for label in train_labels[m:]]
+            ys = [process_labels(label,label_corruption,threshold,zero_one=True,binarized=binarized, binarization_method=binarization_method) for label in train_labels[:m]] + [float(not binarize(label,threshold, binarization_method=binarization_method)) for label in train_labels[m:]]
 
         if training:
-            test_ys = np.array([process_labels(label,label_corruption,threshold,zero_one=True,binarized=binarized) for label in test_labels])
+            test_ys = np.array([process_labels(label,label_corruption,threshold,zero_one=True,binarized=binarized, binarization_method=binarization_method) for label in test_labels])
 
     '''SAVING DATA SAMPLES'''
     if training:
@@ -480,7 +483,8 @@ if __name__ == '__main__':
     f.DEFINE_boolean('unnormalized_images', False, "Whether to have the images in range [0,255.0], rather than the standard [0,1]")
     #f.DEFINE_boolean('extended_test_set', True, "Whether to extend the test set by the part of the training set not in the sample")
     f.DEFINE_boolean('random_training_set', True, "Whether to make the training set by sampling random instances from the full training set of the dataset, rather than just taking the m initial samples")
-    f.DEFINE_string('booltrain_set', None, "an optional training set to provide (instead of random sample) when using boolean dataset")
+    f.DEFINE_string('booltrain_set', None, "when using the Boolean dataset option, you can provide the training set, encoded as a binary string (1 if input is to be included in training set, 0 otherwise), rather than randomly sampling one")
+    f.DEFINE_string('binarization_method', "threshold", "the method to binarize the labels. At the moment we have implemented:  with a threshold, and by their parity (odd/even)")
 
     tf.compat.v1.app.run()
     #tf.app.run()

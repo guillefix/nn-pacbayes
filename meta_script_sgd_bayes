@@ -21,8 +21,8 @@ loss=ce
 L=2 # number of layers
 batch_size=8
 layer_width=40
-epochs_after_fit=64
-#epochs_after_fit=0
+#epochs_after_fit=64
+epochs_after_fit=0
 number_inits=1000000
 prefix=${prefix}${m}_${layer_width}_${L}_${batch_size}_${optimizer}_${loss}_${epochs_after_fit}_
 
