@@ -48,15 +48,15 @@ def main(_):
 
     if using_NTK:
         FLAGS["use_empirical_NTK"] = True
-        K = load_kernel(FLAGS)
+        theta = load_kernel(FLAGS)
         print(K)
         #if using NTK, the above gets the NTK kernel, but we also need the non-NTK one to compute the bound!
         FLAGS["use_empirical_NTK"] = False
-        theta_pre = load_kernel(FLAGS)
-        print(theta_pre)
+        K_pre = load_kernel(FLAGS)
+        print(K_pre)
         if normalize_kernel:
-            theta_pre = theta_pre/theta_pre.max()
-        theta = kernel_mult*theta_pre
+            K_pre = K_pre/K_pre.max()
+        K = kernel_mult*K_pre
     else:
         K_pre = load_kernel(FLAGS)
         print(K_pre)
