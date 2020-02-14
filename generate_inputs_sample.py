@@ -166,6 +166,8 @@ def main(_):
     '''AND DO PRE-PROCESSING if it's an image dataset'''
     #for datasets that are not images, like the boolean one
     if dataset == "boolean" or dataset == "calabiyau":
+        if not random_training_set:
+            raise NotImplementedError
 
         if booltrain_set is not None:
             indices = [i for i,x in enumerate(booltrain_set) if x == "1"]
@@ -482,7 +484,7 @@ if __name__ == '__main__':
     f.DEFINE_boolean('out_of_sample_test_error', True, "Whether to test only on inputs outside of training data, or on whole dataset")
     f.DEFINE_boolean('unnormalized_images', False, "Whether to have the images in range [0,255.0], rather than the standard [0,1]")
     #f.DEFINE_boolean('extended_test_set', True, "Whether to extend the test set by the part of the training set not in the sample")
-    f.DEFINE_boolean('random_training_set', True, "Whether to make the training set by sampling random instances from the full training set of the dataset, rather than just taking the m initial samples")
+    f.DEFINE_boolean('random_training_set', True, "Whether to make the training set by sampling random instances from the full training set of the dataset, rather than just taking the m initial samples. Only implemented for images datasets ")
     f.DEFINE_string('booltrain_set', None, "when using the Boolean dataset option, you can provide the training set, encoded as a binary string (1 if input is to be included in training set, 0 otherwise), rather than randomly sampling one")
     f.DEFINE_string('binarization_method', "threshold", "the method to binarize the labels. At the moment we have implemented:  with a threshold, and by their parity (odd/even)")
 

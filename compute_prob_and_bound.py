@@ -46,11 +46,24 @@ def main(_):
 
     print("compute probability and bound", network, dataset)
 
-    K_pre = load_kernel(FLAGS)
-    print(K_pre)
-    if normalize_kernel:
-        K_pre = K_pre/K_pre.max()
-    K = kernel_mult*K_pre
+    if using_NTK:
+        FLAGS["use_empirical_NTK"] = True
+        theta = load_kernel(FLAGS)
+        print(K)
+        #if using NTK, the above gets the NTK kernel, but we also need the non-NTK one to compute the bound!
+        FLAGS["use_empirical_NTK"] = False
+        K_pre = load_kernel(FLAGS)
+        print(K_pre)
+        if normalize_kernel:
+            K_pre = K_pre/K_pre.max()
+        K = kernel_mult*K_pre
+    else:
+        K_pre = load_kernel(FLAGS)
+        print(K_pre)
+        if normalize_kernel:
+            K_pre = K_pre/K_pre.max()
+        K = kernel_mult*K_pre
+
 
     #finding log marginal likelihood of data
     if using_EP:
@@ -74,9 +87,11 @@ def main(_):
         # logPU = GP_prob(K,X,Y,sigma_noise=np.sqrt(total_samples/2))
         logPU = GP_prob(K,X,Y,sigma_noise=1.0)
     elif using_NTK:
-        from GP_prob.GP_prob_regression import GP_prob
+        # from GP_prob.GP_prob_regression import GP_prob
         # logPU = GP_prob(K,X,Y,sigma_noise=np.sqrt(total_samples/2))
-        logPU = GP_prob(K,X,Y,sigma_noise=1.0, posterior="ntk")
+        # logPU = GP_prob(K,X,Y,sigma_noise=1.0, posterior="ntk")
+        from GP_prob.GP_prob_ntk import GP_prob
+        logPU = GP_prob(K,theta,X,Y,t=1e2)
 
     if rank == 0:
         print(logPU)
@@ -116,6 +131,7 @@ if __name__ == '__main__':
     f.DEFINE_boolean('using_Laplace', False, "Whether to use Laplace method for computing probability")
     f.DEFINE_boolean('using_Laplace2', False, "Whether my numpy implementation of Laplace method for computing probability")
     f.DEFINE_boolean('using_regression', False, "Whether to use the exact relative entropy for MSE GP regression")
+    f.DEFINE_boolean('using_NTK', False, "Whether  to use the exact relative entropy for MSE GP regression, with NTK posterior")
     f.DEFINE_boolean('using_exactPB', False, "Whether using exact PAC-Bayes on approximate posterior rather than approximate PAC-Bayes on exact postierior")
     f.DEFINE_boolean('using_MC', False, "Whether to use Monte Carlo method for computing probability")
     f.DEFINE_boolean('normalize_kernel', False, "Whether to normalize the kernel (by dividing by max value) or not")
