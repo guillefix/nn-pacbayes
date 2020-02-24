@@ -20,6 +20,8 @@ def empirical_NTK(model,train_images):
 
     num_chunks = min(size, num_layers)
     layers_per_chunk = num_layers//num_chunks
+    X = train_images
+    NTK = np.zeros((len(X),len(X)))
     if rank < num_chunks:
         chunks = list(range(int(rank*layers_per_chunk),int((rank+1)*layers_per_chunk)))
 

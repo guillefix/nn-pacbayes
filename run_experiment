@@ -46,7 +46,7 @@ elif [ $train_method = GP ]; then
 elif [ $train_method = NTK ]; then
     if [ $compute_kernel = 1 ]; then
         echo computing empirical kernels
-        $mpi -n $n_procs $py compute_kernel.py $@ --use_empirical_K --compute_for_GP_train
+        #$mpi -n $n_procs $py compute_kernel.py $@ --use_empirical_K --compute_for_GP_train
         $mpi -n $n_procs $py compute_kernel.py $@ --use_empirical_NTK --compute_for_GP_train
     fi
     if [ $train = 1 ]; then

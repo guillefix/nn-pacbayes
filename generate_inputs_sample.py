@@ -8,6 +8,7 @@ from torchvision import transforms, utils
 from math import ceil
 import keras_applications
 import torch
+import pandas as pd
 
 from utils import preprocess_flags, save_data
 from utils import data_folder,datasets_folder
@@ -45,8 +46,12 @@ def main(_):
     elif dataset == "boolean":
         input_dim = 7
         image_size = None
+    elif dataset == "ion":
+        input_dim = 34
+        image_size = None
     elif dataset == "calabiyau":
         input_dim = 180
+        image_size = None
     else:
         raise NotImplementedError
 
@@ -59,7 +64,7 @@ def main(_):
     else:
         image_size=max(image_size,32)
 
-    if dataset is not "boolean" or dataset is not "calabiyau":
+    if dataset is not "boolean" or dataset is not "calabiyau" or dataset is not "ion":
         image_width = image_height = image_size
 
     #image datasets
@@ -149,6 +154,14 @@ def main(_):
             inputs, labels = data["inputs"], data["targets"]
             if whitening:
                 inputs = inputs - inputs.mean(0)
+        elif dataset == "ion":
+            assert network == "fc"
+            num_classes = 2
+            #we ignore the 0 input, because it casues problems when computing the kernel matrix :P
+            #data = np.load("datasets/calabiyau.npz")
+            #inputs, labels = data["inputs"], data["targets"]
+            #inputs = inputs - inputs.mean(0)
+            data=pd.read_csv('datasets/ionosphere.csv')
         else:
             raise NotImplementedError
 
@@ -199,6 +212,25 @@ def main(_):
             test_labels = labels[test_indices]
 
         flat_train_images = train_inputs
+    elif dataset == "ion":
+        np.random.seed(seed=708)
+        data=data.reindex(np.random.permutation(data.index))
+        data=data.reset_index(drop=True)
+        data=data.to_numpy()
+        number_of_test_examples = 351-m
+        X_train_full=data[:-number_of_test_examples,:-1].astype(float)
+        X_test_full=data[-number_of_test_examples:,:-1].astype(float)
+        y_train_full=data[:-number_of_test_examples,-1].astype(float)
+        y_test_full=data[-number_of_test_examples:,-1].astype(float)
+        np.random.seed()
+        n = data.shape[0]-number_of_test_examples
+        train_inputs = X_train_full.reshape(n,34).astype('float32')
+        flat_train_images = train_inputs
+        train_labels = y_train_full[:n].reshape(n,1)
+        n = number_of_test_examples
+        test_inputs = X_test_full.reshape(n,34).astype('float32')
+        flat_test_images = test_inputs
+        test_labels = y_test_full.reshape(n,1)
 
     #for image datasets
     else:
