@@ -8,6 +8,7 @@ from torchvision import transforms, utils
 from math import ceil
 import keras_applications
 import torch
+import pandas as pd
 
 from utils import preprocess_flags, save_data
 from utils import data_folder,datasets_folder
@@ -45,8 +46,12 @@ def main(_):
     elif dataset == "boolean":
         input_dim = 7
         image_size = None
+    elif dataset == "ion":
+        input_dim = 34
+        image_size = None
     elif dataset == "calabiyau":
         input_dim = 180
+        image_size = None
     else:
         raise NotImplementedError
 
@@ -59,7 +64,7 @@ def main(_):
     else:
         image_size=max(image_size,32)
 
-    if dataset is not "boolean" or dataset is not "calabiyau":
+    if dataset is not "boolean" or dataset is not "calabiyau" or dataset is not "ion":
         image_width = image_height = image_size
 
     #image datasets
@@ -149,6 +154,14 @@ def main(_):
             inputs, labels = data["inputs"], data["targets"]
             if whitening:
                 inputs = inputs - inputs.mean(0)
+        elif dataset == "ion":
+            assert network == "fc"
+            num_classes = 2
+            #we ignore the 0 input, because it casues problems when computing the kernel matrix :P
+            #data = np.load("datasets/calabiyau.npz")
+            #inputs, labels = data["inputs"], data["targets"]
+            #inputs = inputs - inputs.mean(0)
+            data=pd.read_csv('datasets/ionosphere.csv')
         else:
             raise NotImplementedError
 
@@ -199,6 +212,25 @@ def main(_):
             test_labels = labels[test_indices]
 
         flat_train_images = train_inputs
+    elif dataset == "ion":
+        np.random.seed(seed=708)
+        data=data.reindex(np.random.permutation(data.index))
+        data=data.reset_index(drop=True)
+        data=data.to_numpy()
+        number_of_test_examples = 351-m
+        X_train_full=data[:-number_of_test_examples,:-1].astype(float)
+        X_test_full=data[-number_of_test_examples:,:-1].astype(float)
+        y_train_full=data[:-number_of_test_examples,-1].astype(float)
+        y_test_full=data[-number_of_test_examples:,-1].astype(float)
+        np.random.seed()
+        n = data.shape[0]-number_of_test_examples
+        train_inputs = X_train_full.reshape(n,34).astype('float32')
+        flat_train_images = train_inputs
+        train_labels = y_train_full[:n].reshape(n,1)
+        n = number_of_test_examples
+        test_inputs = X_test_full.reshape(n,34).astype('float32')
+        flat_test_images = test_inputs
+        test_labels = y_test_full.reshape(n,1)
 
     #for image datasets
     else:
@@ -410,22 +442,25 @@ def main(_):
             test_images = flat_test_images
 
     #corrupting images, and adding confusion data
-    def binarize(label, threshold):
-        return label>=threshold
+    def binarize(label, threshold,method="threshold"):
+        if method=="threshold":
+            return label>=threshold
+        elif method=="oddeven":
+            return (label+1)%2
 
     # %%
-    def process_labels(label,label_corruption,threshold,zero_one=False,binarized=True):
+    def process_labels(label,label_corruption,threshold,zero_one=False,binarized=True, binarization_method="threshold"):
         if binarized:
             if zero_one:
                 if np.random.rand() < label_corruption:
                     return np.random.choice([0,1])
                 else:
-                    return float(binarize(label,threshold))
+                    return float(binarize(label,threshold,binarization_method))
             else:
                 if np.random.rand() < label_corruption:
                     return np.random.choice([-1.0,1.0])
                 else:
-                    return float(binarize(label,threshold))*2.0-1
+                    return float(binarize(label,threshold,binarization_method))*2.0-1
         else:
             if np.random.rand() < label_corruption:
                 return np.random.choice(range(num_classes))
@@ -456,12 +491,12 @@ def main(_):
 
         if random_labels:
             print("zero_one", zero_one)
-            ys = [process_labels(label,label_corruption,threshold,zero_one=True,binarized=binarized) for label in train_labels[:m]] + [process_labels(label,1.0,threshold,zero_one=True,binarized=binarized) for label in train_labels[m:]]
+            ys = [process_labels(label,label_corruption,threshold,zero_one=True,binarized=binarized, binarization_method=binarization_method) for label in train_labels[:m]] + [process_labels(label,1.0,threshold,zero_one=True,binarized=binarized, binarization_method=binarization_method) for label in train_labels[m:]]
         else: #confusion/attack labels
-            ys = [process_labels(label,label_corruption,threshold,zero_one=True,binarized=binarized) for label in train_labels[:m]] + [float(not binarize(label,threshold)) for label in train_labels[m:]]
+            ys = [process_labels(label,label_corruption,threshold,zero_one=True,binarized=binarized, binarization_method=binarization_method) for label in train_labels[:m]] + [float(not binarize(label,threshold, binarization_method=binarization_method)) for label in train_labels[m:]]
 
         if training:
-            test_ys = np.array([process_labels(label,label_corruption,threshold,zero_one=True,binarized=binarized) for label in test_labels])
+            test_ys = np.array([process_labels(label,label_corruption,threshold,zero_one=True,binarized=binarized, binarization_method=binarization_method) for label in test_labels])
 
     '''SAVING DATA SAMPLES'''
     if training:
@@ -482,7 +517,8 @@ if __name__ == '__main__':
     f.DEFINE_boolean('unnormalized_images', False, "Whether to have the images in range [0,255.0], rather than the standard [0,1]")
     #f.DEFINE_boolean('extended_test_set', True, "Whether to extend the test set by the part of the training set not in the sample")
     f.DEFINE_boolean('random_training_set', True, "Whether to make the training set by sampling random instances from the full training set of the dataset, rather than just taking the m initial samples. Only implemented for images datasets ")
-    f.DEFINE_string('booltrain_set', None, "an optional training set to provide (instead of random sample) when using boolean dataset")
+    f.DEFINE_string('booltrain_set', None, "when using the Boolean dataset option, you can provide the training set, encoded as a binary string (1 if input is to be included in training set, 0 otherwise), rather than randomly sampling one")
+    f.DEFINE_string('binarization_method', "threshold", "the method to binarize the labels. At the moment we have implemented:  with a threshold, and by their parity (odd/even)")
 
     tf.compat.v1.app.run()
     #tf.app.run()

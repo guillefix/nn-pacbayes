@@ -3,12 +3,21 @@
 #export PYTHONPATH="/home_directory/.local/lib/python3.5/site-packages/:/usr/local/lib/python3.5/dist-packages/"
 #export PYTHONPATH=""
 
+py=/users/guillefix/anaconda3/envs/venv/bin/python
+rank=`$py get_mpi_rank.py`
+train_sets_file=/mnt/extraspace/guillefix/backup/bias/nn_bias/bias_cpp/train_sets/train_sets_${comp}
+export rank comp train_sets_file
+if [ $(wc -l $train_sets_file) -gt 0 ]; then 
+    booltrain_set=$(sed -n ${rank}'p' $train_sets_file)
+fi
+
 #m=10000
 m=32
 #dataset=mnist
 dataset=boolean
 boolfun=$1
-booltrain_set=01001100010100101100001000100010000010010011000010000010001010010000000001100000010000100000000000100010010000011000100011000000
+#booltrain_set=01001100010100101100001000100010000010010011000010000010001010010000000001100000010000100000000000100010010000011000100011000000
+#booltrain_set=01100010000011100000110101000000101100001010000101001000000110010100000000010000000000000001000000101001100000010010000101000000
 prefix=${2}_sgd_vs_bayes_
 #prefix=test_langevin_ce_run_
 sigmaw=1.0
@@ -19,24 +28,30 @@ optimizer=sgd
 #optimizer=langevin
 loss=ce
 L=2 # number of layers
+
 batch_size=8
 layer_width=40
-epochs_after_fit=64
-#epochs_after_fit=0
-number_inits=1000000
-prefix=${prefix}${m}_${layer_width}_${L}_${batch_size}_${optimizer}_${loss}_${epochs_after_fit}_
+#epochs_after_fit=64
+epochs_after_fit=0
+number_inits=1
+prefix=${prefix}${rank}_${comp}_${m}_${layer_width}_${L}_${batch_size}_${optimizer}_${loss}_${epochs_after_fit}_
 
 pool=none
 net=fc
 c=0
 export n_gpus=0
-export n_procs=100
-#export n_procs=1
+#export n_procs=100
+export n_procs=1
 
 #for net in resnet50; do 
 #for net in vgg19 vgg16 resnet50 resnet101 resnet152 resnetv2_50 resnetv2_101 resnetv2_152 resnext50 resnext101 densenet121 densenet169 densenet201 mobilenetv2 nasnet; do 
     #echo $net
 #./run_experiment_sgd_bayes --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --label_corruption $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --optimizer ${optimizer} --loss $loss --zero_one --ignore_non_fit --batch_size $batch_size --layer_width $layer_width --epochs_after_fit $epochs_after_fit --boolfun $boolfun $@
 
-addqueue -n $n_procs -m 3 -s './run_experiment_sgd_bayes --prefix '${prefix}' --m '${m}' --dataset '${dataset}' --network '${net}' --number_layers '${L}' --training --sigmaw '${sigmaw}' --sigmab '${sigmab}' --n_gpus '${n_gpus}' --pooling '${pool}' --loss '${loss}' --optimizer '${optimizer}' --number_inits '${number_inits}' --ignore_non_fit --batch_size '${batch_size}' --layer_width '${layer_width}' --epochs_after_fit '${epochs_after_fit}' --zero_one --boolfun '${boolfun}' --booltrain_set '${booltrain_set}
+#addqueue -n $n_procs -m 3 -s './run_experiment_sgd_bayes --prefix '${prefix}' --m '${m}' --dataset '${dataset}' --network '${net}' --number_layers '${L}' --training --sigmaw '${sigmaw}' --sigmab '${sigmab}' --n_gpus '${n_gpus}' --pooling '${pool}' --loss '${loss}' --optimizer '${optimizer}' --number_inits '${number_inits}' --ignore_non_fit --batch_size '${batch_size}' --layer_width '${layer_width}' --epochs_after_fit '${epochs_after_fit}' --zero_one --boolfun '${boolfun}' --booltrain_set '${booltrain_set}
+if [ $(wc -l $train_sets_file) -gt 0 ]; then 
+    ./run_experiment_sgd_bayes --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --n_gpus $n_gpus --pooling $pool --loss $loss --optimizer $optimizer --number_inits $number_inits --zero_one --ignore_non_fit --batch_size $batch_size --layer_width $layer_width --epochs_after_fit $epochs_after_fit --boolfun $boolfun --booltrain_set $booltrain_set $@
+else
+    ./run_experiment_sgd_bayes --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --n_gpus $n_gpus --pooling $pool --loss $loss --optimizer $optimizer --number_inits $number_inits --zero_one --ignore_non_fit --batch_size $batch_size --layer_width $layer_width --epochs_after_fit $epochs_after_fit --boolfun $boolfun $@
+fi
 #done

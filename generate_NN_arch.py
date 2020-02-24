@@ -58,10 +58,12 @@ def main(_):
         input_dim = 7
     elif dataset == "calabiyau":
         input_dim = 180
+    elif dataset == "ion":
+        input_dim = 34
     else:
         raise NotImplementedError
 
-    if not(dataset == "boolean" or dataset == "calabiyau"):
+    if not(dataset == "boolean" or dataset == "calabiyau" or dataset == "ion"):
         image_height = image_size
         image_width = image_size
         input_dim = image_height*image_width*number_channels
@@ -141,7 +143,7 @@ def main(_):
     elif network == "fc":
             model = keras.Sequential(
                 ([
-                keras.layers.Dense(layer_width, activation=tf.nn.relu, input_shape=(input_dim,) if index==0 else (None,),#)
+                keras.layers.Dense(layer_width, activation=activation, input_shape=(input_dim,) if index==0 else (None,),#)
                     kernel_initializer=weight_initializer,
                     bias_initializer=bias_initializer)
                     for index,(layer_width,activation) in enumerate(zip(layer_widths,activations))#range(number_layers)

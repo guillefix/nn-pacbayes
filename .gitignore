@@ -41,5 +41,6 @@ results/*_train_functions.txt
 results/index_funs*.txt
 results/*.txt
 results/sgd_vs_bayes/*
+results/gp_samples/*
 !results/*_bounds.txt
 !results/*_nn_training_results.txt
