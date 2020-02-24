@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd /home_directory/nn-pacbayes
+
 dataset=$1
 net=$2
 pool=$3
@@ -34,7 +36,8 @@ export n_gpus=8
 export n_procs=$number_inits
 
 #for m in 1 3 11 36 122 407 1357 4516 15026 40000; do
-for m in 15026 40000; do
+#for m in 15026 40000; do
+for m in $5; do
 #for m in 1000; do
 #for m in 1000 3000 6000 10000 20000 40000; do
 #for m in 15026 49999; do

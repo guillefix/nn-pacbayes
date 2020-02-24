@@ -4,8 +4,10 @@ export ME
 while [ $(squeue -u $ME | wc -l) -gt 3 ]
 do
     sleep 10
+    echo wait
 done
-./meta_meta_script_msweep_jade2
+#./meta_meta_script_msweep_jade2
+./meta_meta_script_msweep_jade3
 sleep 1
 if [ $1 -lt 10000 ]
 then
