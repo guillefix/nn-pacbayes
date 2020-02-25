@@ -1,7 +1,7 @@
 #!/bin/bash
 echo Ive been called $1 times
 export ME
-while [ $(squeue -u $ME | wc -l) -gt 3 ]
+while [ $(squeue -u $ME | wc -l) -gt 1 ]
 do
     sleep 10
     echo wait

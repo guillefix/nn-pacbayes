@@ -4,12 +4,12 @@ n=8
 a='sbatch batch.sh '
 export bounds_file=results/grandmother_of_all_msweeps_bounds.txt
 #for dataset in mnist; do
-dataset=EMNIST
-m=40000
-pool=none
-net=fc
-export dataset net pool m
-$a $dataset $net $pool $n $m
+#dataset=EMNIST
+#m=40000
+#pool=none
+#net=fc
+#export dataset net pool m
+#$a $dataset $net $pool $n $m
 
 dataset=cifar
 m=15026
