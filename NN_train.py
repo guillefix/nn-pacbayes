@@ -242,10 +242,11 @@ def main(_):
         #print('Test accuracy:', test_acc)
         #print('Test sensitivity:', test_sensitivity)
         #print('Test specificity:', test_specificity)
+
         if not ignore_non_fit or train_acc == 1.0:
             #print("printing function to file", funs_filename)
             function = (model.predict(test_images[:test_function_size].astype(np.float32), verbose=0))[:,0]
-            if loss=="mse" and not zero_one:
+            if loss=="mse" and zero_one:
                 function = function>0.5
             else:
                 function = function>0

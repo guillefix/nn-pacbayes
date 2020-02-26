@@ -3,7 +3,7 @@
 while read fun 
 do 
     echo $fun
-    addqueue -n 250 -m 1 ./meta_script 1 $fun 
+    addqueue -n 250 -m 1 -s /users/guillefix/anaconda3/envs/venv/bin/mpiexec -n 250 ./meta_script_sgd_bayes ${fun}
 #done < "funs_tmp.txt" 
 done < "funs.txt" 
 
