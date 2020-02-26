@@ -17,6 +17,7 @@ if [ $train_method = NN ]; then
 
     if [ $compute_bound = 1 ]; then
     $mpi -n 1 $py compute_prob_and_bound.py $@ --using_EP
+    #$mpi -n 1 $py compute_prob_and_bound.py $@ --using_Laplace
     fi
 
     if [ $train = 1 ]; then
