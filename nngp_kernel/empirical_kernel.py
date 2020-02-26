@@ -16,7 +16,7 @@ data_folder = "data/"
 kernel_folder = "kernels/"
 results_folder = "results/"
 
-def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_gpus=1,sess=None, truncated_init_dist=False, data_parallelism=False):
+def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_gpus=1, empirical_kernel_batch_size=256, sess=None, truncated_init_dist=False, data_parallelism=False):
 
     from mpi4py import MPI
     comm = MPI.COMM_WORLD
@@ -90,7 +90,7 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
             reset_weights(model, initial_weights, are_norm, sigmaw, sigmab, truncated_init_dist)
 
         #X = np.squeeze(func(data))
-        X = model.predict(data, batch_size=256).astype(np.float32)
+        X = model.predict(data, batch_size=empirical_kernel_batch_size).astype(np.float32)
         print("X",X)
         if len(X.shape)==1:
             X = np.expand_dims(X,0)

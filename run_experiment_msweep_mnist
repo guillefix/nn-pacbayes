@@ -1,0 +1,19 @@
+#!/bin/bash
+
+#py=/usr/bin/python3
+#py=/users/guillefix/anaconda3/bin/python3
+#mpi=/users/guillefix/anaconda3/bin/mpiexec
+#py=python3
+#py=python
+py=/users/guillefix/anaconda3/envs/venv/bin/python
+mpi=/users/guillefix/anaconda3/envs/venv/bin/mpiexec
+
+$py generate_NN_arch.py $@
+
+$py generate_inputs_sample.py $@
+
+#mpiexec -n 1 $py compute_kernel.py $@
+#mpiexec -n 1 $py compute_prob_and_bound.py $@ --using_EP
+
+$mpi -n $n_procs $py NN_train.py $@
+$mpi -n $n_procs $py sample_funs.py --number_samples 1000000 $@

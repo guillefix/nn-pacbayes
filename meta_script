@@ -1,23 +1,23 @@
 #!/bin/bash
 
 n_gpus=0
-n_procs=200
+n_procs=1
 train_method=NN
-generate_arch=1
-generate_data=1
+generate_arch=0
+generate_data=0
 compute_kernel=0
-compute_bound=0
-train=1
+compute_bound=1
+train=0
 sample_funs=0
 number_inits=10000000
 
-#export py=python3
-#export mpi=mpiexec
-py=/users/guillefix/anaconda3/envs/venv/bin/python
-mpi=/users/guillefix/anaconda3/envs/venv/bin/mpiexec
+export py=python3
+export mpi=mpiexec
+#py=/users/guillefix/anaconda3/envs/venv/bin/python
+#mpi=/users/guillefix/anaconda3/envs/venv/bin/mpiexec
 export n_gpus n_procs train_method generate_arch generate_data compute_kernel compute_bound train sample_funs py mpi
 
-m=10000
+m=100
 dataset=mnist
 #boolfun=00001110110011111001111111001111000000000000000000000000000000000000000001001100000000001101110100000000000000000000000000000000
 #boolfun_comp=84.0
@@ -35,7 +35,9 @@ c=0.0
 batch_size=32
 epochs_after_fit=0
 #epochs_after_fit=64
-prefix=32_batch_oddeven_big_sgd_${loss}_sample_
+#prefix=32_batch_oddeven_big_sgd_${loss}_sample_
+#prefix=oddeven_big_sgd_${loss}_sample_${loss}_
+prefix=test_
 
 if [ $loss = ce ]; then
     kern_mult=10000

@@ -55,11 +55,13 @@
 dataset=$1
 network=$2
 pool=$3
+n=$4
+m=$5
 
-filename=scripts/${dataset}_${network}_${pool}.sh
+filename=${dataset}_${network}_${pool}.sh
 rm $filename
 echo '#!/bin/bash' > $filename
-echo './meta_script_msweep_jade2 '${dataset}' '${network}' '${pool}' 8' >> $filename
+echo '/home_directory/nn-pacbayes/meta_script_msweep_jade2 '${dataset}' '${network}' '${pool}' '${n}' '${m} >> $filename
 chmod +x $filename
 
 #/jmain01/apps/docker/tensorflow-batch -v 18.07-py3 -c ./densenet201.sh

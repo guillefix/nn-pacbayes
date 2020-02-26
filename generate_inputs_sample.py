@@ -98,8 +98,9 @@ def main(_):
             (train_images,train_labels),(test_images,test_labels) = (d1.data, d1.targets),(d2.data,d2.targets)
         else:
             (train_images,train_labels),(test_images,test_labels) = (d1.data, d1.targets),(full_data,full_targets)
-        #train_images = torch.Tensor(train_images)
-        #test_images = torch.Tensor(test_images)
+        if dataset == "cifar":
+            train_images = torch.Tensor(train_images)
+            test_images = torch.Tensor(test_images)
         print(train_images.min(), train_images.max())
 
     #TODO: add custom datasets

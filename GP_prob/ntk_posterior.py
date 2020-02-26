@@ -19,6 +19,7 @@ def matmul_reduce(Ms):
     return r
 
 #theta is ntk
+#K is NNGP
 def NTK_posterior(K_train,K_test,K_train_test,theta_train,theta_test,theta_train_test,X,Y,t=1.0):
     n = K_train.shape[0]
     # t = 1.0

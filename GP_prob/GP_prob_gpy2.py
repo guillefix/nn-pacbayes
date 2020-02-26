@@ -15,13 +15,21 @@ def GP_prob(K,X,Y,parallel_updates=True,method="EP", using_exactPB=False):
     #                # inference_method=GPy.inference.latent_function_inference.PEP(alpha = 1), #only for regression apparently
     #                inference_method=GPy.inference.latent_function_inference.expectation_propagation.EP(),
     #                likelihood=lik)
-    lik = GPy.likelihoods.Bernoulli()
+    print("scaled probit likelihood")
+    linkfun = GPy.likelihoods.link_functions.ScaledProbit(nu=0.05)
+    # linkfun = GPy.likelihoods.link_functions.Heaviside()
+    # lik = GPy.likelihoods.Bernoulli(linkfun)
+    # lik = GPy.likelihoods.Bernoulli()
+    lik = GPy.likelihoods.Binomial(linkfun)
+    # lik = GPy.likelihoods.Gaussian()
+    print(lik)
     if method=="Laplace":
         print("USING LAPLACE")
         inference_method = GPy.inference.latent_function_inference.laplace.Laplace()
     elif method == "EP":
         print("USING EP")
         inference_method = GPy.inference.latent_function_inference.expectation_propagation.EP(parallel_updates=parallel_updates)
+        # inference_method = GPy.inference.latent_function_inference.expectation_propagation.EP()
     m = GPy.core.GP(X=X,
                     Y=Y,
                     kernel=CustomMatrix(X.shape[1],X,K),

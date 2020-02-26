@@ -4,13 +4,16 @@ import matplotlib.pyplot as plt
 %matplotlib
 
 #%%
-training_data = pd.read_csv("results/new_mother_of_all_msweeps_nn_training_results.txt", sep="\t", comment="#")
-# training_data = pd.read_csv("results/2jade_msweep_nn_training_results.txt", sep="\t", comment="#")
 
+#main NNGP big run (up to 4k training set size:)
+# training_data = pd.read_csv("results/new_mother_of_all_msweeps_nn_training_results.txt", sep="\t", comment="#")
+bounds = pd.read_csv("results/new_mother_of_all_msweeps_bounds1000.txt", sep="\t", comment="#")
 
-training_data.columns
-# training_data["sigmaw"]
-# training_data["sigmab"]
+##resnet50 training results:
+training_data = pd.read_csv("results/2jade_msweep_nn_training_results.txt", sep="\t", comment="#")
+# training_data = pd.read_csv("results/3gpu_msweep_nn_training_results.txt", sep="\t", comment="#")
+
+#Other stuff:
 # training_data = pd.read_csv("results/gpu_msweep_nn_training_results.txt", sep="\t", comment="#")
 
 # training_data = pd.read_csv("results/2gpu_msweep_nn_training_results.txt", sep="\t", comment="#")
@@ -20,8 +23,6 @@ training_data.columns
 # bounds = pd.read_csv("results/new_mother_of_all_msweeps_bounds100.txt", sep="\t", comment="#")
 # bounds = pd.read_csv("results/new_mother_of_all_msweeps_bounds50.txt", sep="\t", comment="#")
 
-bounds = pd.read_csv("results/new_mother_of_all_msweeps_bounds1000.txt", sep="\t", comment="#")
-
 # bounds = pd.read_csv("results/2new_mother_of_all_msweeps_bounds.txt", sep="\t", comment="#")
 # bounds = pd.read_csv("results/gpu_msweep_bounds.txt", sep="\t", comment="#")
 
@@ -30,9 +31,11 @@ bounds = pd.read_csv("results/new_mother_of_all_msweeps_bounds1000.txt", sep="\t
 # bounds = pd.read_csv("results/gpu_msweep_bounds_cnn.txt", sep="\t", comment="#")
 # bounds = pd.read_csv("results/2jade_new_msweep_bounds.txt", sep="\t", comment="#")
 
+
 nets = training_data["network"].unique()
 datasets = training_data["dataset"].unique()
 
+#sort by m
 training_data = training_data.sort_values("m")
 bounds = bounds.sort_values("m")
 bounds = bounds[bounds["m"]>=50]
@@ -41,6 +44,7 @@ training_data = training_data[training_data["m"]>=50]
 bounds = bounds.groupby(["m","network","dataset","pooling"],as_index=False).mean()
 # bounds = bounds[(bounds["sigmaw"]==10.0) & (bounds["sigmab"]==10.0)]
 
+#PLOT
 #%%
 # net="cnn"
 # net="fc"
@@ -65,8 +69,8 @@ for i, net in enumerate(nets):
 # for i,dataset in enumerate(datasets):
 # for ii in [1]:
     # pool="None"
-    pool="avg"
-    # pool="max"
+    # pool="avg"
+    pool="max"
     if net=="fc":
         pool="None"
     bdata=bounds[(bounds["network"]==net) & (bounds["dataset"]==dataset) & (bounds["pooling"]==pool)]
@@ -80,7 +84,7 @@ for i, net in enumerate(nets):
 
     color = cmap(i/len(nets))
     # color = cmap(i/len(datasets))
-    plt.plot(bdata["m"], bdata["bound"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
+    # plt.plot(bdata["m"], bdata["bound"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
     # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
     # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color)
     plt.plot(tdata["m"], tdata["test_error"], "--", c=color, label="Test error "+net+" "+dataset+" "+pool)
@@ -98,6 +102,8 @@ ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
 plt.legend()
 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 # plt.savefig("learning_curve_fc_mnist_km10k_1_41_0.png")
+# plt.savefig("learning_curve_resnet50_max_mnist_second_training_set_sample__1_41_0.png")
+# plt.savefig("learning_curve_resnet50_max_mnist_combined_training_set_samples__1_41_0.png")
 # from mpi4py import MPI
 # comm = MPI.COMM_WORLD
 # rank = comm.Get_rank()
