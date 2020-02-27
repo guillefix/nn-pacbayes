@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 #main NNGP big run (up to 4k training set size:)
 # training_data = pd.read_csv("results/new_mother_of_all_msweeps_nn_training_results.txt", sep="\t", comment="#")
-# bounds = pd.read_csv("results/new_mother_of_all_msweeps_bounds1000.txt", sep="\t", comment="#")
+bounds = pd.read_csv("results/new_mother_of_all_msweeps_bounds1000.txt", sep="\t", comment="#")
 
 ##resnet50 training results:
 # training_data = pd.read_csv("results/2jade_msweep_nn_training_results.txt", sep="\t", comment="#")
@@ -20,11 +20,11 @@ training_data = pd.read_csv("results/gpu_msweep_nn_training_results.txt", sep="\
 # training_data[training_data["network"]=="fc"]["m"]
 # bounds[bounds["network"]=="fc"]["dataset"]
 # training_data = pd.read_csv("results/2gpu_msweep_nn_training_results.txt", sep="\t", comment="#")
-bounds = pd.read_csv("results/gpu_msweep_bounds.txt", sep="\t", comment="#")
+# bounds = pd.read_csv("results/gpu_msweep_bounds.txt", sep="\t", comment="#")
 # bounds = pd.read_csv("results/2gpu_msweep_bounds.txt", sep="\t", comment="#")
-# bounds = pd.read_csv("results/2jade_new_msweep_bounds.txt", sep="\t", comment="#")
-bounds2 = pd.read_csv("results/new_small_b_3jade_new_msweep_bounds.txt", sep="\t", comment="#")
-bounds = bounds.append(bounds2)
+# # bounds = pd.read_csv("results/2jade_new_msweep_bounds.txt", sep="\t", comment="#")
+# bounds2 = pd.read_csv("results/new_small_b_3jade_new_msweep_bounds.txt", sep="\t", comment="#")
+# bounds = bounds.append(bounds2)
 
 # training_data = pd.read_csv("results/2gpu_msweep_nn_training_results.txt", sep="\t", comment="#")
 # training_data = pd.read_csv("results/gpu_msweep_nn_training_results_cnn.txt", sep="\t", comment="#")
@@ -46,6 +46,7 @@ training_data = training_data.sort_values("m")
 bounds = bounds.sort_values("m")
 bounds = bounds[bounds["m"]>=50]
 training_data = training_data[training_data["m"]>=50]
+# bounds = bounds[bounds["kernel_mult"]==10000]
 # bounds = bounds[bounds["kern_mult"]==10000]
 bounds = bounds.groupby(["m","network","dataset","pooling"],as_index=False).mean()
 # bounds = bounds[(bounds["sigmaw"]==10.0) & (bounds["sigmab"]==10.0)]
@@ -118,6 +119,9 @@ ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 # size = comm.Get_size()
 #
 # MPI.COUNT
+
+#for repeated entries keep last one in both training_data and bounds
+#for data from jade, because the non-last one could have had problems with two jobs trying to compute the same thing and the later overriding data/kernel of the former
 
 
 #%%
