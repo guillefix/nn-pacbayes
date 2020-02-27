@@ -1,0 +1,20 @@
+#!/bin/bash
+
+n=10
+a=addqueue
+#for dataset in mnist; do
+#dataset=mnist
+#$a -n $n -m 20 -s ./meta_script_msweep $dataset fc none $n
+#dataset=EMNIST
+#$a -n $n -m 100 -s ./meta_script_msweep $dataset fc none $n
+dataset=cifar
+$a -n $n -m 100 -s ./meta_script_msweep $dataset fc none $n
+
+
+#n=20
+#a=addqueue
+#dataset=mnist-fashion
+#for net in resnet50 resnetv2_50 resnetv2_101 resnext50 resnext101 densenet121 densenet169 densenet201;
+#do
+#    $a -n $n -m 5 -s ./meta_script_msweep $dataset $net none $n
+#done

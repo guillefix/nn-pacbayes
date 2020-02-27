@@ -1,6 +1,6 @@
 #!/bin/bash -l
 echo =========================================================   
-echo Job submitted  date = Thu Feb 27 00:59:44 GMT 2020      
+echo Job submitted  date = Tue Feb 25 14:02:22 GMT 2020      
 date_start=`date +%s`
 echo $SLURM_JOB_NUM_NODES nodes \( $SMP processes per node \)        
 echo $SLURM_JOB_NUM_NODES hosts used: $SLURM_JOB_NODELIST      
@@ -16,8 +16,8 @@ ulimit -l unlimited
 export MV2_SMP_USE_CMA=0
 
 #which mpirun
-export OMP_NUM_THEADS=1
- nice -n 10 /users/guillefix/nn-pacbayes/./meta_script 
+export OMP_NUM_THREADS=2
+ nice -n 10 /users/guillefix/anaconda3/envs/venv/bin/mpiexec -n 4 python3 get_mpi_rank.py
 # If we've been checkpointed
 #if [ -n "${DMTCP_CHECKPOINT_DIR}" ]; then
   if [ -d "${DMTCP_CHECKPOINT_DIR}" ]; then
