@@ -10,11 +10,21 @@ import matplotlib.pyplot as plt
 bounds = pd.read_csv("results/new_mother_of_all_msweeps_bounds1000.txt", sep="\t", comment="#")
 
 ##resnet50 training results:
-training_data = pd.read_csv("results/2jade_msweep_nn_training_results.txt", sep="\t", comment="#")
+# training_data = pd.read_csv("results/2jade_msweep_nn_training_results.txt", sep="\t", comment="#")
 # training_data = pd.read_csv("results/3gpu_msweep_nn_training_results.txt", sep="\t", comment="#")
 
 #Other stuff:
-# training_data = pd.read_csv("results/gpu_msweep_nn_training_results.txt", sep="\t", comment="#")
+# more data on fc/cnn
+training_data = pd.read_csv("results/gpu_msweep_nn_training_results.txt", sep="\t", comment="#")
+# training_data = pd.read_csv("results/new_small_b_3jade_new_msweep_nn_training_results.txt", sep="\t", comment="#")
+# training_data[training_data["network"]=="fc"]["m"]
+# bounds[bounds["network"]=="fc"]["dataset"]
+# training_data = pd.read_csv("results/2gpu_msweep_nn_training_results.txt", sep="\t", comment="#")
+# bounds = pd.read_csv("results/gpu_msweep_bounds.txt", sep="\t", comment="#")
+# bounds = pd.read_csv("results/2gpu_msweep_bounds.txt", sep="\t", comment="#")
+# # bounds = pd.read_csv("results/2jade_new_msweep_bounds.txt", sep="\t", comment="#")
+# bounds2 = pd.read_csv("results/new_small_b_3jade_new_msweep_bounds.txt", sep="\t", comment="#")
+# bounds = bounds.append(bounds2)
 
 # training_data = pd.read_csv("results/2gpu_msweep_nn_training_results.txt", sep="\t", comment="#")
 # training_data = pd.read_csv("results/gpu_msweep_nn_training_results_cnn.txt", sep="\t", comment="#")
@@ -24,13 +34,9 @@ training_data = pd.read_csv("results/2jade_msweep_nn_training_results.txt", sep=
 # bounds = pd.read_csv("results/new_mother_of_all_msweeps_bounds50.txt", sep="\t", comment="#")
 
 # bounds = pd.read_csv("results/2new_mother_of_all_msweeps_bounds.txt", sep="\t", comment="#")
-# bounds = pd.read_csv("results/gpu_msweep_bounds.txt", sep="\t", comment="#")
 
-# bounds = pd.read_csv("results/2gpu_msweep_bounds.txt", sep="\t", comment="#")
 
 # bounds = pd.read_csv("results/gpu_msweep_bounds_cnn.txt", sep="\t", comment="#")
-# bounds = pd.read_csv("results/2jade_new_msweep_bounds.txt", sep="\t", comment="#")
-
 
 nets = training_data["network"].unique()
 datasets = training_data["dataset"].unique()
@@ -40,6 +46,7 @@ training_data = training_data.sort_values("m")
 bounds = bounds.sort_values("m")
 bounds = bounds[bounds["m"]>=50]
 training_data = training_data[training_data["m"]>=50]
+# bounds = bounds[bounds["kernel_mult"]==10000]
 # bounds = bounds[bounds["kern_mult"]==10000]
 bounds = bounds.groupby(["m","network","dataset","pooling"],as_index=False).mean()
 # bounds = bounds[(bounds["sigmaw"]==10.0) & (bounds["sigmab"]==10.0)]
@@ -73,6 +80,8 @@ for i, net in enumerate(nets):
     pool="max"
     if net=="fc":
         pool="None"
+    else:
+        continue
     bdata=bounds[(bounds["network"]==net) & (bounds["dataset"]==dataset) & (bounds["pooling"]==pool)]
     # bdata=bounds[(bounds["network"]==net) & (bounds["dataset"]==dataset)]
     tdata=training_data[(training_data["network"]==net) & (training_data["dataset"]==dataset) & (training_data["pooling"]==pool)]
@@ -82,9 +91,9 @@ for i, net in enumerate(nets):
     tdata.columns
     bdata.columns
 
-    color = cmap(i/len(nets))
+    color = cmap(i/(len(nets)+1))
     # color = cmap(i/len(datasets))
-    # plt.plot(bdata["m"], bdata["bound"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
+    plt.plot(bdata["m"], bdata["bound"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
     # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
     # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color)
     plt.plot(tdata["m"], tdata["test_error"], "--", c=color, label="Test error "+net+" "+dataset+" "+pool)
@@ -110,6 +119,9 @@ ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 # size = comm.Get_size()
 #
 # MPI.COUNT
+
+#for repeated entries keep last one in both training_data and bounds
+#for data from jade, because the non-last one could have had problems with two jobs trying to compute the same thing and the later overriding data/kernel of the former
 
 
 #%%
