@@ -2826,7 +2826,6 @@
 #cifar	none	none	resnetv2_101	4516	0.0	0.0	2	1.41	0.0	True	avg	00	False	True	0	10000.0	0.495665063056665	-3066.506033049222
 ######################## kern_mult 100 normalize_kernel
 dataset	boolfun_comp	boolfun	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	kernel_mult	normalize_kernel	bound	logP
->>>>>>> a4b2ff85aa68fecdbfe1db0f3122f69a0f097a57
 mnist	none	none	resnet50	1	0.0	0.0	2	1.41	0.0	True	avg	00	False	True	0	100.0	True	0.9998203713666155	-0.6931471805599454
 #dataset	boolfun_comp	boolfun	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	kernel_mult	normalize_kernel	bound	logP
 mnist	none	none	resnet101	1	0.0	0.0	2	1.41	0.0	True	avg	00	False	True	0	100.0	True	0.9998203713666155	-0.6931471805599454
