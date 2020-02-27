@@ -1,4 +1,4 @@
-#dataset	boolfun_comp	boolfun	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	kernel_mult	normalize_kernel	bound	logP
+dataset	boolfun_comp	boolfun	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	kernel_mult	normalize_kernel	bound	logP
 mnist	none	none	resnet50	1	0.0	0.0	2	1.41	0.0	True	avg	00	False	True	0	1.0	True	0.9998203713666155	-0.6931471805599453
 #dataset	boolfun_comp	boolfun	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	kernel_mult	normalize_kernel	bound	logP
 mnist	none	none	resnet50	3	0.0	0.0	2	1.41	0.0	True	avg	00	False	True	0	1.0	True	0.989417116337862	-3.5168556125576274
