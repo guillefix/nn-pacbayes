@@ -90,7 +90,7 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
             reset_weights(model, initial_weights, are_norm, sigmaw, sigmab, truncated_init_dist)
 
         #X = np.squeeze(func(data))
-        X = model.predict(data, batch_size=empirical_kernel_batch_size).astype(np.float32)
+        X = model.predict(data, batch_size=min(empirical_kernel_batch_size,len(data))).astype(np.float32)
         print("X",X)
         if len(X.shape)==1:
             X = np.expand_dims(X,0)
