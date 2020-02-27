@@ -16,11 +16,11 @@ def GP_prob(K,X,Y,parallel_updates=True,method="EP", using_exactPB=False):
     #                inference_method=GPy.inference.latent_function_inference.expectation_propagation.EP(),
     #                likelihood=lik)
     print("scaled probit likelihood")
-    linkfun = GPy.likelihoods.link_functions.ScaledProbit(nu=0.05)
-    # linkfun = GPy.likelihoods.link_functions.Heaviside()
-    # lik = GPy.likelihoods.Bernoulli(linkfun)
-    # lik = GPy.likelihoods.Bernoulli()
-    lik = GPy.likelihoods.Binomial(linkfun)
+    #linkfun = GPy.likelihoods.link_functions.ScaledProbit(nu=1)
+    linkfun = GPy.likelihoods.link_functions.Heaviside()
+    lik = GPy.likelihoods.Bernoulli(linkfun)
+    #lik = GPy.likelihoods.Bernoulli()
+    #lik = GPy.likelihoods.Binomial(linkfun)
     # lik = GPy.likelihoods.Gaussian()
     print(lik)
     if method=="Laplace":
