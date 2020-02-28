@@ -8,7 +8,7 @@ a=addqueue
 #$a -n $n -m 20 -s ./meta_script_msweep $dataset fc none $n
 #dataset=EMNIST
 #$a -n $n -m 100 -s ./meta_script_msweep $dataset fc none $n
-dataset=cifar
+dataset=EMNIST
 #$a -n $n -m 100 -s ./meta_script_msweep $dataset fc none $n
 ./meta_script_msweep $dataset fc none $n
 #$a -n $n -m 3 -s ./meta_script_msweep $dataset fc none $n
