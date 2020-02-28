@@ -6,8 +6,9 @@ import matplotlib.pyplot as plt
 #%%
 
 #main NNGP big run (up to 4k training set size:)
-# training_data = pd.read_csv("results/new_mother_of_all_msweeps_nn_training_results.txt", sep="\t", comment="#")
-bounds = pd.read_csv("results/new_mother_of_all_msweeps_bounds1000.txt", sep="\t", comment="#")
+training_data = pd.read_csv("results/new_mother_of_all_msweeps_nn_training_results.txt", sep="\t", comment="#")
+bounds = pd.read_csv("results/new_mother_of_all_msweeps_bounds10000.txt", sep="\t", comment="#")
+# bounds = pd.read_csv("results/new_mother_of_all_msweeps_bounds.txt", sep="\t", comment="#")
 
 ##resnet50 training results:
 # training_data = pd.read_csv("results/2jade_msweep_nn_training_results.txt", sep="\t", comment="#")
@@ -15,7 +16,7 @@ bounds = pd.read_csv("results/new_mother_of_all_msweeps_bounds1000.txt", sep="\t
 
 #Other stuff:
 # more data on fc/cnn
-training_data = pd.read_csv("results/gpu_msweep_nn_training_results.txt", sep="\t", comment="#")
+# training_data = pd.read_csv("results/gpu_msweep_nn_training_results.txt", sep="\t", comment="#")
 # training_data = pd.read_csv("results/new_small_b_3jade_new_msweep_nn_training_results.txt", sep="\t", comment="#")
 # training_data[training_data["network"]=="fc"]["m"]
 # bounds[bounds["network"]=="fc"]["dataset"]
@@ -53,7 +54,7 @@ bounds = bounds.groupby(["m","network","dataset","pooling"],as_index=False).mean
 
 #PLOT
 #%%
-# net="cnn"
+net="cnn"
 # net="fc"
 # net="resnetv2_50"
 # net="densenet201"
@@ -65,22 +66,23 @@ bounds = bounds.groupby(["m","network","dataset","pooling"],as_index=False).mean
 # net="densenet121"
 # net="resnet50"
 # net="mobilenetv2"
-dataset="mnist"
+# dataset="mnist"
 # dataset="EMNIST"
 # dataset="KMNIST"
 # dataset="cifar"
 # colors = np.random.rand(len(nets),3)
 import matplotlib
 cmap = matplotlib.cm.get_cmap('Spectral')
-for i, net in enumerate(nets):
-# for i,dataset in enumerate(datasets):
+# for i, net in enumerate(nets):
+for i,dataset in enumerate(datasets):
 # for ii in [1]:
-    # pool="None"
+    pool="None"
     # pool="avg"
-    pool="max"
+    # pool="max"
     if net=="fc":
         pool="None"
-    else:
+
+    if dataset not in ["cifar","mnist","EMNIST"]:
         continue
     bdata=bounds[(bounds["network"]==net) & (bounds["dataset"]==dataset) & (bounds["pooling"]==pool)]
     # bdata=bounds[(bounds["network"]==net) & (bounds["dataset"]==dataset)]
@@ -91,13 +93,20 @@ for i, net in enumerate(nets):
     tdata.columns
     bdata.columns
 
-    color = cmap(i/(len(nets)+1))
-    # color = cmap(i/len(datasets))
-    plt.plot(bdata["m"], bdata["bound"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
-    # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
-    # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color)
-    plt.plot(tdata["m"], tdata["test_error"], "--", c=color, label="Test error "+net+" "+dataset+" "+pool)
-    # plt.plot(tdata["m"], tdata["train_acc"], label="Training error "+net+" "+dataset+" "+pool)
+    # color = cmap(i/(len(nets)+1))
+    color = cmap(i/(len(datasets)+6))
+    if net=="fc":
+        plt.plot(bdata["m"], bdata["bound"], c=color, label="PAC-Bayes bound "+net+" "+dataset)
+        # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
+        # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color)
+        plt.plot(tdata["m"], tdata["test_error"], "--", c=color, label="Test error "+net+" "+dataset)
+        # plt.plot(tdata["m"], tdata["train_acc"], label="Training error "+net+" "+dataset+" "+pool)
+    else:
+        plt.plot(bdata["m"], bdata["bound"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
+        # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
+        # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color)
+        plt.plot(tdata["m"], tdata["test_error"], "--", c=color, label="Test error "+net+" "+dataset+" "+pool)
+        # plt.plot(tdata["m"], tdata["train_acc"], label="Training error "+net+" "+dataset+" "+pool)
     plt.yscale("log")
     plt.xscale("log")
     plt.xlabel("m")
@@ -110,6 +119,10 @@ ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
 # Put a legend to the right of the current axis
 plt.legend()
 ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+# plt.savefig("learning_curve_fc_dataset_all_1_41_0.png")
+# plt.savefig("learning_curve_fc_dataset_selection_1_41_0.png")
+# plt.savefig("learning_curve_resnet50_dataset_selection_1_41_0.png")
+# plt.savefig("learning_curve_resnet50_v2_dataset_selection_1_41_0.png")
 # plt.savefig("learning_curve_fc_mnist_km10k_1_41_0.png")
 # plt.savefig("learning_curve_resnet50_max_mnist_second_training_set_sample__1_41_0.png")
 # plt.savefig("learning_curve_resnet50_max_mnist_combined_training_set_samples__1_41_0.png")

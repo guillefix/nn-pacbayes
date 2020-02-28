@@ -36,6 +36,9 @@ def main(_):
     set_session(sess)  # set this TensorFlow session as the default session for Keras
 
     train_images,flat_train_images,_,test_images,_ = load_data(FLAGS)
+    image_size = train_images.shape[1]
+    number_channels = train_images.shape[-1]
+    #print("image_size", image_size)
     X = train_images
     flat_X = flat_train_images
     if compute_for_GP_train:
@@ -63,7 +66,7 @@ def main(_):
         print("n_samples_repeats",n_samples_repeats)
         print(ceil(int(X.shape[0])*n_samples_repeats))
         arch_json_string = load_model_json(FLAGS)
-        K = empirical_K(arch_json_string,X,ceil(int(X.shape[0])*n_samples_repeats),sigmaw=sigmaw,sigmab=sigmab,n_gpus=n_gpus,empirical_kernel_batch_size=empirial_kernel_batch_size, sess=sess, truncated_init_dist=truncated_init_dist,data_parallelism=False)
+        K = empirical_K(arch_json_string,X,ceil(int(X.shape[0])*n_samples_repeats),sigmaw=sigmaw,sigmab=sigmab,n_gpus=n_gpus,empirical_kernel_batch_size=empirical_kernel_batch_size, sess=sess, truncated_init_dist=truncated_init_dist,data_parallelism=False)
     if rank == 0:
         if not (use_empirical_K or use_empirical_NTK):
             if network=="cnn":
