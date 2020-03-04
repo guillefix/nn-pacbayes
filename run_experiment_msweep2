@@ -18,7 +18,6 @@ $py generate_inputs_sample.py $@
 
 #$mpi -n $n_procs $py compute_kernel.py $@
 #$py compute_prob_and_bound.py $@ --using_EP
-
 #mpi=/users/guillefix/anaconda3/envs/venv/bin/mpiexec
 #$mpi -n $n_procs $py NN_train.py $@
 #mpiexec -n $n_procs $py sample_funs.py --number_samples 100 $@

@@ -36,6 +36,9 @@ def main(_):
     set_session(sess)  # set this TensorFlow session as the default session for Keras
 
     train_images,flat_train_images,_,test_images,_ = load_data(FLAGS)
+    image_size = train_images.shape[1]
+    number_channels = train_images.shape[-1]
+    #print("image_size", image_size)
     X = train_images
     flat_X = flat_train_images
     if compute_for_GP_train:
