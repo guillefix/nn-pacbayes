@@ -1,14 +1,15 @@
 #!/bin/bash
 
-n=50
+n=20
 a=addqueue
 #for dataset in mnist; do
 #dataset=mnist
 #$a -n $n -m 20 -s ./meta_script_msweep $dataset fc none $n
 #dataset=EMNIST
 #$a -n $n -m 100 -s ./meta_script_msweep $dataset fc none $n
-dataset=cifar
-$a -n $n -m 3 -s ./meta_script_msweep $dataset fc none $n
+dataset=mnist
+#$a -n $n -m 3 -s ./meta_script_msweep $dataset fc none $n
+$a -n 5 -m 120 -s ./meta_script_msweep $dataset fc none $n
 
 #dataset=mnist
 #$a -n $n -m 3 -s ./meta_script_msweep $dataset cnn max $n

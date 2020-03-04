@@ -8592,3 +8592,5 @@ EMNIST	none	none	fc	4516	0.0	0.0	2	1.41	0.0	True	None	00	False	True	0	1.0	False	
 cifar	none	none	fc	4516	0.0	0.0	2	1.41	0.0	True	None	00	False	True	0	1.0	False	0.5120149466081982	-3215.334550895061
 #dataset	boolfun_comp	boolfun	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	kernel_mult	normalize_kernel	bound	logP
 EMNIST	none	none	cnn	4516	0.0	0.0	4	1.41	0.0	True	max	1111	False	True	0	1.0	False	0.2943804506204475	-1549.8724383066565
+#dataset	boolfun_comp	boolfun	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	kernel_mult	normalize_kernel	bound	logP
+mnist	none	none	fc	40000	0.0	0.0	2	1.41	0.0	True	None	00	False	True	0	1.0	False	0.5541338271242373	-32280.33257096832
