@@ -1,6 +1,6 @@
 #!/bin/bash
 
-n=10
+n=64
 a=addqueue
 #for dataset in mnist; do
 #dataset=mnist
@@ -8,7 +8,7 @@ a=addqueue
 #dataset=EMNIST
 #$a -n $n -m 100 -s ./meta_script_msweep $dataset fc none $n
 dataset=cifar
-$a -n $n -m 100 -s ./meta_script_msweep $dataset fc none $n
+./meta_script_msweep $dataset nasnet none $n
 
 
 #n=20
