@@ -50,3 +50,10 @@ meta_meta_script_msweep
 meta_meta_script_msweep2
 run_experiment_msweep2
 meta_script_msweep
+
+*.sh
+!get_logPs_GP_MC.sh
+!batch.sh
+!batch_arc.sh
+!batch_test.sh
+!combine_sampled_funs.sh
