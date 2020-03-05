@@ -341,12 +341,12 @@ def main(_):
             else:
                 #note that the transformation to PIL and back to Tensor normalizes the image pixels to be in [0,1]
                 assert train_images.dtype == "uint8" #otherwise ToPILImage wants the input to be NCHW. wtff
-                train_images = np.stack([d.transform(image) for image in train_images])
+                train_images = np.stack([d1.transform(image) for image in train_images])
                 train_images = np.transpose(train_images,(0,2,3,1)) # this is because the pytorch transform changes it to NCHW for some reason :P
                 if unnormalized_images:
                     train_images = train_images*255.0
                 if training:
-                    test_images = np.stack([d.transform(image) for image in test_images])
+                    test_images = np.stack([d1.transform(image) for image in test_images])
                     test_images = np.transpose(test_images,(0,2,3,1))
                     if unnormalized_images:
                         test_images = test_images*255.0
