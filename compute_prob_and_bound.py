@@ -49,7 +49,7 @@ def main(_):
     if using_NTK:
         FLAGS["use_empirical_NTK"] = True
         theta = load_kernel(FLAGS)
-        print(K)
+        print(theta)
         #if using NTK, the above gets the NTK kernel, but we also need the non-NTK one to compute the bound!
         FLAGS["use_empirical_NTK"] = False
         K_pre = load_kernel(FLAGS)
@@ -57,12 +57,18 @@ def main(_):
         if normalize_kernel:
             K_pre = K_pre/K_pre.max()
         K = kernel_mult*K_pre
+        if theta.shape[0] >= m: #must have compute kernel for GP_train
+            theta = theta[:m,:m]
+        if K.shape[0] >= m: #must have compute kernel for GP_train
+            K = K[:m,:m]
     else:
         K_pre = load_kernel(FLAGS)
         print(K_pre)
         if normalize_kernel:
             K_pre = K_pre/K_pre.max()
         K = kernel_mult*K_pre
+        if K.shape[0] >= m: #must have compute kernel for GP_train
+            K = K[:m,:m]
 
 
     #finding log marginal likelihood of data
