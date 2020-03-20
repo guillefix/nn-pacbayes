@@ -69,6 +69,9 @@ test_ys = test_ys[:50]
 
 plt.imshow(train_images[0].reshape(28,28))
 
+# Y.shape
+Xfull.shape
+
 X = train_images
 Xfull =  np.concatenate([train_images,test_images])
 ys2 = [[y] for y in ys]
@@ -112,6 +115,48 @@ m = GPy.core.GP(X=X,
                 inference_method=inference_method,
                 likelihood=lik)
 
+# mean, cov = m.predict(test_images,full_cov=True)
+#
+# inference_method = GPy.inference.latent_function_inference.expectation_propagation.EP(parallel_updates=False)
+# linkfun = GPy.likelihoods.link_functions.Heaviside()
+# lik = GPy.likelihoods.Bernoulli(linkfun)
+# m = GPy.core.GP(X=test_images,
+#                 Y=np.array([[y] for y in test_ys]),
+#                 kernel=CustomMatrix(test_images.shape[1],test_images,cov),
+#                 inference_method=inference_method,
+#                 mean_function=CustomMean(test_images,mean),
+#                 likelihood=lik)
+#
+# class CustomMean(GPy.core.Mapping):
+#     def __init__(self,X,means):
+#         GPy.core.Mapping.__init__(self, input_dim=X.shape[1], output_dim=1, name="custom_means")
+#         self.X = X
+#         self.means = means
+#         # self.link_parameter(GPy.core.parameterization.Param('means', means))
+#     def f(self,X):
+#         indices = np.concatenate([np.nonzero(np.prod(self.X == x,1))[0] for x in X])
+#         if np.all(np.isin(X,self.X)):
+#             if len(indices) != X.shape[0]:
+#                 raise NotImplementedError("Some elements of X appear more than once in self.X")
+#             else:
+#                 return self.means[indices]
+#         else:
+#             raise NotImplementedError("Some elements of X are not in self.X")
+#
+#     def update_gradients(self, dL_dF, X):
+#         # self.means.gradient = dL_dF.sum(0)
+#         pass
+#
+#     def gradients_X(self, dL_dF, X):
+#         return np.zeros_like(X)
+#
+# m.log_likelihood()
+
+from GP_prob.nngp_mse_heaviside_posterior import nngp_mse_heaviside_posteror_logp
+
+import imp; import GP_prob; imp.reload(GP_prob.nngp_mse_heaviside_posterior)
+
+nngp_mse_heaviside_posteror_logp(X,Y,test_images,np.array([[y] for y in test_ys]),Kfull)
 
 # m.predict(test_images[0:1])
 m.predict(test_images)[0]>0.5
