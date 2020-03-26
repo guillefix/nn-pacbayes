@@ -7,10 +7,14 @@ import matplotlib.pyplot as plt
 
 #main NNGP big run (up to 4k training set size:)
 training_data = pd.read_csv("results/new_mother_of_all_msweeps_nn_training_results.txt", sep="\t", comment="#")
-training_data = training_data[~((training_data["network"] == "fc") & (training_data["dataset"] == "cifar"))]
-training_data = training_data[~((training_data["network"] == "fc") & (training_data["dataset"] == "EMNIST"))]
 training_data2 = pd.read_csv("results/newer_mother_of_all_msweeps_nn_training_results.txt", sep="\t", comment="#")
+training_data = training_data[~((training_data["network"] == "fc") & (training_data["dataset"] == "cifar"))]
 training_data = training_data.append(training_data2)
+# training_data = training_data[~((training_data["network"] == "fc") & (training_data["dataset"] == "cifar"))]
+# training_data = training_data[~((training_data["network"] == "fc") & (training_data["dataset"] == "EMNIST"))]
+# training_data2 = pd.read_csv("results/newer_mother_of_all_msweeps_nn_training_results.txt", sep="\t", comment="#")
+# training_data = training_data.append(training_data2)
+
 # bounds = pd.read_csv("results/new_mother_of_all_msweeps_bounds10000.txt", sep="\t", comment="#")
 bounds = pd.read_csv("results/newer_mother_of_all_msweeps_bounds.txt", sep="\t", comment="#")
 # bounds = pd.read_csv("results/new_mother_of_all_msweeps_bounds.txt", sep="\t", comment="#")
@@ -29,8 +33,9 @@ bounds = pd.read_csv("results/newer_mother_of_all_msweeps_bounds.txt", sep="\t",
 # bounds = pd.read_csv("results/gpu_msweep_bounds.txt", sep="\t", comment="#")
 # bounds = pd.read_csv("results/2gpu_msweep_bounds.txt", sep="\t", comment="#")
 # # bounds = pd.read_csv("results/2jade_new_msweep_bounds.txt", sep="\t", comment="#")
-bounds2 = pd.read_csv("results/new_small_b_3jade_new_msweep_bounds.txt", sep="\t", comment="#")
-bounds = bounds.append(bounds2)
+
+# bounds2 = pd.read_csv("results/new_small_b_3jade_new_msweep_bounds.txt", sep="\t", comment="#")
+# bounds = bounds.append(bounds2)
 
 # training_data = pd.read_csv("results/2gpu_msweep_nn_training_results.txt", sep="\t", comment="#")
 # training_data = pd.read_csv("results/gpu_msweep_nn_training_results_cnn.txt", sep="\t", comment="#")
@@ -43,7 +48,10 @@ bounds = bounds.append(bounds2)
 
 
 # bounds = pd.read_csv("results/gpu_msweep_bounds_cnn.txt", sep="\t", comment="#")
+#missing nasnet
 
+bounds["network"].unique()
+training_data["network"].unique()
 nets = training_data["network"].unique()
 datasets = training_data["dataset"].unique()
 
@@ -61,7 +69,7 @@ training_data = training_data.groupby(["m","network","dataset","pooling"],as_ind
 #PLOT
 #%%
 # net="cnn"
-net="fc"
+# net="fc"
 # net="resnetv2_50"
 # net="densenet201"
 # net="resnext101"
@@ -73,51 +81,65 @@ net="fc"
 # net="resnet50"
 # net="mobilenetv2"
 # dataset="mnist"
+# dataset="mnist-fashion"
 # dataset="EMNIST"
 # dataset="KMNIST"
-# dataset="cifar"
+dataset="cifar"
 # colors = np.random.rand(len(nets),3)
 import matplotlib
 cmap = matplotlib.cm.get_cmap('rainbow')
-# for i, net in enumerate(nets):
-for i,dataset in enumerate(datasets):
+# j=0
+for i, net in enumerate(nets):
+# for i,dataset in enumerate(datasets):
 # for ii in [1]:
-    pool="None"
+    # if i!=j: break
+    # plt.close()
+    # pool="None"
     # pool="avg"
     # pool="max"
-    if net=="fc":
-        pool="None"
-
-    # if dataset not in ["mnist"]:
-    if dataset not in ["cifar","mnist","EMNIST"]:
-        continue
-    bdata=bounds[(bounds["network"]==net) & (bounds["dataset"]==dataset) & (bounds["pooling"]==pool)]
-    # bdata=bounds[(bounds["network"]==net) & (bounds["dataset"]==dataset)]
-    tdata=training_data[(training_data["network"]==net) & (training_data["dataset"]==dataset) & (training_data["pooling"]==pool)]
-    # bounds.dtypes
-
-    # bounds["bound"] = pd.to_numeric(bounds["bound"])
-    tdata.columns
-    bdata.columns
-
-    # color = cmap(i/(len(nets)+1))
-    color = cmap(i/(len(datasets)))
-    if net=="fc":
-        plt.plot(bdata["m"], bdata["bound"], c=color, label="PAC-Bayes bound "+net+" "+dataset)
-        # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
-        # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color)
-        plt.plot(tdata["m"], tdata["test_error"], "--", c=color, label="Test error "+net+" "+dataset)
-        # plt.plot(tdata["m"], tdata["train_acc"], label="Training error "+net+" "+dataset+" "+pool)
+    if net=="cnn":
+        pools=["None","avg","max"]
+    elif net=="fc":
+        pools=["None"]
     else:
-        plt.plot(bdata["m"], bdata["bound"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
-        # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
-        # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color)
-        plt.plot(tdata["m"], tdata["test_error"], "--", c=color, label="Test error "+net+" "+dataset+" "+pool)
-        # plt.plot(tdata["m"], tdata["train_acc"], label="Training error "+net+" "+dataset+" "+pool)
-    plt.yscale("log")
-    plt.xlabel("m", fontsize=12)
-    plt.xscale("log")
-    plt.ylabel("generalization error", fontsize=12)
+        pools=["avg"]
+
+    for pool in pools:
+        # if dataset not in ["mnist"]:
+        # if dataset not in ["cifar","mnist","EMNIST"]:
+        #     continue
+        bdata=bounds[(bounds["network"]==net) & (bounds["dataset"]==dataset) & (bounds["pooling"]==pool)]
+        # bdata=bounds[(bounds["network"]==net) & (bounds["dataset"]==dataset)]
+        tdata=training_data[(training_data["network"]==net) & (training_data["dataset"]==dataset) & (training_data["pooling"]==pool)]
+        # bounds.dtypes
+        print(net, len(bdata))
+        # print(net, len(tdata))
+        print(net,tdata[["m","train_acc"]])
+
+        # bounds["bound"] = pd.to_numeric(bounds["bound"])
+        tdata.columns
+        bdata.columns
+
+        color = cmap(i/(len(nets)+1))
+        # color = cmap(i/(len(datasets)))
+        if net=="fc":
+            plt.plot(bdata["m"], bdata["bound"], c=color, label="PAC-Bayes bound "+net+" "+dataset)
+            # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
+            # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color)
+            plt.plot(tdata["m"], tdata["test_error"], "--", c=color, label="Test error "+net+" "+dataset)
+            plt.plot(tdata["m"], tdata["train_acc"], label="Training error "+net+" "+dataset)
+        else:
+            plt.plot(bdata["m"], bdata["bound"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
+            # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
+            # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color)
+            plt.plot(tdata["m"], tdata["test_error"], "--", c=color, label="Test error "+net+" "+dataset+" "+pool)
+            plt.plot(tdata["m"], tdata["train_acc"], label="Training error "+net+" "+dataset+" "+pool)
+        plt.yscale("log")
+        plt.xlabel("m", fontsize=12)
+        plt.xscale("log")
+        plt.ylabel("generalization error", fontsize=12)
+
+
 
 ax = plt.gca()
 box = ax.get_position()
@@ -137,11 +159,12 @@ for tick in ax.yaxis.get_major_ticks():
     # specify integer or one of preset strings, e.g.
     #tick.label.set_fontsize('x-small')
     # tick.label.set_rotation('vertical')
-plt.ylim([1e-2,1e0])
+
+plt.ylim([1e-2,1.1e0])
 plt.xlim([1e2,50000])
 
 # plt.savefig("learning_curve_fc_dataset_all_1_41_0.png")
-plt.savefig("learning_curve_fc_dataset_selection_1_41_0.png")
+# plt.savefig("learning_curve_fc_dataset_selection_1_41_0.png")
 # plt.savefig("learning_curve_resnet50_dataset_selection_1_41_0.png")
 # plt.savefig("learning_curve_resnet50_v2_dataset_selection_1_41_0.png")
 # plt.savefig("learning_curve_fc_mnist_km10k_1_41_0.png")
@@ -157,6 +180,21 @@ plt.savefig("learning_curve_fc_dataset_selection_1_41_0.png")
 #for repeated entries keep last one in both training_data and bounds
 #for data from jade, because the non-last one could have had problems with two jobs trying to compute the same thing and the later overriding data/kernel of the former
 
+#%%
+
+bdata=bounds[(bounds["m"]==4516) & (bounds["dataset"]==dataset) & (bounds["pooling"]==pool)]
+tdata=training_data[(training_data["m"]==4516) & (training_data["dataset"]==dataset) & (training_data["pooling"]==pool)]
+
+boundss = []
+test_errorss = []
+
+for net in bounds["network"].unique():
+    if len(bdata[bdata["network"]==net]) == 1 and len(tdata[tdata["network"]==net]) == 1:
+        boundss.append(bdata[bdata["network"]==net]["bound"].iloc[0])
+        test_errorss.append(tdata[tdata["network"]==net]["test_error"].iloc[0])
+
+
+plt.scatter(boundss,test_errorss)
 
 #%%
 ###### exploring the standard deviation

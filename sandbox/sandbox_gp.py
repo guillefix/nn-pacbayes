@@ -15,7 +15,7 @@ kernel_folder = "kernels/"
 # number_layers = 4
 
 #RUN this if no data file found
-# python3 generate_inputs_sample.py --m 100 --dataset mnist --sigmaw 10.0 --sigmab 10.0 --network fc --prefix test --random_labels --training --number_layers 1
+# python3 generate_inputs_sample.py --m 1000 --dataset mnist --sigmaw 1.41 --sigmab 0.0 --network fc --prefix test --training --number_layers 2
 FLAGS = {}
 FLAGS['m'] = 1000
 FLAGS['dataset'] =  "mnist"
@@ -33,7 +33,7 @@ FLAGS['intermediate_pooling_type'] =  "max"
 FLAGS['init_dist'] =  "gaussian"
 FLAGS['sigmaw'] =  1.41
 FLAGS['sigmab'] =  0.0
-FLAGS['prefix'] =  "test_"
+FLAGS['prefix'] =  "test"
 FLAGS['whitening'] =  False
 FLAGS['random_labels'] =  True
 FLAGS['training'] =  True
@@ -49,6 +49,7 @@ FLAGS['oversampling'] =  False
 FLAGS['oversampling2'] =  False
 FLAGS['nn_random_labels'] =  False
 FLAGS['nn_random_regression_outputs'] =  False
+FLAGS['n_gpus'] =  0
 
 #%%
 

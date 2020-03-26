@@ -31,6 +31,7 @@ resnetv2_50.sh
 resnext101.sh
 resnext50.sh
 vgg16.sh
+meta_script_msweep.sh
 
 checkpoint.p
 fs.p
@@ -44,3 +45,15 @@ results/sgd_vs_bayes/*
 results/gp_samples/*
 !results/*_bounds*.txt
 !results/*_nn_training_results.txt
+
+meta_meta_script_msweep
+meta_meta_script_msweep2
+run_experiment_msweep2
+meta_script_msweep
+
+*.sh
+!get_logPs_GP_MC.sh
+!batch.sh
+!batch_arc.sh
+!batch_test.sh
+!combine_sampled_funs.sh
