@@ -9,6 +9,7 @@ import os,sys
 import h5py
 import pickle
 from tensorflow.keras import backend as K
+import gc
 
 
 arch_folder = "archs/"
@@ -51,7 +52,6 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
 
     print("Doing task %d of %d" % (rank, size))
     import time
-    start_time = time.time()
 
     from tensorflow.keras.models import model_from_json
     model = model_from_json(arch_json_string) # this resets the weights (makes sense as the json string only has architecture)
@@ -83,6 +83,7 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
     num_chunks = covs.shape[0]//update_chunk
     print("num_chunks",num_chunks)
     for index in tasks:
+        start_time = time.time()
         print("sample for kernel", index)
 
         # model = model_from_json(arch_json_string) # this resets the weights (makes sense as the json string only has architecture)
@@ -116,6 +117,7 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
         #        pickle.dump(len(fs_tmp),open("checkpoint.p","wb"))
         sys.stdout.flush()
         local_index += 1
+        #gc.collect()
 
         print("--- %s seconds ---" % (time.time() - start_time))
 
