@@ -17,7 +17,7 @@ kernel_folder = "kernels/"
 #RUN this if no data file found
 # python3 generate_inputs_sample.py --m 1000 --dataset mnist --sigmaw 1.41 --sigmab 0.0 --network fc --prefix test --training --number_layers 2
 FLAGS = {}
-FLAGS['m'] = 1000
+FLAGS['m'] = 10000
 FLAGS['dataset'] =  "mnist"
 FLAGS['network'] =  "fc"
 FLAGS['number_inits'] = 1
@@ -85,6 +85,8 @@ Kfull = kernel_matrix(Xfull,number_layers=number_layers,sigmaw=sigmaw,sigmab=sig
 # FLAGS["m"] = 1500
 #Kfull = load_kernel(FLAGS)
 K = Kfull[0:m,0:m]
+
+#%%
 
 # filename=kernel_folder
 # for flag in ["network","dataset","m","confusion","label_corruption","binarized","whitening","random_labels","number_layers","sigmaw","sigmab"]:
@@ -156,7 +158,7 @@ from GP_prob.nngp_mse_heaviside_posterior import nngp_mse_heaviside_posteror_log
 
 import imp; import GP_prob; imp.reload(GP_prob.nngp_mse_heaviside_posterior)
 
-nngp_mse_heaviside_posteror_logp(X,Y,test_images,np.array([[y] for y in test_ys]),Kfull)
+nngp_mse_heaviside_posteror_logp(X,Y,test_images,np.array([[y] for y in test_ys]),10000*Kfull)
 
 # m.predict(test_images[0:1])
 m.predict(test_images)[0]>0.5
