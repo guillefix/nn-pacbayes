@@ -33,10 +33,10 @@ mpi=/usr/local/shared/openmpi/4.0.0/bin/mpiexec
 $py generate_inputs_sample.py $@
 
 #$mpi -n ${n_procs} $py NN_train.py $@
-#$py NN_train.py $@
+$py NN_train.py $@
 
-$mpi -n $n_procs $py compute_kernel.py $@ --compute_for_GP_train
-$mpi -n $n_procs $py GP_train.py $@
+#$mpi -n $n_procs $py compute_kernel.py $@ --compute_for_GP_train
+#$mpi -n $n_procs $py GP_train.py $@
 
 
 #$mpi -n $n_procs $py compute_kernel.py $@ --use_empirical_K --compute_for_GP_train

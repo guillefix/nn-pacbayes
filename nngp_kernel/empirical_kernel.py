@@ -9,6 +9,7 @@ import os,sys
 import h5py
 import pickle
 from tensorflow.keras import backend as K
+import gc
 
 
 arch_folder = "archs/"
@@ -51,7 +52,6 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
 
     print("Doing task %d of %d" % (rank, size))
     import time
-    start_time = time.time()
 
     from tensorflow.keras.models import model_from_json
     model = model_from_json(arch_json_string) # this resets the weights (makes sense as the json string only has architecture)
@@ -59,7 +59,8 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
     from initialization import get_all_layers, is_normalization_layer, reset_weights
 
     #fs = []
-    covs = np.zeros((len(data),len(data)),dtype=np.float32)
+    m = len(data)
+    covs = np.zeros((m,m),dtype=np.float32)
     #last_layer = model.layers[-1].input
     #print(last_layer.shape)
     #func = K.function(model.input,last_layer)
@@ -79,10 +80,11 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
     layers = get_all_layers(model)
     are_norm = [is_normalization_layer(l) for l in layers for w in l.get_weights()]
     initial_weights = model.get_weights()
-    update_chunk = 20000
+    update_chunk = 10000
     num_chunks = covs.shape[0]//update_chunk
     print("num_chunks",num_chunks)
     for index in tasks:
+        start_time = time.time()
         print("sample for kernel", index)
 
         # model = model_from_json(arch_json_string) # this resets the weights (makes sense as the json string only has architecture)
@@ -90,7 +92,8 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
             reset_weights(model, initial_weights, are_norm, sigmaw, sigmab, truncated_init_dist)
 
         #X = np.squeeze(func(data))
-        X = model.predict(data, batch_size=min(empirical_kernel_batch_size, len(data))).astype(np.float32)
+        #covs += (sigmaw**2/X.shape[1])*np.matmul(X,X.T)+(sigmab**2)*np.ones((X.shape[0],X.shape[0]), dtype=np.float32)
+        X = model.predict(data, batch_size=empirical_kernel_batch_size).astype(np.float32)
         print("X",X)
         if len(X.shape)==1:
             X = np.expand_dims(X,0)
@@ -100,8 +103,40 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
                 covs[i*update_chunk:(i+1)*update_chunk] += (sigmaw**2/X.shape[1])*np.matmul(X[i*update_chunk:(i+1)*update_chunk],X.T)+(sigmab**2)*np.ones((update_chunk,X.shape[0]), dtype=np.float32)
             last_bits = slice(update_chunk*num_chunks,covs.shape[0])
             covs[last_bits] += (sigmaw**2/X.shape[1])*np.matmul(X[last_bits],X.T)+(sigmab**2)*np.ones((last_bits.stop-last_bits.start,X.shape[0]), dtype=np.float32)
+        #if covs.shape[0] > 2*update_chunk:
+        #    for i in range(num_chunks):
+        #        slice1 = slice(i*update_chunk:(i+1)*update_chunk)
+        #        data_chunk = data[slice1]
+        #        X1 = model.predict(data_chunk, batch_size=min(empirical_kernel_batch_size, len(data_chunk))).astype(np.float32)
+        #        if len(X1.shape)==1: X1 = np.expand_dims(X1,0)
+        #        for j in range(i,num_chunks):
+        #            if j>i:
+        #                slice2 = slice(j*update_chunk:(j+1)*update_chunk)
+        #                data_chunk = data[slice2]
+        #                X2 = model.predict(data_chunk, batch_size=min(empirical_kernel_batch_size, len(data_chunk))).astype(np.float32)
+        #            else: #diagonal
+        #                slice2 = slice1
+        #                X2 = X1
+        #            if len(X2.shape)==1: X2 = np.expand_dims(X2,0)
+        #            covs[slice1,slice2] += (sigmaw**2/X1.shape[1])*np.matmul(X1,X2.T)+sigmab**2
+        #        slice2 = slice(update_chunk*num_chunks,covs.shape[0])
+        #        data_chunk = data[slice2]
+        #        X2 = model.predict(data_chunk, batch_size=min(empirical_kernel_batch_size, len(data_chunk))).astype(np.float32)
+        #        if len(X2.shape)==1: X2 = np.expand_dims(X2,0)
+        #        covs[slice1,slice2] += (sigmaw**2/X1.shape[1])*np.matmul(X1,X2.T)+sigmab**2
+
+        #    slice1 = slice(update_chunk*num_chunks,covs.shape[0])
+        #    data_chunk = data[slice1]
+        #    X1 = model.predict(data_chunk, batch_size=min(empirical_kernel_batch_size, len(data_chunk))).astype(np.float32)
+        #    if len(X1.shape)==1: X1 = np.expand_dims(X1,0)
+        #    slice2 = slice1
+        #    X2 = X1
+        #    if len(X2.shape)==1: X2 = np.expand_dims(X2,0)
+        #    covs[slice1,slice2] += (sigmaw**2/last_layer_size)*np.matmul(X1,X2.T)+sigmab**2
         else:
-            covs += (sigmaw**2/X.shape[1])*np.matmul(X,X.T)+(sigmab**2)*np.ones((X.shape[0],X.shape[0]), dtype=np.float32)
+            X = model.predict(data, batch_size=min(empirical_kernel_batch_size, len(data))).astype(np.float32)
+            covs += (sigmaw**2/X.shape[1])*np.matmul(X,X.T)+sigmab**2
+            #covs += (sigmaw**2/X.shape[1])*np.matmul(X,X.T)+(sigmab**2)*np.ones((X.shape[0],X.shape[0]), dtype=np.float32)
         #outputs = model.predict(data)
         #print(outputs)
 
@@ -116,6 +151,7 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
         #        pickle.dump(len(fs_tmp),open("checkpoint.p","wb"))
         sys.stdout.flush()
         local_index += 1
+        gc.collect()
 
         print("--- %s seconds ---" % (time.time() - start_time))
 
@@ -131,6 +167,9 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
         comm.Reduce(covs[25000:,:], covs2_recv, op=MPI.SUM, root=0)
 
         if rank == 0:
+            #if covs.shape[0] > update_chunk:
+            #    #make matrix symmetric
+            #    covs = np.maximum(covs,covs.trasnpose())
             #fs = sum(fs, [])
             #covs = sum(covs, [])
             #fs += fs_init
@@ -142,4 +181,7 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
         else:
             return None
     else:
+        #if covs.shape[0] > update_chunk:
+        #    #make matrix symmetric
+        #    covs = np.maximum(covs,covs.trasnpose())
         return covs/number_samples
