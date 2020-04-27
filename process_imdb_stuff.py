@@ -1,6 +1,7 @@
 import numpy as np
 import pickle
 import tensorflow as tf
+from utils import preprocess_flags, save_data
 
 imdb_data_folder="../for_guillermo"
 

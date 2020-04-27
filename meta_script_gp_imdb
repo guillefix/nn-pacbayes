@@ -1,18 +1,19 @@
 #!/bin/bash
 
-n_gpus=1
+n_gpus=0
 n_procs=1
 train_method=NN
-generate_arch=1
-generate_data=1
+generate_arch=0
+generate_data=0
 compute_kernel=0
 compute_bound=0
 train=1
 sample_funs=0
+#number_inits=1000000
 number_inits=1
 
-export py=python3
-export mpi=mpiexec
+export py=/usr/bin/python3
+export mpi=/usr/local/shared/openmpi/4.0.0/bin/mpiexec
 #py=/users/guillefix/anaconda3/envs/venv/bin/python
 #mpi=/users/guillefix/anaconda3/envs/venv/bin/mpiexec
 export n_gpus n_procs train_method generate_arch generate_data compute_kernel compute_bound train sample_funs py mpi
@@ -39,8 +40,9 @@ epochs_after_fit=0
 #epochs_after_fit=64
 #prefix=32_batch_oddeven_big_sgd_${loss}_sample_
 #prefix=oddeven_big_sgd_${loss}_sample_${loss}_
-prefix=test_
+prefix=imdb_gp_mse_
 
+intermediate_pooling=0000
 if [ $net = fc ]; then
     L=2
     intermediate_pooling=00
@@ -63,6 +65,6 @@ fi
 #echo $m
   #./run_experiment --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --sigmaw $sigmaw --sigmab $sigmab --n_gpus $n_gpus --pooling $pool -loss $loss --n_samples_repeats 0.1 --kernel_mult $kern_mult --optimizer $optimizer --norandom_training_set --number_inits $number_inits --binarization_method=oddeven --batch_size=$batch_size
 
-  ./run_experiment --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --sigmaw $sigmaw --sigmab $sigmab --n_gpus $n_gpus --pooling $pool -loss $loss --n_samples_repeats 0.1 --kernel_mult $kern_mult --optimizer $optimizer --number_inits $number_inits --batch_size=$batch_size --layer_widths 512 --batch_size 256 --intermediate_pooling $intermediate_pooling
+  ./run_experiment_imdbtmp --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --sigmaw $sigmaw --sigmab $sigmab --n_gpus $n_gpus --pooling $pool -loss $loss --n_samples_repeats 0.1 --kernel_mult $kern_mult --optimizer $optimizer --number_inits $number_inits --batch_size=$batch_size --layer_widths 512 --batch_size 256 --intermediate_pooling $intermediate_pooling
   #./run_experiment --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --sigmaw $sigmaw --sigmab $sigmab --n_gpus $n_gpus --pooling $pool -loss $loss --epochs_after_fit $epochs_after_fit --n_samples_repeats 0.1 --optimizer $optimizer --number_inits $number_inits --batch_size=$batch_size --intermediate_pooling $intermediate_pooling --kernel_mult 1 --empirical_kernel_batch_size 1024 --normalize_kernel
 #done
