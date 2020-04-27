@@ -1,0 +1,16 @@
+#!/bin/bash
+
+n=4
+#for dataset in mnist mnist-fashion EMNIST KMNIST cifar; do
+#for dataset in mnist mnist-fashion EMNIST; do
+for dataset in KMNIST cifar; do
+    ./meta_script_msweep_gpu $dataset cnn none $n
+    ./meta_script_msweep_gpu $dataset cnn max $n
+    ./meta_script_msweep_gpu $dataset fc none $n
+    ./meta_script_msweep_gpu $dataset cnn avg $n
+    for net in resnet50 resnet101 resnet152 resnetv2_50 resnetv2_101 resnetv2_152 resnext50 resnext101 densenet121 densenet169 densenet201 mobilenetv2 nasnet vgg19 vgg16 ; do 
+    #for net in resnetv2_50 resnext50 densenet121 densenet169; do 
+    #for net in nasnet; do 
+        ./meta_script_msweep_gpu $dataset $net avg $n
+    done
+done

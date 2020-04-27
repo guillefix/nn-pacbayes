@@ -265,6 +265,9 @@ def main(_):
                     kernel_initializer=weight_initializer,
                     bias_initializer=bias_initializer_last_layer,))
 
+    print("Number of parameters: ",model.count_params())
+    print(model.summary())
+
     json_string = model.to_json()
 
     '''SAVE ARCHITECTURE'''
