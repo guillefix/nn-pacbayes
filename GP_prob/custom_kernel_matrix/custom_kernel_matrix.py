@@ -18,14 +18,14 @@ class CustomMatrix(Kern):
         if X2 is None and np.all(X1 == self.X):
             return self.Kmatrix
 
-        indices1 = [np.nonzero(np.prod(self.X == x,1))[0][0] for x in X1]
+        indices1 = np.array([np.nonzero(np.prod(self.X == x,1))[0][0] for x in X1])
 
         if X2 is None:
             X2 = X1
             indices2 = indices1
         else:
             #indices2 = np.concatenate([np.nonzero(np.prod(self.X == x,1))[0] for x in X2])
-            indices2 = [np.nonzero(np.prod(self.X == x,1))[0][0] for x in X2]
+            indices2 = np.array([np.nonzero(np.prod(self.X == x,1))[0][0] for x in X2])
 
         if np.all(np.isin(X2,self.X)):
             #if len(indices2) != X2.shape[0] or len(indices1) != X1.shape[0]:
@@ -40,7 +40,7 @@ class CustomMatrix(Kern):
     def Kdiag(self,X):
         # K = kernel_matrix(X,X2)
         #indices = np.concatenate([np.nonzero(np.prod(self.X == x,1))[0] for x in X])
-        indices = [np.nonzero(np.prod(self.X == x,1))[0][0] for x in X]
+        indices = np.array([np.nonzero(np.prod(self.X == x,1))[0][0] for x in X])
         return np.diag(self.Kmatrix)[indices]
     def update_gradients_full(self, dL_dK, X, X2):
         pass
