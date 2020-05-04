@@ -1,9 +1,9 @@
 import numpy as np
 import pickle
 import tensorflow as tf
-from utils import preprocess_flags, save_data
+from utils import preprocess_flags, save_data, save_kernel
 
-imdb_data_folder="../for_guillermo"
+imdb_data_folder="../../hert5217/SGDvsGP/for_guillermo/"
 
 def main(_):
 

@@ -2,7 +2,7 @@
 
 n_gpus=0
 n_procs=1
-train_method=NN
+train_method=GP
 generate_arch=0
 generate_data=0
 compute_kernel=0
