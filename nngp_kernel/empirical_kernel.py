@@ -17,19 +17,14 @@ data_folder = "data/"
 kernel_folder = "kernels/"
 results_folder = "results/"
 
-def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_gpus=1, empirical_kernel_batch_size=256, sess=None, truncated_init_dist=False, data_parallelism=False):
+def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_gpus=1, empirical_kernel_batch_size=256, sess=None, truncated_init_dist=False, data_parallelism=False, store_partial_kernel=False, partial_kernel_n_proc=1,partial_kernel_index=0):
 
-    from mpi4py import MPI
-    comm = MPI.COMM_WORLD
-    rank = comm.Get_rank()
-    size = comm.Get_size()
-    print(rank)
     num_tasks = number_samples
 
     if data_parallelism:
         num_tasks *= n_gpus
 
-    save_freq = 5000
+    #save_freq = 5000
     # we can use checkpoints (TODO: make this work again with nice option and stuff)
     #try:
     #    chkpt = pickle.load(open("checkpoint.p","rb"))
@@ -44,11 +39,25 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
 
     #num_tasks = num_tasks - chkpt
 
-    num_tasks_per_job = num_tasks//size
-    tasks = list(range(int(rank*num_tasks_per_job),int((rank+1)*num_tasks_per_job)))
+    if store_partial_kernel:
+        size = partial_kernel_n_proc
+        rank = partial_kernel_index
+        num_tasks_per_job = num_tasks//size
+        tasks = list(range(int(rank*num_tasks_per_job),int((rank+1)*num_tasks_per_job)))
 
-    if rank < num_tasks%size:
-        tasks.append(size*num_tasks_per_job+rank)
+        if rank < num_tasks%size:
+            tasks.append(size*num_tasks_per_job+rank)
+    else:
+        from mpi4py import MPI
+        comm = MPI.COMM_WORLD
+        rank = comm.Get_rank()
+        size = comm.Get_size()
+        print(rank)
+        num_tasks_per_job = num_tasks//size
+        tasks = list(range(int(rank*num_tasks_per_job),int((rank+1)*num_tasks_per_job)))
+
+        if rank < num_tasks%size:
+            tasks.append(size*num_tasks_per_job+rank)
 
     print("Doing task %d of %d" % (rank, size))
     import time
@@ -156,7 +165,7 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
         print("--- %s seconds ---" % (time.time() - start_time))
 
     #fs = comm.gather(fs,root=0)
-    if size > 1:
+    if size > 1 and not store_partial_kernel:
         covs1_recv = None
         covs2_recv = None
         if rank == 0:
@@ -184,4 +193,7 @@ def empirical_K(arch_json_string, data, number_samples,sigmaw=1.0,sigmab=1.0,n_g
         #if covs.shape[0] > update_chunk:
         #    #make matrix symmetric
         #    covs = np.maximum(covs,covs.trasnpose())
-        return covs/number_samples
+        if store_partial_kernel:
+            return covs
+        else:
+            return covs/number_samples

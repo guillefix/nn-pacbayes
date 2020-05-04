@@ -1,30 +1,37 @@
 #!/bin/bash
 
-#n=64
-n=30
-a=addqueue
-#for dataset in mnist; do
-#dataset=mnist
-#$a -n $n -m 20 -s ./meta_script_msweep $dataset fc none $n
-#dataset=EMNIST
-#$a -n $n -m 100 -s ./meta_script_msweep $dataset fc none $n
-dataset=cifar
-$a -n 30 -m 3 -s ./meta_script_msweep $dataset vgg19 avg $n
-#$a -n 5 -m 120 -s ./meta_script_msweep $dataset fc none $n
-#./meta_script_msweep $dataset nasnet none $n
-#dataset=EMNIST
-#$a -n $n -m 100 -s ./meta_script_msweep $dataset fc none $n
-#./meta_script_msweep $dataset fc none $n
-#$a -n $n -m 3 -s ./meta_script_msweep $dataset fc none $n
-
-#dataset=mnist
-#$a -n $n -m 3 -s ./meta_script_msweep $dataset cnn max $n
-
-
-#n=20
+#nn=3x8
+#nn=175
+#nn=90
+#n=$nn
+n=1
+#mem=14
+#mem=20
+#a='addqueue -q bigmem'
 #a=addqueue
-#dataset=mnist-fashion
-#for net in resnet50 resnetv2_50 resnetv2_101 resnext50 resnext101 densenet121 densenet169 densenet201;
-#do
-#    $a -n $n -m 5 -s ./meta_script_msweep $dataset $net none $n
-#done
+#for dataset in mnist; do
+#for dataset in mnist-fashion; do
+#for dataset in mnist mnist-fashion EMNIST; do
+#for dataset in KMNIST cifar; do
+for dataset in mnist; do
+    #resnet101 resnet152 resnetv2_50 resnetv2_101 
+    for net in resnetv2_152 resnext50 resnext101 densenet121 densenet169 densenet201 mobilenetv2 nasnet vgg19 vgg16 ; do 
+    #for net in resnetv2_50 resnext50 densenet121 densenet169; do 
+    #for net in nasnet; do 
+        ./meta_script_msweep $dataset $net avg $n $1
+    done
+    ./meta_script_msweep $dataset cnn none $n $1
+    ./meta_script_msweep $dataset cnn avg $n $1
+    ./meta_script_msweep $dataset cnn max $n $1
+done
+for dataset in mnist mnist-fashion EMNIST KMNIST cifar; do
+    for net in resnet50 resnet101 resnet152 resnetv2_50 resnetv2_101 resnetv2_152 resnext50 resnext101 densenet121 densenet169 densenet201 mobilenetv2 nasnet vgg19 vgg16 ; do 
+    #for net in resnetv2_50 resnext50 densenet121 densenet169; do 
+    #for net in nasnet; do 
+        ./meta_script_msweep $dataset $net avg $n $1
+    done
+    ./meta_script_msweep $dataset fc none $n $1
+    ./meta_script_msweep $dataset cnn none $n $1
+    ./meta_script_msweep $dataset cnn avg $n $1
+    ./meta_script_msweep $dataset cnn max $n $1
+done

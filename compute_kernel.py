@@ -5,7 +5,7 @@ import pickle
 import os
 from math import ceil
 
-from utils import preprocess_flags, save_kernel
+from utils import preprocess_flags, save_kernel, save_kernel_partial
 from utils import load_data,load_model,load_model_json,load_kernel
 from utils import data_folder,kernel_folder,arch_folder
 
@@ -66,7 +66,7 @@ def main(_):
         print("n_samples_repeats",n_samples_repeats)
         print(ceil(int(X.shape[0])*n_samples_repeats))
         arch_json_string = load_model_json(FLAGS)
-        K = empirical_K(arch_json_string,X,ceil(int(X.shape[0])*n_samples_repeats),sigmaw=sigmaw,sigmab=sigmab,n_gpus=n_gpus,empirical_kernel_batch_size=empirical_kernel_batch_size, sess=sess, truncated_init_dist=truncated_init_dist,data_parallelism=False)
+        K = empirical_K(arch_json_string,X,ceil(int(X.shape[0])*n_samples_repeats),sigmaw=sigmaw,sigmab=sigmab,n_gpus=n_gpus,empirical_kernel_batch_size=empirical_kernel_batch_size, sess=sess, truncated_init_dist=truncated_init_dist,data_parallelism=False,store_partial_kernel=store_partial_kernel,partial_kernel_n_proc=partial_kernel_n_proc,partial_kernel_index=partial_kernel_index)
     if rank == 0:
         if not (use_empirical_K or use_empirical_NTK):
             if network=="cnn":
@@ -84,7 +84,10 @@ def main(_):
         print(K)
 
         '''SAVE KERNEL'''
-        save_kernel(K,FLAGS)
+        if store_partial_kernel:
+            save_kernel_partial(K,FLAGS,partial_kernel_index) 
+        else:
+            save_kernel(K,FLAGS)
 
 
 if __name__ == '__main__':
@@ -95,6 +98,9 @@ if __name__ == '__main__':
 
     define_default_flags(f)
     f.DEFINE_boolean('compute_for_GP_train', False, "Whether to add a bit of test set to kernel, to be able to use it for GP training")
+    f.DEFINE_boolean('store_partial_kernel', False, "Whether to store the kernels partially on a file to free the processes")
     f.DEFINE_integer('empirical_kernel_batch_size', 256, "batch size to use when computing the empirical kernel, larger models need smaller values, but smaller models can use larger values")
+    f.DEFINE_integer('partial_kernel_n_proc', 175, "number of processes over which we are parallelizing the when computing partial kernels and saving")
+    f.DEFINE_integer('partial_kernel_index', 0, "index of the process when using partial_kernels method")
 
     tf.compat.v1.app.run()

@@ -12,9 +12,9 @@ mpi=/usr/local/shared/openmpi/4.0.0/bin/mpiexec
 #py=/users/guillefix/anaconda3/envs/venv/bin/python
 #mpi=/users/guillefix/anaconda3/envs/venv/bin/mpiexec
 
-$py generate_NN_arch.py $@
+#$py generate_NN_arch.py $@
 ##
-$py generate_inputs_sample.py $@
+#$py generate_inputs_sample.py $@
 #
 $mpi -n $n_procs $py compute_kernel.py $@
 #$py compute_prob_and_bound.py $@ --using_EP
