@@ -13,8 +13,8 @@ a=addqueue
 #for dataset in mnist-fashion; do
 #for dataset in mnist mnist-fashion EMNIST; do
 #for dataset in KMNIST cifar; do
-for dataset in mnist; do
-    for net in resnetv2_101 resnetv2_152 resnext50 resnext101 densenet121 densenet169 densenet201 mobilenetv2 nasnet vgg19 vgg16 ; do 
+for dataset in cifar; do
+    for net in resnet50 resnet101 resnet152 resnetv2_50 resnetv2_101 resnetv2_152 resnext50 resnext101 densenet121 densenet169 densenet201 mobilenetv2 nasnet vgg19 vgg16 ; do 
     #for net in resnetv2_50 resnext50 densenet121 densenet169; do 
     #for net in nasnet; do 
         $a -n $nn -m $mem -s ./meta_script_msweep $dataset $net avg $n $1
