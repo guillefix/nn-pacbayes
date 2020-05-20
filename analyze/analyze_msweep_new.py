@@ -181,9 +181,13 @@ plt.xlim([1e2,50000])
 #for data from jade, because the non-last one could have had problems with two jobs trying to compute the same thing and the later overriding data/kernel of the former
 
 #%%
+%matplotlib
+dataset = "EMNIST"
+pool = "avg"
 
 bdata=bounds[(bounds["m"]==4516) & (bounds["dataset"]==dataset) & (bounds["pooling"]==pool)]
 tdata=training_data[(training_data["m"]==4516) & (training_data["dataset"]==dataset) & (training_data["pooling"]==pool)]
+len(bdata)
 
 boundss = []
 test_errorss = []
@@ -195,6 +199,7 @@ for net in bounds["network"].unique():
 
 
 plt.scatter(boundss,test_errorss)
+# plt.
 
 #%%
 ###### exploring the standard deviation
