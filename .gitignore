@@ -46,10 +46,10 @@ results/gp_samples/*
 !results/*_bounds*.txt
 !results/*_nn_training_results.txt
 
-meta_meta_script_msweep
-meta_meta_script_msweep2
-run_experiment_msweep2
-meta_script_msweep
+#meta_meta_script_msweep
+#meta_meta_script_msweep2
+#run_experiment_msweep2
+#meta_script_msweep
 
 *.sh
 !get_logPs_GP_MC.sh

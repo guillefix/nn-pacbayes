@@ -24,10 +24,14 @@ def main(_):
         assert loss == "mse"
     global threshold
 
-    from mpi4py import MPI
-    comm = MPI.COMM_WORLD
-    rank = comm.Get_rank()
-    size = comm.Get_size()
+    if using_mpi:
+        from mpi4py import MPI
+        comm = MPI.COMM_WORLD
+        rank = comm.Get_rank()
+        size = comm.Get_size()
+    else:
+        rank=0
+        size=1
     num_tasks_per_job = number_inits//size
     tasks = list(range(int(rank*num_tasks_per_job),int((rank+1)*num_tasks_per_job)))
 
@@ -48,16 +52,16 @@ def main(_):
 
     print(tf.__version__)
     if loss=="mse":
-        callbacks = [EarlyStoppingByAccuracy(monitor='val_binary_accuracy_for_mse', value=1.0, verbose=0, wait_epochs=epochs_after_fit)]
+        callbacks = [EarlyStoppingByAccuracy(monitor='val_binary_accuracy_for_mse', value=acc_threshold, verbose=0, wait_epochs=epochs_after_fit)]
         if doing_regression:
             callbacks = [EarlyStoppingByLoss(monitor='val_loss', value=1e-2, verbose=0, wait_epochs=epochs_after_fit)]
     else:
         #if tf.__version__[:3] == "2.1":
         if tf.__version__[0] == "2":
             print("hi im tf 2")
-            callbacks = [EarlyStoppingByAccuracy(monitor='val_accuracy', value=1.0, verbose=0, wait_epochs=epochs_after_fit)]
+            callbacks = [EarlyStoppingByAccuracy(monitor='val_accuracy', value=acc_threshold, verbose=0, wait_epochs=epochs_after_fit)]
         else:
-            callbacks = [EarlyStoppingByAccuracy(monitor='val_acc', value=1.0, verbose=0, wait_epochs=epochs_after_fit)]
+            callbacks = [EarlyStoppingByAccuracy(monitor='val_acc', value=acc_threshold, verbose=0, wait_epochs=epochs_after_fit)]
 
     # callbacks += [EarlyStopping(monitor='val_loss', patience=2, verbose=0),
     #               ModelCheckpoint(kfold_weights_path, monitor='val_loss', save_best_only=True, verbose=0),
@@ -184,7 +188,7 @@ def main(_):
         #print(weights_norm,biases_norm)
 
         #batch_size = min(batch_size, m)
-        model.fit(train_images.astype(np.float32), ys.astype(np.float32), verbose=0,\
+        model.fit(train_images.astype(np.float32), ys.astype(np.float32), verbose=1,\
             sample_weight=sample_weights, validation_data=(train_images.astype(np.float32), ys.astype(np.float32)), epochs=MAX_TRAIN_EPOCHS,callbacks=callbacks, batch_size=min(m,batch_size))
         sys.stdout.flush()
 
@@ -193,7 +197,7 @@ def main(_):
         weights_norm, biases_norm = measure_sigmas(model) #TODO: make sure it works with archs with norm layers etc
         #print(weights_norm,biases_norm)
 
-        if not doing_regression:
+        if not doing_regression: # classification
             train_loss, train_acc = model.evaluate(train_images.astype(np.float32), ys.astype(np.float32), verbose=0)
             test_loss, test_acc = model.evaluate(test_images.astype(np.float32), test_ys.astype(np.float32), verbose=0)
         else:
@@ -243,7 +247,7 @@ def main(_):
         #print('Test sensitivity:', test_sensitivity)
         #print('Test specificity:', test_specificity)
 
-        if not ignore_non_fit or train_acc == 1.0:
+        if not ignore_non_fit or train_acc >= acc_threshold:
             #print("printing function to file", funs_filename)
             function = (model.predict(test_images[:test_function_size].astype(np.float32), verbose=0))[:,0]
             if loss=="mse" and zero_one:
@@ -323,22 +327,40 @@ def main(_):
         #biases_norms_squared_recv = None
         #iterss_recv = None
 
-    test_accs_recv = comm.reduce(test_accs, root=0)
-    test_accs_squared_recv = comm.reduce(test_accs_squared, root=0)
-    test_sensitivities_recv = comm.reduce(test_sensitivities, root=0)
-    test_specificities_recv = comm.reduce(test_specificities, root=0)
-    train_accs_recv = comm.reduce(train_accs, root=0)
-    train_accs_squared_recv = comm.reduce(train_accs_squared, root=0)
+    if using_mpi:
+        test_accs_recv = comm.reduce(test_accs, root=0)
+        test_accs_squared_recv = comm.reduce(test_accs_squared, root=0)
+        test_sensitivities_recv = comm.reduce(test_sensitivities, root=0)
+        test_specificities_recv = comm.reduce(test_specificities, root=0)
+        train_accs_recv = comm.reduce(train_accs, root=0)
+        train_accs_squared_recv = comm.reduce(train_accs_squared, root=0)
 
-    comm.Reduce(weightss.flatten(), weightss_recv, root=0)
-    comm.Reduce(biasess.flatten(), biasess_recv, root=0)
-    comm.Reduce(weightss_squared.flatten(), weightss_squared_recv, root=0)
-    comm.Reduce(biasess_squared.flatten(), biasess_squared_recv, root=0)
-    weights_norms_recv = comm.reduce(weights_norms, root=0)
-    weights_norms_squared_recv = comm.reduce(weights_norms_squared, root=0)
-    biases_norms_recv = comm.reduce(biases_norms, root=0)
-    biases_norms_squared_recv = comm.reduce(biases_norms_squared, root=0)
-    iterss_recv = comm.reduce(iterss, root=0)
+        comm.Reduce(weightss.flatten(), weightss_recv, root=0)
+        comm.Reduce(biasess.flatten(), biasess_recv, root=0)
+        comm.Reduce(weightss_squared.flatten(), weightss_squared_recv, root=0)
+        comm.Reduce(biasess_squared.flatten(), biasess_squared_recv, root=0)
+        weights_norms_recv = comm.reduce(weights_norms, root=0)
+        weights_norms_squared_recv = comm.reduce(weights_norms_squared, root=0)
+        biases_norms_recv = comm.reduce(biases_norms, root=0)
+        biases_norms_squared_recv = comm.reduce(biases_norms_squared, root=0)
+        iterss_recv = comm.reduce(iterss, root=0)
+    else:
+        test_accs_recv = test_accs
+        test_accs_squared_recv = test_accs_squared
+        test_sensitivities_recv = test_sensitivities
+        test_specificities_recv = test_specificities
+        train_accs_recv = train_accs
+        train_accs_squared_recv = train_accs_squared
+
+        weightss_recv=weightss.flatten()
+        biasess_recv=biasess.flatten()
+        weightss_squared_recv=weightss_squared.flatten()
+        biasess_squared_recv=biasess_squared.flatten()
+        weights_norms_recv = weights_norms
+        weights_norms_squared_recv = weights_norms_squared
+        biases_norms_recv = biases_norms
+        biases_norms_squared_recv = biases_norms_squared
+        iterss_recv = iterss
 
     '''PROCESS COLLECTIVE DATA'''
     if rank == 0:
@@ -396,10 +418,12 @@ if __name__ == '__main__':
     f.DEFINE_integer('epochs_after_fit',1,"Number of epochs to wait after it first reacehs 100% accuracy")
     f.DEFINE_float('gamma',1.0,"weight for confusion samples (1.0 weigths them the same as normal samples)")
     f.DEFINE_float('learning_rate',0.01,"learning rate when using SGD")
+    f.DEFINE_float('acc_threshold',1.0,"the minimum training accuracy after which we early stop (unless combined with wait_for_epochs parameter)")
     f.DEFINE_string('optimizer',"sgd","Which optimizer to use (keras optimizers available)")
     f.DEFINE_string('loss',"ce","Which loss to use (ce/mse/etc)")
     f.DEFINE_boolean('ignore_non_fit', False, "Whether to ignore functions that don't fit data")
     f.DEFINE_integer('test_function_size',100,"Number of samples on the test set to use to evaluate the function the network has found")
+    f.DEFINE_boolean('using_mpi', True, "Whether to use MPI or not (don't use if calling this script from another process using MPI, as it would throw error)")
 
     tf.compat.v1.app.run()
     import gc; gc.collect()

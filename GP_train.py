@@ -85,7 +85,6 @@ def main(_):
         else:
             raise NotImplementedError("Gamma not equal to 1.0 with oversampling2 not implemented")
 
-    model = load_model(FLAGS)
 
     set_session = tf.compat.v1.keras.backend.set_session
 
@@ -112,10 +111,10 @@ def main(_):
         likelihood = "bernoulli"
     print("Training GP with "+likelihood+" likelihood")
 
-    model.compile("sgd", loss="mse")
-
     from initialization import get_all_layers, is_normalization_layer, reset_weights, simple_reset_weights
-    if network not in ["cnn", "fc"]:
+    if nn_random_labels or nn_random_regression_outputs:
+        model = load_model(FLAGS)
+        model.compile("sgd", loss="mse")
         layers = get_all_layers(model)
         are_norm = [is_normalization_layer(l) for l in layers for w in l.get_weights()]
         initial_weights = model.get_weights()
@@ -133,8 +132,12 @@ def main(_):
     local_index = 0
 
     from math import ceil
-    samples_per_chunk_base=min(len(tasks),10000)
-    num_chunks = len(tasks)//samples_per_chunk_base
+    if len(tasks)>0:
+        samples_per_chunk_base=min(len(tasks),10000)
+        num_chunks = len(tasks)//samples_per_chunk_base
+    else:
+        samples_per_chunk_base=1
+        num_chunks=0
     remainder = len(tasks)%samples_per_chunk_base
     if remainder > 0:
         num_chunks += 1
@@ -215,7 +218,7 @@ def main(_):
         if threshold != -1:
             print('Test sensitivity:', test_sensitivity/samples_per_chunk)
             print('Test specificity:', test_specificity/samples_per_chunk)
-        if not ignore_non_fit or train_acc == 1.0:
+        if not ignore_non_fit or train_acc/samples_per_chunk == 1.0:
             print("printing function to file", funs_filename)
             functions = preds[:,:test_function_size]>0.5
             functions=functions.astype(int)

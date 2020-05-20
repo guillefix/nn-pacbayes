@@ -95,25 +95,72 @@ def load_model(FLAGS):
     return model
 
 
-def kernel_filename(FLAGS):
+def kernel_filename(FLAGS,cnt=0,partial=False):
     filename=kernel_folder
     for flag in ["prefix","network","dataset","m","confusion","label_corruption","binarized","whitening","random_labels","number_layers","sigmaw","sigmab","pooling","intermediate_pooling","intermediate_pooling_type"]:
         filename+=str(FLAGS[flag])+"_"
     if FLAGS["use_empirical_NTK"]: filename += "NTK_"
+    if partial:
+        filename+="_"+str(cnt)+"_"
     filename += "kernel.npy"
     return filename
+
+import glob
+#def find_partial_kernel_filename(FLAGS):
+#    filename=kernel_folder
+#    for flag in ["prefix","network","dataset","m","confusion","label_corruption","binarized","whitening","random_labels","number_layers","sigmaw","sigmab","pooling","intermediate_pooling","intermediate_pooling_type"]:
+#        filename+=str(FLAGS[flag])+"_"
+#    if FLAGS["use_empirical_NTK"]: filename += "NTK_"
+#    if partial:
+#        filename+="_*_"
+#    filename += "kernel.npy"
+#    files = glob.glob(filename)
+#    if len(files) == 0:
+#        return None, 0
+#    elif len(files) == 1:
+#        filename = files[0]
+#        cnt = int(filename.split("_")[-2])
+#        return filename, cnt
+#    else:
+#        raise Exception("more than one partial kernel found for this run")
+
+def find_partial_kernel_filenames(FLAGS):
+    filename=kernel_folder
+    for flag in ["prefix","network","dataset","m","confusion","label_corruption","binarized","whitening","random_labels","number_layers","sigmaw","sigmab","pooling","intermediate_pooling","intermediate_pooling_type"]:
+        filename+=str(FLAGS[flag])+"_"
+    if FLAGS["use_empirical_NTK"]: filename += "NTK_"
+    filename+="_*_"
+    filename += "kernel.npy"
+    files = glob.glob(filename)
+    return files
 
 def save_kernel(K,FLAGS):
     filename = kernel_filename(FLAGS)
     np.save(open(filename,"wb"),K)
+
+def save_kernel_partial(K,FLAGS,index):
+    filename = kernel_filename(FLAGS,index,True)
+    np.save(open(filename,"wb"),K)
+
+def delete_kernel_partial(FLAGS,index):
+    filename = kernel_filename(FLAGS,index,True)
+    os.remove(filename)
 
 def load_kernel(FLAGS):
     filename = kernel_filename(FLAGS)
     print("loading kernel ",filename)
     return load_kernel_by_filename(filename)
 
+#def load_kernel_partial(FLAGS):
+#    filename, cnt = find_partial_kernel_filename(FLAGS)
+#    print("loading partial kernel ",filename, cnt)
+#    if filename is not None:
+#        return load_kernel_by_filename(filename), cnt
+#    else:
+#        return None, cnt
+
 def load_kernel_by_filename(filename):
-    K = np.load(filename,"r")
+    K = np.load(filename,"r+")
     return K
 
 def define_default_flags(f):
