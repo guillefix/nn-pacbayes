@@ -41,7 +41,7 @@ epochs_after_fit=0
 #epochs_after_fit=64
 #prefix=32_batch_oddeven_big_sgd_${loss}_sample_
 #prefix=oddeven_big_sgd_${loss}_sample_${loss}_
-prefix=test_
+prefix=mnist_mse_logQs_
 
 if [ $net = fc ]; then
     L=2

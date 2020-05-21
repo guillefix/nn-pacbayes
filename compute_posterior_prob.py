@@ -82,8 +82,8 @@ def main(_):
 
     if rank == 0:
         print(logQ)
-        useful_flags = ["dataset","boolfun_comp","boolfun", "network", "m","label_corruption","confusion", "number_layers", "sigmaw", "sigmab", "binarized", "pooling", "intermediate_pooling", "whitening", "training", "n_gpus", "kernel_mult", "normalize_kernel"]
-        with open(results_folder+prefix+"bounds.txt","a") as file:
+        useful_flags = ["dataset","boolfun_comp","boolfun","test_function_override", "test_function_size", "network", "m","label_corruption","confusion", "number_layers", "sigmaw", "sigmab", "binarized", "pooling", "intermediate_pooling", "whitening", "training", "n_gpus", "kernel_mult", "normalize_kernel"]
+        with open(results_folder+prefix+"logQs.txt","a") as file:
             file.write("#")
             for key in useful_flags:
                 file.write("{}\t".format(key))
