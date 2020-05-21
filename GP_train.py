@@ -52,7 +52,7 @@ def main(_):
     #print("ys", ys)
     #process data to be on the right format for GP
     #test on a smaller sample on test set because otherwise GP would run out of memory
-    test_images = test_images[:1000]
+    test_images = test_images[:1000] #TODO: well this isn't very clean I should just pass the test_set_size to the K computation really..
     test_ys = test_ys[:1000]
     X = flat_train_images
     data = test_images
