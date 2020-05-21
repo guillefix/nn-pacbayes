@@ -30,7 +30,7 @@ class CustomMean(GPy.core.Mapping):
     def gradients_X(self, dL_dF, X):
         return np.zeros_like(X)
 
-def nngp_mse_heaviside_posteror_logp(Xtrain,Ytrain,Xtest,Ytest,Kfull):
+def nngp_mse_heaviside_posteror_params(Xtrain,Ytrain,Xtest,Kfull):
 
     #find out the analytical posterior
     Xfull =  np.concatenate([Xtrain,Xtest])
@@ -39,6 +39,10 @@ def nngp_mse_heaviside_posteror_logp(Xtrain,Ytrain,Xtest,Ytest,Kfull):
     kernel = CustomMatrix(Xfull.shape[1],Xfull,Kfull)
     gp_model = GPy.core.GP(X=Xtrain,Y=Ytrain,kernel=kernel,inference_method=inference_method, likelihood=lik)
     mean, cov = gp_model.predict(Xtest,full_cov=True)
+
+    return mean, cov
+
+def nngp_mse_heaviside_posteror_logp(Xtest,Ytest,mean,cov):
 
     #use EP approximation to estimate probability of binary labelling on test set.
     linkfun = GPy.likelihoods.link_functions.Heaviside()

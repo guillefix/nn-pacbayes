@@ -303,3 +303,7 @@ mnist	none	none	cnn	1000	0.0	0.0	4	1.41	0.0	True	mac	1111	False	True	1	1.0	False
 #dataset	boolfun_comp	boolfun	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	kernel_mult	normalize_kernel	logQ
 mnist	none	none	fc	100	0.0	0.0	2	1.41	0.1	True	max	00	False	True	0	1.0	False	#dataset	boolfun_comp	boolfun	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	kernel_mult	normalize_kernel	logQ
 mnist	none	none	fc	100	0.0	0.0	2	1.41	0.1	True	max	00	False	True	0	1.0	False	-117.14378648554407
+#dataset	boolfun_comp	boolfun	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	kernel_mult	normalize_kernel	logQ
+mnist	none	none	fc	100	0.0	0.0	2	1.41	0.1	True	max	00	False	True	0	1.0	False	-117.1437864855437
+#dataset	boolfun_comp	boolfun	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	kernel_mult	normalize_kernel	logQ
+mnist	none	none	fc	100	0.0	0.0	2	1.41	0.1	True	max	00	False	True	0	1.0	False	-117.14378648554334

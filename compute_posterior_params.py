@@ -53,10 +53,10 @@ def main(_):
     Xtest = flat_test_images
     Xfull =  np.concatenate([flat_train_images,flat_test_images])
     ys2 = [[y] for y in ys]
-    if test_fun_override is not None:
-        ys2test = [[float(x)] for x in test_fun_override]
-    else:
-        ys2test = [[y] for y in test_ys]
+    # if test_fun_override is not None:
+    #     ys2test = [[float(x)] for x in test_fun_override]
+    # else:
+    ys2test = [[y] for y in test_ys]
     ysfull = ys2 + ys2test
     Yfull = np.array(ysfull)
     Ytrain = np.array(ys2)
@@ -70,29 +70,40 @@ def main(_):
     # if loss is not "mse":
     #     raise NotImplementedError("Haven't implemented logQ estimate for CE loss yet")
 
-    from utils import load_posterior_params
-    mean,cov = load_posterior_params(FLAGS)
+    if using_NTK:
+        raise NotImplementedError("Haven't implemented logQ estimate for NTK yet")
+        # FLAGS["use_empirical_NTK"] = True
+        # theta = load_kernel(FLAGS)
+        # print(theta)
+        # #if using NTK, the above gets the NTK kernel, but we also need the non-NTK one to compute the bound!
+        # FLAGS["use_empirical_NTK"] = False
+        # K_pre = load_kernel(FLAGS)
+        # print(K_pre)
+        # if normalize_kernel:
+        #     K_pre = K_pre/K_pre.max()
+        # K = kernel_mult*K_pre
+        # if theta.shape[0] >= m: #must have compute kernel for GP_train
+        #     theta = theta[:m,:m]
+        # if K.shape[0] >= m: #must have compute kernel for GP_train
+        #     K = K[:m,:m]
+    else:
+        K_pre = load_kernel(FLAGS)
+        print(K_pre)
+        if normalize_kernel:
+            K_pre = K_pre/K_pre.max()
+        Kfull = kernel_mult*K_pre
+
 
     #finding log marginal likelihood of data
-    if using_EP:
-        from GP_prob.nngp_mse_heaviside_posterior import nngp_mse_heaviside_posteror_logp
-        logQ = nngp_mse_heaviside_posteror_logp(Xtest,Ytest,mean,cov)
+    if loss == "mse":
+        from GP_prob.nngp_mse_heaviside_posterior import nngp_mse_heaviside_posteror_params
+        mean,cov = nngp_mse_heaviside_posteror_params(Xtrain,Ytrain,Xtest,Kfull)
     else:
-        raise NotImplementedError("Only EP estimation of logQ is implemented")
+        raise NotImplementedError("Only mse loss implemented")
 
     if rank == 0:
-        print(logQ)
-        useful_flags = ["dataset","boolfun_comp","boolfun", "network", "m","label_corruption","confusion", "number_layers", "sigmaw", "sigmab", "binarized", "pooling", "intermediate_pooling", "whitening", "training", "n_gpus", "kernel_mult", "normalize_kernel"]
-        with open(results_folder+prefix+"bounds.txt","a") as file:
-            file.write("#")
-            for key in useful_flags:
-                file.write("{}\t".format(key))
-            file.write("logQ")
-            file.write("\n")
-            for key in useful_flags:
-                file.write("{}\t".format(FLAGS[key]))
-            file.write("{}".format(logQ))
-            file.write("\n")
+        from utils import save_posterior_params
+        save_posterior_params(mean,cov,FLAGS)
 
 if __name__ == '__main__':
 
@@ -105,7 +116,8 @@ if __name__ == '__main__':
     f.DEFINE_boolean('using_NTK', False, "Whether  to use the exact relative entropy for MSE GP regression, with NTK posterior")
     f.DEFINE_boolean('normalize_kernel', False, "Whether to normalize the kernel (by dividing by max value) or not")
     f.DEFINE_float('kernel_mult', 1.0, "Factor by which to multiply the kernel before computing approximate marginal likelihood")
-    f.DEFINE_string('test_fun_override', None, "If given, it substitutes the y-values of the test set with the labels given in the string")
+    # f.DEFINE_string('test_fun_override', None, "If given, it substitutes the y-values of the test set with the labels given in the string")
     f.DEFINE_integer('test_function_size',100,"Number of samples on the test set to use to evaluate the function the network has found")
+    f.DEFINE_string('loss',"ce","Which loss to use (ce/mse/etc)")
 
     tf.compat.v1.app.run()
