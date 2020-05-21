@@ -19,7 +19,7 @@ export mpi=mpiexec
 #mpi=/users/guillefix/anaconda3/envs/venv/bin/mpiexec
 export n_gpus n_procs train_method generate_arch generate_data compute_kernel compute_bound train sample_funs compute_logQ py mpi
 
-m=10000
+m=100
 dataset=mnist
 #boolfun=00001110110011111001111111001111000000000000000000000000000000000000000001001100000000001101110100000000000000000000000000000000
 #boolfun_comp=84.0
