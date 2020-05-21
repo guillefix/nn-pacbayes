@@ -1,0 +1,28 @@
+#!/bin/bash
+
+
+if [ $generate_arch = 1 ]; then
+$py generate_NN_arch.py $@
+fi
+
+if [ $generate_data = 1 ]; then
+$py generate_inputs_sample.py $@
+fi
+
+if [ $compute_kernel = 1 ]; then
+    $mpi -n $n_procs $py compute_kernel.py $@ --compute_for_GP_train
+fi
+if [ $train = 1 ]; then
+    $mpi -n $n_procs $py GP_train.py $@
+fi
+if [ $compute_logQ = 1 ]; then
+  $py compute_posterior_prob.py $@ --using_EP
+fi
+if [ $compute_bound = 1 ]; then
+    echo Not implemented
+    exit 1
+fi
+if [ $sample_funs = 1 ]; then
+    echo Not implemented
+    exit 1
+fi
