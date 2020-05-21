@@ -1,23 +1,26 @@
 #!/bin/bash
 
+test_fun=$1
+logPGPEP=$2
+errors=$3
 n_gpus=0
 n_procs=1
 train_method=GP
 generate_arch=1
 generate_data=1
-compute_kernel=1
+compute_kernel=$4
+compute_posterior_params=$4
 compute_bound=0
 train=0
 sample_funs=0
 compute_logQ=1
 number_inits=1
-test_fun=$1
 
 export py=python3
 export mpi=mpiexec
 #py=/users/guillefix/anaconda3/envs/venv/bin/python
 #mpi=/users/guillefix/anaconda3/envs/venv/bin/mpiexec
-export n_gpus n_procs train_method generate_arch generate_data compute_kernel compute_bound train sample_funs compute_logQ py mpi
+export n_gpus n_procs train_method generate_arch generate_data compute_kernel compute_bound train sample_funs compute_logQ compute_posterior_params py mpi
 
 m=100
 dataset=mnist
