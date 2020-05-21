@@ -19,7 +19,6 @@ if [ $compute_posterior_params = 1 ]; then
   $py compute_posterior_params.py $@
 fi
 if [ $compute_logQ = 1 ]; then
-  $py compute_posterior_params.py $@
   $py compute_posterior_prob.py $@ --using_EP
 fi
 if [ $compute_bound = 1 ]; then

@@ -82,7 +82,7 @@ def main(_):
 
     if rank == 0:
         print(logQ)
-        useful_flags = ["dataset","boolfun_comp","boolfun","test_fun_override", "test_function_size", "network", "m","label_corruption","confusion", "number_layers", "sigmaw", "sigmab", "binarized", "pooling", "intermediate_pooling", "whitening", "training", "n_gpus", "kernel_mult", "normalize_kernel"]
+        useful_flags = ["dataset","boolfun_comp","boolfun","test_fun_override", "test_function_size", "network", "m","label_corruption","confusion", "number_layers", "sigmaw", "sigmab", "binarized", "pooling", "intermediate_pooling", "whitening", "training", "n_gpus", "kernel_mult", "normalize_kernel", "logPGPEP", "errors"]
         with open(results_folder+prefix+"logQs.txt","a") as file:
             file.write("#")
             for key in useful_flags:
@@ -105,6 +105,8 @@ if __name__ == '__main__':
     f.DEFINE_boolean('using_NTK', False, "Whether  to use the exact relative entropy for MSE GP regression, with NTK posterior")
     f.DEFINE_boolean('normalize_kernel', False, "Whether to normalize the kernel (by dividing by max value) or not")
     f.DEFINE_float('kernel_mult', 1.0, "Factor by which to multiply the kernel before computing approximate marginal likelihood")
+    f.DEFINE_float('logPGPEP', 0.0, "Convenience thing to save the logP from the files that Chris gave me")
+    f.DEFINE_integer('errors', -1, "Convenience thing to save the errors from the files that Chris gave me")
     f.DEFINE_string('test_fun_override', None, "If given, it substitutes the y-values of the test set with the labels given in the string")
     f.DEFINE_integer('test_function_size',100,"Number of samples on the test set to use to evaluate the function the network has found")
 
