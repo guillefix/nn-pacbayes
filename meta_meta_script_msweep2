@@ -19,14 +19,14 @@ for dataset in cifar; do
 #for dataset in mnist-fashion EMNIST KMNIST cifar; do
     #for net in resnetv2_50 resnetv2_101 resnetv2_152 resnext50 densenet121 densenet169 densenet201 mobilenetv2 nasnet; do 
     #for net in resnet50; do 
-    for net in resnet50 resnet101 resnet152 resnetv2_50 resnetv2_101 resnetv2_152 resnext50 resnext101 densenet121 densenet169 densenet201 mobilenetv2 nasnet vgg19 vgg16 ; do 
+    for net in densenet121 densenet169 ; do 
     #for net in nasnet; do 
         $a -n $nn -m $mem -s ./meta_script_msweep2 $dataset $net avg $n $1
     done
-    $a -n $nn -m $mem -s ./meta_script_msweep2 $dataset fc none $n $1
-    $a -n $nn -m $mem -s ./meta_script_msweep2 $dataset cnn none $n $1
+    #$a -n $nn -m $mem -s ./meta_script_msweep2 $dataset fc none $n $1
+    #$a -n $nn -m $mem -s ./meta_script_msweep2 $dataset cnn none $n $1
     $a -n $nn -m $mem -s ./meta_script_msweep2 $dataset cnn avg $n $1
-    $a -n $nn -m $mem -s ./meta_script_msweep2 $dataset cnn max $n $1
+    #$a -n $nn -m $mem -s ./meta_script_msweep2 $dataset cnn max $n $1
 done
 #for dataset in mnist-fashion EMNIST KMNIST cifar; do
 #    #for net in resnet50 resnet101 resnet152 resnetv2_50 resnetv2_101 resnetv2_152 resnext50 resnext101 densenet121 densenet169 densenet201 mobilenetv2 nasnet vgg19 vgg16 ; do 

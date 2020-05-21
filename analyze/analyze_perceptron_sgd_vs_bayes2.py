@@ -16,9 +16,9 @@ funs = ["10001000000000000000000000000000000010000000000000000000000000000000000
 
 # funs = ["10001000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000","11111111111111111111111111111111010111110111111101111111011111111111111111111111111111111111111111111111111111111111111111111111","11111111111111111111111111111111011101110111011101110111011101111111111111111111111111111111111111111111111111111111111111111111","11111111111111111111111111111111010101010101010101010101010101011111111111111111111111111111111101010101010101010101010101010101","00110011001100110000000000000000001100110011001100000000000000000000000000000000000000000000000000000000000000000000000000000000","00001111000011110000111100001111000011110000111100001111000011111111111111111111111111111111111111111111111111111111111111111111"]
 
-def compute_gen_error(testfun,target_testfun):
+def compute_gen_acc(testfun,target_testfun):
     assert len(testfun) == len(target_testfun)
-    return len([x for i,x in enumerate(testfun) if x==target_testfun[i]])/len(testfun)
+    return len([x for ii,x in enumerate(testfun) if x==target_testfun[ii]])*1.0/len(testfun)
 
 #%%
 
@@ -30,39 +30,56 @@ overtraining_epochs = 0
 
 batch_size = 1
 learning_rate="_0.01"
-learning_rate=""
+learning_rate="_0.001"
+# learning_rate=""
 
-# first_name="ABI"
-first_name="GP_EP"
-second_name="SGD"
+first_name="ABI"
+# first_name="GP_EP"
+# second_name="SGD"
+second_name="GP_MSE"
+
+# loss="ce"
+loss="mse"
+loss="gpmse"
+
+if loss=="mse":
+    # prefix="sgd_vs_bayes_mse"
+    prefix="sgd_vs_bayes"
+else:
+    prefix="sgd_vs_bayes"
 
 # %matplotlib
 # first_sample["freq"].unique()
 # second_sample["freq"].unique()
+#%%
 
+# i=0
+# fun=funs[i]
 for i,fun in list(enumerate(funs)):
     # if i<=5:
     #     continue
     #%%
     train_set = train_sets[i]
-    train_set_indices = [i for i in range(len(train_set)) if train_set[i]=="1"]
-    test_set_indices = [i for i in range(len(train_set)) if train_set[i]=="0"]
+    train_set_indices = [ii for ii in range(len(train_set)) if train_set[ii]=="1"]
+    test_set_indices = [ii for ii in range(len(train_set)) if train_set[ii]=="0"]
     target_fun = fun
     # abi_sample = pd.read_csv("results/sgd_vs_bayes/"+str(i)+"_abi_sample_net_2hl_sorted.txt", sep="\t", header=None,names=["freq","fun","testerror"])
     for ii,name in enumerate([first_name,second_name]):
         if name == "SGD":
-            thing = pd.read_csv("results/sgd_vs_bayes/"+str(i)+"_sgd_vs_bayes_32_40_2_"+str(batch_size)+"_sgd_ce_"+str(overtraining_epochs)+learning_rate+"__nn_train_functions_sorted.txt", header=None, delim_whitespace=True, names=["freq","testfun"])
+            thing = pd.read_csv("results/sgd_vs_bayes/"+str(i)+"_"+prefix+"_32_40_2_"+str(batch_size)+"_sgd_"+loss+"_"+str(overtraining_epochs)+learning_rate+"__nn_train_functions_sorted.txt", header=None, delim_whitespace=True, names=["freq","testfun"])
         elif name == "ABI":
             thing = pd.read_csv("results/sgd_vs_bayes/"+str(i)+"_abi_sample_net_2hl_sorted_testfun.csv")
         elif name == "GP_EP":
             thing = pd.read_csv("results/sgd_vs_bayes/"+str(i)+"_sgd_vs_bayes_gpep_32_40_2_8_sgd_ce_"+str(overtraining_epochs)+"__nn_train_functions_sorted.txt", header=None, delim_whitespace=True, names=["freq","testfun"])
+        elif name == "GP_MSE":
+            thing = pd.read_csv("results/sgd_vs_bayes/"+str(i)+"_"+prefix+"_32_40_2_"+str(batch_size)+"_sgd_gpmse_"+str(overtraining_epochs)+learning_rate+"__nn_train_functions_sorted.txt", header=None, delim_whitespace=True, names=["freq","testfun"])
         else:
             raise NotImplementedError
 
         if ii == 0: first_sample = thing
         elif ii == 1: second_sample = thing
 
-    target_testfun = "".join([x for i,x in enumerate(target_fun) if i in test_set_indices])
+    target_testfun = "".join([x for ii,x in enumerate(target_fun) if ii in test_set_indices])
 
     # abi_sample
     first_tot_samples = sum(first_sample["freq"])
@@ -77,34 +94,37 @@ for i,fun in list(enumerate(funs)):
     second_sample = second_sample.set_index("testfun")
 
     #%%
+    # %matplotlib
     '''ERROR HISTOGRAMS'''
     # abi_sample.to_csv("results/sgd_vs_bayes/"+str(i)+"_abi_sample_net_2hl_sorted_testfun.csv")
-    gen_error_first_sample = list(map(lambda x: compute_gen_error(x, target_testfun), first_sample.index))
+    gen_error_first_sample = list(map(lambda x: compute_gen_acc(x, target_testfun), first_sample.index))
     first_sample["testerror"] = np.array(1) - gen_error_first_sample
-    gen_error_second_sample = list(map(lambda x: compute_gen_error(x, target_testfun), second_sample.index))
+    gen_error_second_sample = list(map(lambda x: compute_gen_acc(x, target_testfun), second_sample.index))
     second_sample["testerror"] = np.array(1) - gen_error_second_sample
-    plt.hist(gen_error_second_sample, alpha=0.5, weights=second_sample["freq"], density=True, bins=np.linspace(0.7,1.0,20), label=second_name+" sampling");
-    plt.hist(gen_error_first_sample, alpha=0.5, weights=first_sample["freq"], density=True, bins=np.linspace(0.7,1.0,20), label=first_name+" sampling");
-    plt.legend()
-    plt.xlabel("Test error")
-    # plt.savefig(str(i)+"_test_error_histograms_sgd_fc_32_"+str(overtraining_epochs)+"__8_sgd_ce_vs_abi_1_7_2x40_1.png")
-    # plt.savefig(str(i)+"_test_error_histograms_sgd_fc_32_"+str(overtraining_epochs)+"__8_sgd_ce_vs_gpep_1_7_2x40_1.png")
-    plt.savefig(str(i)+"_"+first_name+"_vs_"+second_name+"_test_error_histograms_fc_32_"+str(overtraining_epochs)+"_"+learning_rate+"__"+str(batch_size)+"_1_7_2x40_1.png")
-    plt.close()
+    print(np.mean(gen_error_first_sample))
+    print(np.mean(gen_error_second_sample))
+    # plt.hist(gen_error_second_sample, alpha=0.5, weights=second_sample["freq"], density=True, bins=np.linspace(0.7,1.0,20), label=second_name+" sampling");
+    # plt.hist(gen_error_first_sample, alpha=0.5, weights=first_sample["freq"], density=True, bins=np.linspace(0.7,1.0,20), label=first_name+" sampling");
+    # plt.legend()
+    # plt.xlabel("Test accuracy")
+    # # plt.savefig(str(i)+"_test_error_histograms_sgd_fc_32_"+str(overtraining_epochs)+"__8_sgd_ce_vs_abi_1_7_2x40_1.png")
+    # # plt.savefig(str(i)+"_test_error_histograms_sgd_fc_32_"+str(overtraining_epochs)+"__8_sgd_ce_vs_gpep_1_7_2x40_1.png")
+    # plt.savefig(str(i)+"_"+first_name+"_vs_"+second_name+"_test_error_histograms_fc_32_"+str(overtraining_epochs)+"_"+learning_rate+"__"+str(batch_size)+"_1_7_2x40_1_"+loss+".png")
+    # plt.close()
     #%%
-    # continue
+    continue
 
     '''RANK PLOTS'''
     sorted_second_freqs = np.sort(second_sample["freq"])[::-1]
     sorted_first_freqs = np.sort(first_sample["freq"])[::-1]
-    plt.plot(range(1,len(sorted_second_freqs)+1),sorted_second_freqs/second_tot_samples, label=second_name+" sampling")
-    plt.plot(range(1,len(sorted_first_freqs)+1),sorted_first_freqs/first_tot_samples, label=first_name+" sampling")
+    plt.plot(range(1,len(sorted_second_freqs)+1),1.0*sorted_second_freqs/second_tot_samples, label=second_name+" sampling")
+    plt.plot(range(1,len(sorted_first_freqs)+1),1.0*sorted_first_freqs/first_tot_samples, label=first_name+" sampling")
     plt.yscale("log")
     plt.xscale("log")
     plt.xlabel("Rank")
     plt.ylabel("Probability")
     plt.legend()
-    plt.savefig(str(i)+"_"+first_name+"_vs_"+second_name+"_rank_plots_fc_32_"+str(overtraining_epochs)+"_"+learning_rate+"__"+str(batch_size)+"_1_7_2x40_1.png")
+    plt.savefig(str(i)+"_"+first_name+"_vs_"+second_name+"_rank_plots_fc_32_"+str(overtraining_epochs)+"_"+learning_rate+"__"+str(batch_size)+"_1_7_2x40_1_"+loss+".png")
     plt.close()
     #%%
 
@@ -143,8 +163,8 @@ for i,fun in list(enumerate(funs)):
             test_funs.append(test_fun)
             errors.append(error)
 
-    normalized_second_freqs = np.array(second_freqs)/second_tot_samples
-    normalized_first_freqs = np.array(first_freqs)/first_tot_samples
+    normalized_second_freqs = 1.0*np.array(second_freqs)/second_tot_samples
+    normalized_first_freqs = 1.0*np.array(first_freqs)/first_tot_samples
 
     #%%
     # %matplotlib
@@ -161,7 +181,7 @@ for i,fun in list(enumerate(funs)):
     # plt.xlabel("Rank")
     plt.ylabel("Probability")
     plt.legend()
-    plt.savefig(str(i)+"_"+first_name+"_vs_"+second_name+"_error_scatter_plot_fc_32_"+str(overtraining_epochs)+"_"+learning_rate+"__"+str(batch_size)+"_1_7_2x40_1.png")
+    plt.savefig(str(i)+"_"+first_name+"_vs_"+second_name+"_error_scatter_plot_fc_32_"+str(overtraining_epochs)+"_"+learning_rate+"__"+str(batch_size)+"_1_7_2x40_1_"+loss+".png")
     # plt.close()
     # #%%
     # plt.scatter(normalized_abi_freqs, normalized_sgd_freqs)
@@ -230,7 +250,7 @@ for i,fun in list(enumerate(funs)):
     #%%
     cmap = plt.cm.viridis  # define the colormap
     # extract all colors from the .jet map
-    cmaplist = [cmap(i) for i in range(cmap.N)]
+    cmaplist = [cmap(ii) for ii in range(cmap.N)]
     # create the new map
     import matplotlib as mpl
     cmap = mpl.colors.LinearSegmentedColormap.from_list(
@@ -255,7 +275,7 @@ for i,fun in list(enumerate(funs)):
     ys = [0.5*np.minimum(min_val,1e-6),np.minimum(1.5,1.5*max_val)]
     plt.xlim(xs)
     plt.ylim(ys)
-    plt.plot(xs,ys,c=np.array([10, 166, 10,125])/255)
+    plt.plot(xs,ys,c=1.0*np.array([10, 166, 10,125])/255)
     plt.grid(color="0.7")
     plt.xlabel(second_name+" sampling probability", fontsize=14)
     plt.ylabel(first_name+" sampling probability", fontsize=14)
@@ -272,7 +292,7 @@ for i,fun in list(enumerate(funs)):
 
     plt.gca().set_yticklabels(list(range(0,10))+["10+"])
     # ax2.yaxis.get_major_ticks()[-1].label.set_fontsize(14)
-    plt.savefig(str(i)+"_scatter_"+first_name+"_vs_"+second_name+"_"+str(overtraining_epochs)+"_"+learning_rate+"_"+str(batch_size)+".png")
+    plt.savefig(str(i)+"_scatter_"+first_name+"_vs_"+second_name+"_"+str(overtraining_epochs)+"_"+learning_rate+"_"+str(batch_size)+"_"+loss+".png")
     # plt.ylim([y_min*0.9,y_max*1.1])
     # plt.xlim([x_min*0.9,x_max*1.1])
     # # # plt.savefig("sgd_fc_32___8_sgd_ce_wait64_vs_abi_7_2x40_1_above3_sgd_weighted_row_normalized.png")

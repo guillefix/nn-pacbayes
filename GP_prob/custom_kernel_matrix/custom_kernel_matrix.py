@@ -34,7 +34,7 @@ class CustomMatrix(Kern):
             #else:
             return self.Kmatrix[indices1[:, None], indices2]
         else:
-            raise NotImplementedError("Some elements of X2 are not in X")
+            raise NotImplementedError("Some elements of X2 or X1 are not in X")
         #     return NotImplementedError
     # @Cache_this(limit=3, ignore_args=())
     def Kdiag(self,X):
