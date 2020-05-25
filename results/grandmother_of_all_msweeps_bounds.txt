@@ -254,3 +254,7 @@ cifar	none	none	mobilenetv2	40000	0.0	0.0	2	1.41	0.0	True	avg	00	False	True	0	1.
 cifar	none	none	resnext101	40000	0.0	0.0	2	1.41	0.0	True	avg	00	False	True	0	1.0	True	0.4724921093530937	-25554.533465586588
 #dataset	boolfun_comp	boolfun	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	kernel_mult	normalize_kernel	bound	logP
 cifar	none	none	vgg19	40000	0.0	0.0	2	1.41	0.0	True	avg	00	False	True	0	1.0	True	0.393659547002951	-19983.4211403244
+#dataset	boolfun_comp	boolfun	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	kernel_mult	normalize_kernel	bound	logP
+cifar	none	none	resnext50	40000	0.0	0.0	2	1.41	0.0	True	avg	00	False	True	0	1.0	True	0.4860292938748221	-26594.435543745738
+#dataset	boolfun_comp	boolfun	network	m	label_corruption	confusion	number_layers	sigmaw	sigmab	binarized	pooling	intermediate_pooling	whitening	training	n_gpus	kernel_mult	normalize_kernel	bound	logP
+cifar	none	none	densenet201	40000	0.0	0.0	2	1.41	0.0	True	avg	00	False	True	0	1.0	True	0.4387594986427319	-23075.105824885515

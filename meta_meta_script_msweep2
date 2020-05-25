@@ -19,7 +19,7 @@ for dataset in cifar; do
 #for dataset in mnist-fashion EMNIST KMNIST cifar; do
     #for net in resnetv2_50 resnetv2_101 resnetv2_152 resnext50 densenet121 densenet169 densenet201 mobilenetv2 nasnet; do 
     #for net in resnet50; do 
-    for net in densenet121 densenet169 ; do 
+    for net in resnext50 densenet121 densenet169 densenet201 ; do 
     #for net in nasnet; do 
         $a -n $nn -m $mem -s ./meta_script_msweep2 $dataset $net avg $n $1
     done
