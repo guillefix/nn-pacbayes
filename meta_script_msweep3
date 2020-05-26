@@ -17,8 +17,8 @@ elif [ $net = cnn ]; then
         intermediate_pooling=1111
     fi
 fi
-optimizer=adam
-#optimizer=sgd
+#optimizer=adam
+optimizer=sgd
 loss=ce
 sigmaw=1.41
 #sigmaw=10.0
