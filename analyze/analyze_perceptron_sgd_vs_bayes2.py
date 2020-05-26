@@ -33,14 +33,15 @@ learning_rate="_0.01"
 learning_rate="_0.001"
 # learning_rate=""
 
-first_name="ABI"
+# first_name="ABI"
 # first_name="GP_EP"
+first_name="SGD"
 # second_name="SGD"
 second_name="GP_MSE"
 
 # loss="ce"
 loss="mse"
-loss="gpmse"
+# loss="gpmse"
 
 if loss=="mse":
     # prefix="sgd_vs_bayes_mse"
@@ -55,6 +56,8 @@ else:
 
 # i=0
 # fun=funs[i]
+first_name_old=first_name
+second_name_old=second_name
 for i,fun in list(enumerate(funs)):
     # if i<=5:
     #     continue
@@ -64,7 +67,7 @@ for i,fun in list(enumerate(funs)):
     test_set_indices = [ii for ii in range(len(train_set)) if train_set[ii]=="0"]
     target_fun = fun
     # abi_sample = pd.read_csv("results/sgd_vs_bayes/"+str(i)+"_abi_sample_net_2hl_sorted.txt", sep="\t", header=None,names=["freq","fun","testerror"])
-    for ii,name in enumerate([first_name,second_name]):
+    for ii,name in enumerate([first_name_old,second_name_old]):
         if name == "SGD":
             thing = pd.read_csv("results/sgd_vs_bayes/"+str(i)+"_"+prefix+"_32_40_2_"+str(batch_size)+"_sgd_"+loss+"_"+str(overtraining_epochs)+learning_rate+"__nn_train_functions_sorted.txt", header=None, delim_whitespace=True, names=["freq","testfun"])
         elif name == "ABI":
@@ -93,6 +96,11 @@ for i,fun in list(enumerate(funs)):
     first_sample = first_sample.set_index("testfun")
     second_sample = second_sample.set_index("testfun")
 
+    if first_name == "SGD":
+        first_name = "SGD ("+loss+" loss)"
+    if second_name == "SGD":
+        second_name = "SGD ("+loss+" loss)"
+
     #%%
     # %matplotlib
     '''ERROR HISTOGRAMS'''
@@ -103,16 +111,16 @@ for i,fun in list(enumerate(funs)):
     second_sample["testerror"] = np.array(1) - gen_error_second_sample
     print(np.mean(gen_error_first_sample))
     print(np.mean(gen_error_second_sample))
-    # plt.hist(gen_error_second_sample, alpha=0.5, weights=second_sample["freq"], density=True, bins=np.linspace(0.7,1.0,20), label=second_name+" sampling");
-    # plt.hist(gen_error_first_sample, alpha=0.5, weights=first_sample["freq"], density=True, bins=np.linspace(0.7,1.0,20), label=first_name+" sampling");
-    # plt.legend()
-    # plt.xlabel("Test accuracy")
-    # # plt.savefig(str(i)+"_test_error_histograms_sgd_fc_32_"+str(overtraining_epochs)+"__8_sgd_ce_vs_abi_1_7_2x40_1.png")
-    # # plt.savefig(str(i)+"_test_error_histograms_sgd_fc_32_"+str(overtraining_epochs)+"__8_sgd_ce_vs_gpep_1_7_2x40_1.png")
-    # plt.savefig(str(i)+"_"+first_name+"_vs_"+second_name+"_test_error_histograms_fc_32_"+str(overtraining_epochs)+"_"+learning_rate+"__"+str(batch_size)+"_1_7_2x40_1_"+loss+".png")
-    # plt.close()
+    plt.hist(gen_error_second_sample, alpha=0.5, weights=second_sample["freq"], density=True, bins=np.linspace(0.7,1.0,20), label=second_name+" sampling");
+    plt.hist(gen_error_first_sample, alpha=0.5, weights=first_sample["freq"], density=True, bins=np.linspace(0.7,1.0,20), label=first_name+" sampling");
+    plt.legend()
+    plt.xlabel("Test accuracy")
+    # plt.savefig(str(i)+"_test_error_histograms_sgd_fc_32_"+str(overtraining_epochs)+"__8_sgd_ce_vs_abi_1_7_2x40_1.png")
+    # plt.savefig(str(i)+"_test_error_histograms_sgd_fc_32_"+str(overtraining_epochs)+"__8_sgd_ce_vs_gpep_1_7_2x40_1.png")
+    plt.savefig(str(i)+"_"+first_name+"_vs_"+second_name+"_test_error_histograms_fc_32_"+str(overtraining_epochs)+"_"+learning_rate+"__"+str(batch_size)+"_1_7_2x40_1_"+loss+".png")
+    plt.close()
     #%%
-    continue
+    # continue
 
     '''RANK PLOTS'''
     sorted_second_freqs = np.sort(second_sample["freq"])[::-1]
