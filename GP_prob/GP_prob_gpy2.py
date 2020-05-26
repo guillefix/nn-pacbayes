@@ -29,8 +29,8 @@ def GP_prob(K,X,Y,parallel_updates=True,method="EP", using_exactPB=False):
         inference_method = GPy.inference.latent_function_inference.laplace.Laplace()
     elif method == "EP":
         print("USING EP")
-        inference_method = GPy.inference.latent_function_inference.expectation_propagation.EP(parallel_updates=parallel_updates, epsilon=1.0e-6, delta=1.0)
-        #inference_method = GPy.inference.latent_function_inference.expectation_propagation.EP(parallel_updates=parallel_updates, epsilon=1.0e-6, delta=0.1)
+        #inference_method = GPy.inference.latent_function_inference.expectation_propagation.EP(parallel_updates=parallel_updates, epsilon=1.0e-6, delta=1.0)
+        inference_method = GPy.inference.latent_function_inference.expectation_propagation.EP(parallel_updates=parallel_updates, epsilon=1.0e-6, delta=0.1)
         #inference_method = GPy.inference.latent_function_inference.expectation_propagation.EP(parallel_updates=parallel_updates)
         # inference_method = GPy.inference.latent_function_inference.expectation_propagation.EP()
     m = GPy.core.GP(X=X,

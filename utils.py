@@ -68,7 +68,7 @@ def load_data_by_filename(filename, training=True):
 '''ARCHITECTURE FUNCTIONS'''
 def arch_filename(FLAGS):
     filename=arch_folder
-    for flag in ["network","dataset","binarized","number_layers","pooling","intermediate_pooling","intermediate_pooling_type","init_dist"]:
+    for flag in ["network","dataset","binarized","number_layers","pooling","intermediate_pooling","intermediate_pooling_type","init_dist", "sigmaw", "sigmab"]:
         filename+=str(FLAGS[flag])+"_"
     filename += "model"
     return filename
@@ -84,6 +84,16 @@ def load_model_json(FLAGS):
     json_string_filename = filename
     arch_json_string = open(filename, "r") .read()
     return arch_json_string
+
+def load_model_from_filename(filename):
+    #CauchyInit = cauchy_init_class_wrapper(FLAGS["sigmaw"])
+    #ShiftedInit = shifted_init_class_wrapper(FLAGS["sigmab"],FLAGS["shifted_init_shift"])
+    #custom_objects = {'cauchy_init': CauchyInit, 'shifted_init':ShiftedInit}
+    arch_json_string = open(filename, "r") .read()
+    from tensorflow.keras.models import model_from_json
+    #model = model_from_json(arch_json_string, custom_objects=custom_objects)
+    model = model_from_json(arch_json_string)
+    return model
 
 def load_model(FLAGS):
     CauchyInit = cauchy_init_class_wrapper(FLAGS["sigmaw"])
