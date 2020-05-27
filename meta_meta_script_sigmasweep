@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#for L in 15
+#for L in 2
 for L in 2 5 10 15 20 30 40 50
 do
     for sigmaw in `seq 1.0 0.1 2.5`
@@ -8,7 +8,8 @@ do
     do
         echo $L $sigmaw
         #addqueue -m 10 -s -n 4 'meta_script_sigmasweep '$sigmaw' '$L
-        addqueue -m 2 -s -n 4 'meta_script_sigmasweep2 '$sigmaw' '$L
+        #addqueue -m 2 -s -n 4 'meta_script_sigmasweep2 '$sigmaw' '$L
+        addqueue -m 10 -s -n 4 'meta_script_sigmasweep2 '$sigmaw' '$L
   done
 done
 

@@ -4,7 +4,7 @@ n_gpus=0
 n_procs=4
 train_method=NN
 generate_arch=1
-generate_data=0
+generate_data=1
 compute_kernel=0
 compute_bound=0
 train=1
@@ -25,17 +25,17 @@ dataset=mnist
 #net=cnn
 net=fc
 L=4
-#optimizer=sgd
-optimizer=adam
-loss=ce
-#loss=mse
+optimizer=sgd
+#optimizer=adam
+#loss=ce
+loss=mse
 sigmaw=1.41
 #sigmaw=50.0
 sigmab=0.2
 pool=max
 c=0.0
-batch_size=256
-lr=0.05
+batch_size=128
+lr=0.001
 epochs_after_fit=0
 #epochs_after_fit=64
 #prefix=32_batch_oddeven_big_sgd_${loss}_sample_
@@ -46,12 +46,13 @@ kern_mult=1
 
 sigmaw=$1
 L=$2
-prefix=new_sigmaw_chaos_${L}_${sigmaw}
+prefix=2new_sigmaw_chaos_${L}_${sigmaw}_
 
 #for m in 4 16 32 64 128 256 512 1024 2048 4096 8192; do
 #echo $m
   #./run_experiment --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --sigmaw $sigmaw --sigmab $sigmab --n_gpus $n_gpus --pooling $pool -loss $loss --n_samples_repeats 0.1 --kernel_mult $kern_mult --optimizer $optimizer --norandom_training_set --number_inits $number_inits --binarization_method=oddeven --batch_size=$batch_size
 
-      ./run_experiment --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --sigmaw $sigmaw --sigmab $sigmab --n_gpus $n_gpus --pooling $pool -loss $loss --n_samples_repeats 0.1 --kernel_mult $kern_mult --optimizer $optimizer --number_inits $number_inits --batch_size=$batch_size --layer_widths 1024 --batch_size $batch_size --intermediate_pooling $intermediate_pooling --activations tanh --learning_rate $lr
+      #./run_experiment --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --sigmaw $sigmaw --sigmab $sigmab --n_gpus $n_gpus --pooling $pool -loss $loss --n_samples_repeats 0.1 --kernel_mult $kern_mult --optimizer $optimizer --number_inits $number_inits --batch_size=$batch_size --layer_widths 1024 --batch_size $batch_size --intermediate_pooling $intermediate_pooling --activations relu --learning_rate $lr --nozero_one
+      ./run_experiment --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --sigmaw $sigmaw --sigmab $sigmab --n_gpus $n_gpus --pooling $pool -loss $loss --n_samples_repeats 0.1 --kernel_mult $kern_mult --optimizer $optimizer --number_inits $number_inits --batch_size=$batch_size --layer_widths 1024 --batch_size $batch_size --intermediate_pooling $intermediate_pooling --activations tanh --learning_rate $lr --zero_one
   #./run_experiment --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --sigmaw $sigmaw --sigmab $sigmab --n_gpus $n_gpus --pooling $pool -loss $loss --epochs_after_fit $epochs_after_fit --n_samples_repeats 0.1 --optimizer $optimizer --number_inits $number_inits --batch_size=$batch_size --intermediate_pooling $intermediate_pooling --kernel_mult 1 --empirical_kernel_batch_size 1024 --normalize_kernel
 #done
