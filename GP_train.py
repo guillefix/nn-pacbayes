@@ -61,6 +61,9 @@ def main(_):
     flat_data = np.transpose(data, tp_order)  # NHWC -> NCHW # this is because the cnn GP kernels assume this
     flat_test_images = np.array([test_image.flatten() for test_image in flat_data])
     Xfull =  np.concatenate([flat_train_images,flat_test_images])
+    #if not zero_one: #This is temporary remove me later!
+    #    ys=ys*2.0-1.0
+    #    test_ys=test_ys*2.0-1.0
     ys2 = [[y] for y in ys]
     ysfull = ys2 + [[y] for y in test_ys]
     Yfull = np.array(ysfull)
@@ -173,9 +176,13 @@ def main(_):
         print(preds.shape)
         #preds = np.array([pred[0] for pred in preds])
         if not doing_regression:
-            th = 0.5
             train_loss, train_acc = 0, 1.0*samples_per_chunk
-            test_loss, test_acc = np.sum(cross_entropy_loss(test_ys,preds))/len(test_ys), np.sum((preds>th)==test_ys)/len(test_ys)
+            if zero_one:
+                th = 0.5
+                test_loss, test_acc = np.sum(cross_entropy_loss(test_ys,preds))/len(test_ys), np.sum((preds>th)==test_ys)/len(test_ys)
+            else:
+                th = 0.0
+                test_loss, test_acc = np.sum(cross_entropy_loss(test_ys,preds))/len(test_ys), np.sum((preds>th)*2-1==test_ys)/len(test_ys)
         else:
             train_acc = train_loss = 0
             test_acc = test_loss = np.sum(cross_entropy_loss(test_ys,preds))/len(test_ys)
