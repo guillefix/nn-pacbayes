@@ -2,10 +2,10 @@
 
 n_gpus=0
 n_procs=4
-train_method=NN
+train_method=GP
 generate_arch=1
 generate_data=1
-compute_kernel=0
+compute_kernel=1
 compute_bound=0
 train=1
 sample_funs=0
@@ -27,8 +27,8 @@ net=fc
 L=4
 optimizer=sgd
 #optimizer=adam
-#loss=ce
-loss=mse
+loss=ce
+#loss=mse
 sigmaw=1.41
 #sigmaw=50.0
 sigmab=0.2
@@ -46,7 +46,7 @@ kern_mult=1
 
 sigmaw=$1
 L=$2
-prefix=2new_sigmaw_chaos_${L}_${sigmaw}_
+prefix=2new_sigmaw_chaos_${train_method}_${loss}_${L}_${sigmaw}_
 
 #for m in 4 16 32 64 128 256 512 1024 2048 4096 8192; do
 #echo $m
