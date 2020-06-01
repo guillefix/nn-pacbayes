@@ -68,7 +68,7 @@ def load_data_by_filename(filename, training=True):
 '''ARCHITECTURE FUNCTIONS'''
 def arch_filename(FLAGS):
     filename=arch_folder
-    for flag in ["network","dataset","binarized","number_layers","pooling","intermediate_pooling","intermediate_pooling_type","init_dist"]:
+    for flag in ["network","dataset","binarized","number_layers","pooling","intermediate_pooling","intermediate_pooling_type","init_dist", "sigmaw", "sigmab"]:
         filename+=str(FLAGS[flag])+"_"
     filename += "model"
     return filename
@@ -85,6 +85,16 @@ def load_model_json(FLAGS):
     arch_json_string = open(filename, "r") .read()
     return arch_json_string
 
+def load_model_from_filename(filename):
+    #CauchyInit = cauchy_init_class_wrapper(FLAGS["sigmaw"])
+    #ShiftedInit = shifted_init_class_wrapper(FLAGS["sigmab"],FLAGS["shifted_init_shift"])
+    #custom_objects = {'cauchy_init': CauchyInit, 'shifted_init':ShiftedInit}
+    arch_json_string = open(filename, "r") .read()
+    from tensorflow.keras.models import model_from_json
+    #model = model_from_json(arch_json_string, custom_objects=custom_objects)
+    model = model_from_json(arch_json_string)
+    return model
+
 def load_model(FLAGS):
     CauchyInit = cauchy_init_class_wrapper(FLAGS["sigmaw"])
     ShiftedInit = shifted_init_class_wrapper(FLAGS["sigmab"],FLAGS["shifted_init_shift"])
@@ -94,6 +104,7 @@ def load_model(FLAGS):
     model = model_from_json(arch_json_string, custom_objects=custom_objects)
     return model
 
+'''KERNEL FUNCTIONS'''
 
 def kernel_filename(FLAGS,cnt=0,partial=False):
     filename=kernel_folder
@@ -107,22 +118,6 @@ def kernel_filename(FLAGS,cnt=0,partial=False):
 
 import glob
 #def find_partial_kernel_filename(FLAGS):
-#    filename=kernel_folder
-#    for flag in ["prefix","network","dataset","m","confusion","label_corruption","binarized","whitening","random_labels","number_layers","sigmaw","sigmab","pooling","intermediate_pooling","intermediate_pooling_type"]:
-#        filename+=str(FLAGS[flag])+"_"
-#    if FLAGS["use_empirical_NTK"]: filename += "NTK_"
-#    if partial:
-#        filename+="_*_"
-#    filename += "kernel.npy"
-#    files = glob.glob(filename)
-#    if len(files) == 0:
-#        return None, 0
-#    elif len(files) == 1:
-#        filename = files[0]
-#        cnt = int(filename.split("_")[-2])
-#        return filename, cnt
-#    else:
-#        raise Exception("more than one partial kernel found for this run")
 
 def find_partial_kernel_filenames(FLAGS):
     filename=kernel_folder
@@ -162,6 +157,37 @@ def load_kernel(FLAGS):
 def load_kernel_by_filename(filename):
     K = np.load(filename,"r+")
     return K
+
+'''POSTERIOR PARAMS FUNCTIONS'''
+
+def posterior_params_filename(FLAGS):
+    filename=kernel_folder
+    for flag in ["prefix", "network","dataset","m","confusion","label_corruption","binarized","whitening","centering","channel_normalization","threshold","random_labels", "oversampling", "oversampling2"]:
+        filename+=str(FLAGS[flag])+"_"
+    if FLAGS["dataset"] == "boolean" and FLAGS["boolfun_comp"] is not None:
+        filename+=str(FLAGS["boolfun_comp"])+"_"
+    filename += "posterior_params.h5"
+    return filename
+
+def save_posterior_params(mean,cov,FLAGS):
+    filename = posterior_params_filename(FLAGS)
+    h5f = h5py.File(filename,"w")
+    h5f.create_dataset('mean', data=mean)
+    h5f.create_dataset('cov', data=cov)
+    h5f.close()
+
+def load_posterior_params(FLAGS):
+    filename = posterior_params_filename(FLAGS)
+    return load_posterior_params_by_filename(filename, training=FLAGS["training"])
+
+def load_posterior_params_by_filename(filename, training=True):
+    h5f = h5py.File(filename,'r')
+    mean = h5f['mean'][:]
+    cov = h5f['cov'][:]
+    h5f.close()
+    return mean,cov
+
+'''FLAGS'''
 
 def define_default_flags(f):
     f.DEFINE_integer('m',None,"Number of training examples")
