@@ -420,7 +420,8 @@ def main(_):
 
                 #normalize each channel (3 colors for e.g.)
                 #to do this we reshape the tensor to NHWC form
-                train_images = flat_x.reshape((x.shape[0], x.shape[3], x.shape[1],x.shape[2]))
+                #train_images = flat_x.reshape((x.shape[0], x.shape[3], x.shape[1],x.shape[2]))
+                train_images = flat_x.reshape((x.shape[0], x.shape[1], x.shape[2],x.shape[3]))
 
                 #test images
                 if training:
