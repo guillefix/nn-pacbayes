@@ -39,6 +39,7 @@ def main(_):
         tasks.append(size*num_tasks_per_job+rank)
 
     import os
+    print(rank)
     if n_gpus>0:
         os.environ["CUDA_VISIBLE_DEVICES"]=str(rank%n_gpus)
 
@@ -119,8 +120,10 @@ def main(_):
     if optimizer == "langevin":
         optim = tfp.optimizer.StochasticGradientLangevinDynamics(learning_rate=0.01)
     elif optimizer == "sgd":
-        optim = keras.optimizers.SGD(lr=learning_rate)
-        #keras.optimizers.SGD(lr=0.01,momentum=0.9,decay=1e-6)
+        #optim = keras.optimizers.SGD(lr=learning_rate)
+        optim = keras.optimizers.SGD(lr=0.001,momentum=0.9,decay=1e-6)
+    elif optimizer == "adam":
+        optim = keras.optimizers.Adam(lr=learning_rate)
     else:
         optim = optimizer
 
