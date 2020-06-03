@@ -2,7 +2,7 @@
 
 n_gpus=0
 n_procs=4
-train_method=GP
+train_method=NTK
 generate_arch=1
 generate_data=1
 compute_kernel=1
