@@ -10,6 +10,8 @@ training_data = pd.read_csv("results/new_mother_of_all_msweeps_nn_training_resul
 training_data2 = pd.read_csv("results/newer_mother_of_all_msweeps_nn_training_results.txt", sep="\t", comment="#")
 training_data = training_data[~((training_data["network"] == "fc") & (training_data["dataset"] == "cifar"))]
 training_data = training_data.append(training_data2)
+training_data3 = pd.read_csv("results/grandmother_of_all_msweeps_nn_training_results.txt", sep="\t", comment="#")
+training_data = training_data.append(training_data3)
 # training_data = training_data[~((training_data["network"] == "fc") & (training_data["dataset"] == "cifar"))]
 # training_data = training_data[~((training_data["network"] == "fc") & (training_data["dataset"] == "EMNIST"))]
 # training_data2 = pd.read_csv("results/newer_mother_of_all_msweeps_nn_training_results.txt", sep="\t", comment="#")
@@ -17,6 +19,8 @@ training_data = training_data.append(training_data2)
 
 # bounds = pd.read_csv("results/new_mother_of_all_msweeps_bounds10000.txt", sep="\t", comment="#")
 bounds = pd.read_csv("results/newer_mother_of_all_msweeps_bounds.txt", sep="\t", comment="#")
+bounds2 = pd.read_csv("results/grandmother_of_all_msweeps_bounds.txt", sep="\t", comment="#")
+bounds = bounds.append(bounds2)
 # bounds = pd.read_csv("results/new_mother_of_all_msweeps_bounds.txt", sep="\t", comment="#")
 
 ##resnet50 training results:
@@ -66,10 +70,23 @@ bounds = bounds.groupby(["m","network","dataset","pooling"],as_index=False).mean
 training_data = training_data.groupby(["m","network","dataset","pooling"],as_index=False).mean()
 # bounds = bounds[(bounds["sigmaw"]==10.0) & (bounds["sigmab"]==10.0)]
 
+training_data = training_data.append(pd.Series({"m":40000, "dataset":"mnist","network":"vgg16","pooling":"avg","test_error":1-0.9884999990463257,"train_acc":1.0,"batch_size":200}), ignore_index=True)
+training_data = training_data.append(pd.Series({"m":40000, "dataset":"mnist","network":"vgg19","pooling":"avg","test_error":1-0.9898999929428101,"train_acc":1.0,"batch_size":200}), ignore_index=True)
+training_data = training_data.append(pd.Series({"m":40000, "dataset":"mnist-fashion","network":"vgg19","pooling":"avg","test_error":1-0.9465999603271484,"train_acc":1.0,"batch_size":200}), ignore_index=True)
+training_data = training_data.append(pd.Series({"m":40000, "dataset":"mnist-fashion","network":"vgg16","pooling":"avg","test_error":1-0.9443999528884888,"train_acc":1.0,"batch_size":200}), ignore_index=True)
+training_data = training_data.append(pd.Series({"m":40000, "dataset":"mnist-fashion","network":"cnn","pooling":"avg","test_error":1-0.9502,"train_acc":1.0,"batch_size":200}), ignore_index=True)
+training_data = training_data.append(pd.Series({"m":40000, "dataset":"mnist-fashion","network":"cnn","pooling":"None","test_error":1-0.9473,"train_acc":1.0,"batch_size":200}), ignore_index=True)
+training_data = training_data.append(pd.Series({"m":40000, "dataset":"mnist-fashion","network":"cnn","pooling":"max","test_error":1-0.9484,"train_acc":1.0,"batch_size":200}), ignore_index=True)
+training_data = training_data.append(pd.Series({"m":40000, "dataset":"cifar10","network":"cnn","pooling":"max","test_error":1-0.7894,"train_acc":1.0,"batch_size":200}), ignore_index=True)
+training_data = training_data.append(pd.Series({"m":40000, "dataset":"cifar10","network":"cnn","pooling":"None","test_error":1-0.7635,"train_acc":1.0,"batch_size":200}), ignore_index=True)
+training_data = training_data.append(pd.Series({"m":40000, "dataset":"cifar10","network":"cnn","pooling":"avg","test_error":1-0.8392,"train_acc":1.0,"batch_size":200}), ignore_index=True)
+training_data = training_data.append(pd.Series({"m":40000, "dataset":"cifar10","network":"vgg16","pooling":"avg","test_error":1-0.7134,"train_acc":1.0,"batch_size":200}), ignore_index=True)
+training_data = training_data.append(pd.Series({"m":40000, "dataset":"cifar10","network":"vgg19","pooling":"avg","test_error":1-0.7816,"train_acc":1.0,"batch_size":200}), ignore_index=True)
+
 #PLOT
 #%%
 # net="cnn"
-# net="fc"
+net="fc"
 # net="resnetv2_50"
 # net="densenet201"
 # net="resnext101"
@@ -83,13 +100,18 @@ training_data = training_data.groupby(["m","network","dataset","pooling"],as_ind
 # dataset="mnist"
 # dataset="mnist-fashion"
 # dataset="EMNIST"
-# dataset="KMNIST"
-dataset="cifar"
+dataset="KMNIST"
+# dataset="cifar"
 # colors = np.random.rand(len(nets),3)
 import matplotlib
 cmap = matplotlib.cm.get_cmap('rainbow')
 # j=0
-for i, net in enumerate(nets):
+sweep="datasets"
+if sweep="nets":
+    things = nets
+else:
+    things = datasets
+for i, thing in enumerate(things):
 # for i,dataset in enumerate(datasets):
 # for ii in [1]:
     # if i!=j: break
@@ -97,12 +119,13 @@ for i, net in enumerate(nets):
     # pool="None"
     # pool="avg"
     # pool="max"
-    if net=="cnn":
-        pools=["None","avg","max"]
-    elif net=="fc":
-        pools=["None"]
-    else:
-        pools=["avg"]
+    if sweep="nets":
+        if net=="cnn":
+            pools=["None","avg","max"]
+        elif net=="fc":
+            pools=["None"]
+        else:
+            pools=["avg"]
 
     for pool in pools:
         # if dataset not in ["mnist"]:
@@ -112,7 +135,8 @@ for i, net in enumerate(nets):
         # bdata=bounds[(bounds["network"]==net) & (bounds["dataset"]==dataset)]
         tdata=training_data[(training_data["network"]==net) & (training_data["dataset"]==dataset) & (training_data["pooling"]==pool)]
         # bounds.dtypes
-        print(net, len(bdata))
+        # print(net, len(bdata))
+        print(net, bdata[["m","bound"]])
         # print(net, len(tdata))
         print(net,tdata[["m","train_acc"]])
 
@@ -120,20 +144,20 @@ for i, net in enumerate(nets):
         tdata.columns
         bdata.columns
 
-        color = cmap(i/(len(nets)+1))
+        color = cmap(i/(len(things)+1))
         # color = cmap(i/(len(datasets)))
         if net=="fc":
             plt.plot(bdata["m"], bdata["bound"], c=color, label="PAC-Bayes bound "+net+" "+dataset)
             # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
             # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color)
             plt.plot(tdata["m"], tdata["test_error"], "--", c=color, label="Test error "+net+" "+dataset)
-            plt.plot(tdata["m"], tdata["train_acc"], label="Training error "+net+" "+dataset)
+            # plt.plot(tdata["m"], tdata["train_acc"], label="Training error "+net+" "+dataset)
         else:
             plt.plot(bdata["m"], bdata["bound"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
             # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
             # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color)
             plt.plot(tdata["m"], tdata["test_error"], "--", c=color, label="Test error "+net+" "+dataset+" "+pool)
-            plt.plot(tdata["m"], tdata["train_acc"], label="Training error "+net+" "+dataset+" "+pool)
+            # plt.plot(tdata["m"], tdata["train_acc"], label="Training error "+net+" "+dataset+" "+pool)
         plt.yscale("log")
         plt.xlabel("m", fontsize=12)
         plt.xscale("log")
@@ -160,7 +184,11 @@ for tick in ax.yaxis.get_major_ticks():
     #tick.label.set_fontsize('x-small')
     # tick.label.set_rotation('vertical')
 
-plt.ylim([1e-2,1.1e0])
+# min_error = np.min(training_data[training_data["dataset"]==dataset]["test_error"])
+min_error = np.min(training_data[training_data["network"]==net]["test_error"])
+# min_error = np.min(training_data["test_error"])
+
+plt.ylim([min_error*0.8,1.1e0])
 plt.xlim([1e2,50000])
 
 # plt.savefig("learning_curve_fc_dataset_all_1_41_0.png")
@@ -179,6 +207,11 @@ plt.xlim([1e2,50000])
 
 #for repeated entries keep last one in both training_data and bounds
 #for data from jade, because the non-last one could have had problems with two jobs trying to compute the same thing and the later overriding data/kernel of the former
+
+%%
+#
+dataset="mnist"
+# bounds[(bounds["network"]==net) & (bounds["dataset"]==dataset) & (bounds["pooling"]==pool)]
 
 #%%
 %matplotlib
