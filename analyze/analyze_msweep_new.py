@@ -66,7 +66,9 @@ bounds = bounds[bounds["m"]>=50]
 training_data = training_data[training_data["m"]>=50]
 # bounds = bounds[bounds["kernel_mult"]==10000]
 # bounds = bounds[bounds["kern_mult"]==10000]
-bounds = bounds.groupby(["m","network","dataset","pooling"],as_index=False).mean()
+# bounds = bounds.groupby(["m","network","dataset","pooling"],as_index=False).mean()
+# training_data = training_data.groupby(["m","network","dataset","pooling"],as_index=False).mean()
+bounds = bounds.groupby(["m","network","dataset","pooling"],as_index=False).min()
 training_data = training_data.groupby(["m","network","dataset","pooling"],as_index=False).mean()
 # bounds = bounds[(bounds["sigmaw"]==10.0) & (bounds["sigmab"]==10.0)]
 
@@ -77,26 +79,35 @@ training_data = training_data.append(pd.Series({"m":40000, "dataset":"mnist-fash
 training_data = training_data.append(pd.Series({"m":40000, "dataset":"mnist-fashion","network":"cnn","pooling":"avg","test_error":1-0.9502,"train_acc":1.0,"batch_size":200}), ignore_index=True)
 training_data = training_data.append(pd.Series({"m":40000, "dataset":"mnist-fashion","network":"cnn","pooling":"None","test_error":1-0.9473,"train_acc":1.0,"batch_size":200}), ignore_index=True)
 training_data = training_data.append(pd.Series({"m":40000, "dataset":"mnist-fashion","network":"cnn","pooling":"max","test_error":1-0.9484,"train_acc":1.0,"batch_size":200}), ignore_index=True)
-training_data = training_data.append(pd.Series({"m":40000, "dataset":"cifar10","network":"cnn","pooling":"max","test_error":1-0.7894,"train_acc":1.0,"batch_size":200}), ignore_index=True)
-training_data = training_data.append(pd.Series({"m":40000, "dataset":"cifar10","network":"cnn","pooling":"None","test_error":1-0.7635,"train_acc":1.0,"batch_size":200}), ignore_index=True)
-training_data = training_data.append(pd.Series({"m":40000, "dataset":"cifar10","network":"cnn","pooling":"avg","test_error":1-0.8392,"train_acc":1.0,"batch_size":200}), ignore_index=True)
-training_data = training_data.append(pd.Series({"m":40000, "dataset":"cifar10","network":"vgg16","pooling":"avg","test_error":1-0.7134,"train_acc":1.0,"batch_size":200}), ignore_index=True)
-training_data = training_data.append(pd.Series({"m":40000, "dataset":"cifar10","network":"vgg19","pooling":"avg","test_error":1-0.7816,"train_acc":1.0,"batch_size":200}), ignore_index=True)
+training_data = training_data.append(pd.Series({"m":40000, "dataset":"cifar","network":"cnn","pooling":"max","test_error":1-0.7894,"train_acc":1.0,"batch_size":200}), ignore_index=True)
+training_data = training_data.append(pd.Series({"m":40000, "dataset":"cifar","network":"cnn","pooling":"None","test_error":1-0.7635,"train_acc":1.0,"batch_size":200}), ignore_index=True)
+training_data = training_data.append(pd.Series({"m":40000, "dataset":"cifar","network":"cnn","pooling":"avg","test_error":1-0.8392,"train_acc":1.0,"batch_size":200}), ignore_index=True)
+training_data = training_data.append(pd.Series({"m":40000, "dataset":"cifar","network":"vgg16","pooling":"avg","test_error":1-0.7134,"train_acc":1.0,"batch_size":200}), ignore_index=True)
+training_data = training_data.append(pd.Series({"m":40000, "dataset":"cifar","network":"vgg19","pooling":"avg","test_error":1-0.7816,"train_acc":1.0,"batch_size":200}), ignore_index=True)
+training_data = training_data.append(pd.Series({"m":40000, "dataset":"mnist","network":"cnn","pooling":"None","test_error":1-0.9874,"train_acc":1.0,"batch_size":200}), ignore_index=True)
+training_data = training_data.append(pd.Series({"m":40000, "dataset":"mnist","network":"cnn","pooling":"max","test_error":1-0.9909,"train_acc":1.0,"batch_size":200}), ignore_index=True)
+training_data = training_data.append(pd.Series({"m":40000, "dataset":"mnist","network":"cnn","pooling":"avg","test_error":1-0.9918,"train_acc":1.0,"batch_size":200}), ignore_index=True)
+# training_data = training_data.append(pd.Series({"m":40000, "dataset":"EMNIST","network":"cnn","pooling":"None","test_error":1-0.9032,"train_acc":1.0,"batch_size":200}), ignore_index=True)
+# training_data = training_data.append(pd.Series({"m":40000, "dataset":"EMNIST","network":"cnn","pooling":"max","test_error":1-0.9228,"train_acc":1.0,"batch_size":200}), ignore_index=True)
+
+# nets
 
 #PLOT
 #%%
 # net="cnn"
-net="fc"
+# net="fc"
 # net="resnetv2_50"
 # net="densenet201"
 # net="resnext101"
 # net="resnetv2_101"
 # net="nasnet"
 # net="vgg16"
+# net="vgg19"
 # net="resnext101"
 # net="densenet121"
-# net="resnet50"
+net="resnet50"
 # net="mobilenetv2"
+
 # dataset="mnist"
 # dataset="mnist-fashion"
 # dataset="EMNIST"
@@ -106,12 +117,17 @@ dataset="KMNIST"
 import matplotlib
 cmap = matplotlib.cm.get_cmap('rainbow')
 # j=0
+# sweep="nets"
 sweep="datasets"
-if sweep="nets":
+if sweep=="nets":
     things = nets
 else:
     things = datasets
 for i, thing in enumerate(things):
+    if sweep=="nets":
+        net=thing
+    else:
+        dataset=thing
 # for i,dataset in enumerate(datasets):
 # for ii in [1]:
     # if i!=j: break
@@ -119,13 +135,13 @@ for i, thing in enumerate(things):
     # pool="None"
     # pool="avg"
     # pool="max"
-    if sweep="nets":
+    if sweep=="nets":
         if net=="cnn":
             pools=["None","avg","max"]
-        elif net=="fc":
-            pools=["None"]
-        else:
-            pools=["avg"]
+    if net=="fc":
+        pools=["None"]
+    elif net!="cnn":
+        pools=["avg"]
 
     for pool in pools:
         # if dataset not in ["mnist"]:
@@ -153,11 +169,11 @@ for i, thing in enumerate(things):
             plt.plot(tdata["m"], tdata["test_error"], "--", c=color, label="Test error "+net+" "+dataset)
             # plt.plot(tdata["m"], tdata["train_acc"], label="Training error "+net+" "+dataset)
         else:
-            plt.plot(bdata["m"], bdata["bound"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
+            # plt.plot(bdata["m"], bdata["bound"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
             # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
             # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color)
             plt.plot(tdata["m"], tdata["test_error"], "--", c=color, label="Test error "+net+" "+dataset+" "+pool)
-            # plt.plot(tdata["m"], tdata["train_acc"], label="Training error "+net+" "+dataset+" "+pool)
+            plt.plot(tdata["m"], tdata["train_acc"], label="Training error "+net+" "+dataset+" "+pool)
         plt.yscale("log")
         plt.xlabel("m", fontsize=12)
         plt.xscale("log")
@@ -184,8 +200,10 @@ for tick in ax.yaxis.get_major_ticks():
     #tick.label.set_fontsize('x-small')
     # tick.label.set_rotation('vertical')
 
-# min_error = np.min(training_data[training_data["dataset"]==dataset]["test_error"])
-min_error = np.min(training_data[training_data["network"]==net]["test_error"])
+if sweep=="nets":
+    min_error = np.min(training_data[training_data["dataset"]==dataset]["test_error"])
+else:
+    min_error = np.min(training_data[training_data["network"]==net]["test_error"])
 # min_error = np.min(training_data["test_error"])
 
 plt.ylim([min_error*0.8,1.1e0])
