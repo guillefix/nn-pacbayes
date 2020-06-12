@@ -16,18 +16,18 @@ a=addqueue
 #for dataset in mnist-fashion; do
 #for dataset in mnist mnist-fashion EMNIST; do
 #for dataset in KMNIST cifar; do
-for dataset in cifar; do
+for dataset in mnist KMNIST EMNIST; do
     #for net in resnetv2_152; do 
     #for net in resnet152; do 
     #for net in resnetv2_152 resnext50 resnext101 densenet121 densenet169 densenet201 nasnet vgg19 vgg16 ; do 
     #for net in resnetv2_50 resnext50 densenet121 densenet169; do 
     #for net in densenet121 densenet169 densenet201 mobilenetv2 nasnet vgg19 vgg16 ; do 
-    for net in nasnet vgg16; do 
-        $a -n $nn -m $mem -s ./meta_script_msweep $dataset $net avg $n $1
-    done
+    #for net in nasnet vgg16; do 
+    #    $a -n $nn -m $mem -s ./meta_script_msweep $dataset $net avg $n $1
+    #done
     $a -n $nn -m $mem -s ./meta_script_msweep $dataset fc none $n $1
     #$a -n $nn -m $mem -s ./meta_script_msweep $dataset cnn none $n $1
-    $a -n $nn -m $mem -s ./meta_script_msweep $dataset cnn avg $n $1
+    #$a -n $nn -m $mem -s ./meta_script_msweep $dataset cnn avg $n $1
     #$a -n $nn -m $mem -s ./meta_script_msweep $dataset cnn max $n $1
 done
 #for dataset in mnist-fashion EMNIST KMNIST cifar; do
