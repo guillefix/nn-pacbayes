@@ -64,6 +64,7 @@ training_data = training_data.sort_values("m")
 bounds = bounds.sort_values("m")
 bounds = bounds[bounds["m"]>=50]
 training_data = training_data[training_data["m"]>=50]
+# training_data = training_data[training_data["batch_size"]==32]
 # bounds = bounds[bounds["kernel_mult"]==10000]
 # bounds = bounds[bounds["kern_mult"]==10000]
 # bounds = bounds.groupby(["m","network","dataset","pooling"],as_index=False).mean()
@@ -87,29 +88,34 @@ training_data = training_data.append(pd.Series({"m":40000, "dataset":"cifar","ne
 training_data = training_data.append(pd.Series({"m":40000, "dataset":"mnist","network":"cnn","pooling":"None","test_error":1-0.9874,"train_acc":1.0,"batch_size":200}), ignore_index=True)
 training_data = training_data.append(pd.Series({"m":40000, "dataset":"mnist","network":"cnn","pooling":"max","test_error":1-0.9909,"train_acc":1.0,"batch_size":200}), ignore_index=True)
 training_data = training_data.append(pd.Series({"m":40000, "dataset":"mnist","network":"cnn","pooling":"avg","test_error":1-0.9918,"train_acc":1.0,"batch_size":200}), ignore_index=True)
-# training_data = training_data.append(pd.Series({"m":40000, "dataset":"EMNIST","network":"cnn","pooling":"None","test_error":1-0.9032,"train_acc":1.0,"batch_size":200}), ignore_index=True)
-# training_data = training_data.append(pd.Series({"m":40000, "dataset":"EMNIST","network":"cnn","pooling":"max","test_error":1-0.9228,"train_acc":1.0,"batch_size":200}), ignore_index=True)
+### training_data = training_data.append(pd.Series({"m":40000, "dataset":"EMNIST","network":"cnn","pooling":"None","test_error":1-0.9032,"train_acc":1.0,"batch_size":200}), ignore_index=True)
+### training_data = training_data.append(pd.Series({"m":40000, "dataset":"EMNIST","network":"cnn","pooling":"max","test_error":1-0.9228,"train_acc":1.0,"batch_size":200}), ignore_index=True)
 
 # nets
 
 #PLOT
 #%%
-# net="cnn"
-# net="fc"
+net="cnn"
+pools=["avg"]
+net="fc"
+# net="resnet50"
+# net="resnet101"
+# net="resnet152"
 # net="resnetv2_50"
-# net="densenet201"
-# net="resnext101"
 # net="resnetv2_101"
+# net="resnetv2_152"
+# net="resnext50"
+# net="resnext101"
+# net="densenet121"
+# net="densenet169"
+# net="densenet201"
+# net="mobilenetv2"
 # net="nasnet"
 # net="vgg16"
 # net="vgg19"
-# net="resnext101"
-# net="densenet121"
-net="resnet50"
-# net="mobilenetv2"
 
 # dataset="mnist"
-# dataset="mnist-fashion"
+dataset="mnist-fashion"
 # dataset="EMNIST"
 dataset="KMNIST"
 # dataset="cifar"
@@ -117,8 +123,8 @@ dataset="KMNIST"
 import matplotlib
 cmap = matplotlib.cm.get_cmap('rainbow')
 # j=0
-# sweep="nets"
-sweep="datasets"
+sweep="nets"
+# sweep="datasets"
 if sweep=="nets":
     things = nets
 else:
@@ -169,11 +175,11 @@ for i, thing in enumerate(things):
             plt.plot(tdata["m"], tdata["test_error"], "--", c=color, label="Test error "+net+" "+dataset)
             # plt.plot(tdata["m"], tdata["train_acc"], label="Training error "+net+" "+dataset)
         else:
-            # plt.plot(bdata["m"], bdata["bound"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
+            plt.plot(bdata["m"], bdata["bound"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
             # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
             # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color)
             plt.plot(tdata["m"], tdata["test_error"], "--", c=color, label="Test error "+net+" "+dataset+" "+pool)
-            plt.plot(tdata["m"], tdata["train_acc"], label="Training error "+net+" "+dataset+" "+pool)
+            # plt.plot(tdata["m"], tdata["train_acc"], label="Training error "+net+" "+dataset+" "+pool)
         plt.yscale("log")
         plt.xlabel("m", fontsize=12)
         plt.xscale("log")
@@ -227,26 +233,48 @@ plt.xlim([1e2,50000])
 #for data from jade, because the non-last one could have had problems with two jobs trying to compute the same thing and the later overriding data/kernel of the former
 
 %%
-#
-dataset="mnist"
-# bounds[(bounds["network"]==net) & (bounds["dataset"]==dataset) & (bounds["pooling"]==pool)]
+
+dataset="mnist-fashion"
+bounds[(bounds["network"]==net) & (bounds["dataset"]==dataset) & (bounds["pooling"]==pool)]
+training_data[(training_data["network"]==net) & (training_data["dataset"]==dataset) & (training_data["pooling"]==pool)][["m","batch_size", "test_error"]]
+training_data[training_data["dataset"]==dataset][["m","batch_size", "test_error"]]
 
 #%%
 %matplotlib
 dataset = "EMNIST"
-pool = "avg"
-
-bdata=bounds[(bounds["m"]==4516) & (bounds["dataset"]==dataset) & (bounds["pooling"]==pool)]
-tdata=training_data[(training_data["m"]==4516) & (training_data["dataset"]==dataset) & (training_data["pooling"]==pool)]
+# dataset = "cifar"
+# dataset = "mnist"
+# dataset = "KMNIST"
+dataset = "mnist-fashion"
+# pool = "avg"
+bounds["m"].unique()
+m=40000
+#
+# bdata=bounds[(bounds["m"]==4516) & (bounds["dataset"]==dataset) & (bounds["pooling"]==pool)]
+bdata=bounds[(bounds["m"]==m) & (bounds["dataset"]==dataset)]
+# tdata=training_data[(training_data["m"]==4516) & (training_data["dataset"]==dataset) & (training_data["pooling"]==pool)]
+tdata=training_data[(training_data["m"]==m) & (training_data["dataset"]==dataset)]
+# tdata=training_data[(training_data["dataset"]==dataset)]
 len(bdata)
 
 boundss = []
 test_errorss = []
 
 for net in bounds["network"].unique():
-    if len(bdata[bdata["network"]==net]) == 1 and len(tdata[tdata["network"]==net]) == 1:
-        boundss.append(bdata[bdata["network"]==net]["bound"].iloc[0])
-        test_errorss.append(tdata[tdata["network"]==net]["test_error"].iloc[0])
+    if net in ["vgg19","vgg16"]:
+        continue
+    if net != "cnn":
+        if len(bdata[bdata["network"]==net]) == 1 and len(tdata[tdata["network"]==net]) == 1:
+            boundss.append(bdata[bdata["network"]==net]["bound"].iloc[0])
+            test_errorss.append(tdata[tdata["network"]==net]["test_error"].iloc[0])
+            print(net, boundss[-1], test_errorss[-1])
+    else:
+        # for pool in ["None","max","avg"]:
+        for pool in ["max"]:
+            if len(bdata[(bdata["network"]==net) & (bdata["pooling"]==pool)]) == 1 and len(tdata[(tdata["network"]==net) & (tdata["pooling"]==pool)]) == 1:
+                boundss.append(bdata[(bdata["network"]==net) & (bdata["pooling"]==pool)]["bound"].iloc[0])
+                test_errorss.append(tdata[(tdata["network"]==net) & (tdata["pooling"]==pool)]["test_error"].iloc[0])
+                print(net, boundss[-1], test_errorss[-1])
 
 
 plt.scatter(boundss,test_errorss)
