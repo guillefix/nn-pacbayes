@@ -4,6 +4,7 @@ dataset=$1
 net=$2
 pool=$3
 number_inits=$4
+m=$5
 #index=$5
 intermediate_pooling=0000
 L=2
@@ -46,7 +47,7 @@ export n_procs=$number_inits
 #for m in 10000; do
 #for m in 15026; do
 #for m in 15026 40000; do
-for m in 40000; do
+for m in $m; do
 #for m in 49999; do
 #for m in 1 ; do
 echo $m
