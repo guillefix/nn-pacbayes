@@ -5,6 +5,7 @@ net=$2
 pool=$3
 number_inits=$4
 #index=$5
+m=$5
 intermediate_pooling=0000
 L=2
 if [ $net = fc ]; then
@@ -46,7 +47,7 @@ export n_procs=$number_inits
 #for m in 10000; do
 #for m in 15026; do
 #for m in 15026 40000; do
-for m in 40000; do
+for m in $m; do
 #for m in 49999; do
 #for m in 1 ; do
 echo $dataset $net $pool
@@ -54,5 +55,6 @@ echo $m
 ## msweep boolean 
   #./run_experiment_msweep --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 0.1 --epochs_after_fit $epochs_after_fit -loss $loss --optimizer $optimizer --use_empirical_K --intermediate_pooling $intermediate_pooling 
   #./run_experiment_msweep2 --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 0.1 --epochs_after_fit $epochs_after_fit -loss $loss --optimizer $optimizer --intermediate_pooling $intermediate_pooling --kernel_mult 1 --empirical_kernel_batch_size 128 --normalize_kernel --use_empirical_K  --batch_size 256 --learning_rate 0.01 --layer_widths 1024 --partial_kernel_index $index --partial_kernel_n_proc 89 --store_partial_kernel
-  ./run_experiment_msweep22 --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 0.1 --epochs_after_fit $epochs_after_fit -loss $loss --optimizer $optimizer --intermediate_pooling $intermediate_pooling --kernel_mult 1 --empirical_kernel_batch_size 128 --normalize_kernel --use_empirical_K  --batch_size 256 --learning_rate 0.01 --layer_widths 1024
+  #./run_experiment_msweep22 --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 0.1 --epochs_after_fit $epochs_after_fit -loss $loss --optimizer $optimizer --intermediate_pooling $intermediate_pooling --kernel_mult 1 --empirical_kernel_batch_size 128 --normalize_kernel --use_empirical_K  --batch_size 256 --learning_rate 0.01 --layer_widths 1024
+  ./run_experiment_msweep22 --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --training --sigmaw $sigmaw --sigmab $sigmab --confusion $c --n_gpus $n_gpus --pooling $pool --number_inits $number_inits --n_samples_repeats 0.1 --epochs_after_fit $epochs_after_fit -loss $loss --optimizer $optimizer --intermediate_pooling $intermediate_pooling --empirical_kernel_batch_size 128 --use_empirical_K  --batch_size 256 --learning_rate 0.01 --layer_widths 1024
 done
