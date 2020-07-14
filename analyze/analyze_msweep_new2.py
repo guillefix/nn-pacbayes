@@ -7,11 +7,28 @@ import matplotlib.pyplot as plt
 
 #main NNGP big run (up to 4k training set size:)
 training_data = pd.read_csv("results/new_mother_of_all_msweeps_nn_training_results.txt", sep="\t", comment="#")
+# training_data[training_data["batch_size"]==32]["m"].tolist()
+training_data[(training_data["batch_size"] == 32) & (training_data["dataset"] == "KMNIST") & (training_data["network"] == "fc")][["m","train_acc","test_error"]]
+#removing the old batch 32 data which was done with a different learning rate or something
+training_data = training_data[~(training_data["batch_size"] == 32)]
+
+
 training_data2 = pd.read_csv("results/newer_mother_of_all_msweeps_nn_training_results.txt", sep="\t", comment="#")
+training_data2[training_data2["batch_size"] == 32][["m","dataset","train_acc","test_error","network"]]
 # training_data = training_data[~((training_data["network"] == "fc") & (training_data["dataset"] == "cifar"))]
 training_data = training_data.append(training_data2)
+
+#this one has the batch 32 data for sizes >= 15k
 training_data3 = pd.read_csv("results/grandmother_of_all_msweeps_nn_training_results.txt", sep="\t", comment="#")
+training_data3[(training_data3["batch_size"] == 32) & (training_data3["dataset"] == "KMNIST") & (training_data3["network"] == "fc")][["m","train_acc","test_error"]]
+training_data3[(training_data3["batch_size"] == 32) & (training_data3["train_acc"]==1) & (training_data3["network"] == "resnet50")][["m","dataset","train_acc","test_error"]].head(40)
 training_data = training_data.append(training_data3)
+
+#this one has the batch 32 data for sizes < 15k
+training_data4 = pd.read_csv("results/new_grandmother_of_all_msweeps_nn_training_results.txt", sep="\t", comment="#")
+# training_data4[training_data4["batch_size"] == 32]["m"].unique()
+training_data4[(training_data4["batch_size"] == 32) & (training_data4["dataset"] == "KMNIST") & (training_data4["network"] == "fc")][["m","train_acc","test_error"]]
+training_data = training_data.append(training_data4)
 # training_data = training_data[~((training_data["network"] == "fc") & (training_data["dataset"] == "cifar"))]
 # training_data = training_data[~((training_data["network"] == "fc") & (training_data["dataset"] == "EMNIST"))]
 # training_data2 = pd.read_csv("results/newer_mother_of_all_msweeps_nn_training_results.txt", sep="\t", comment="#")
@@ -160,10 +177,11 @@ training_data = training_data.groupby(["m","network","dataset","pooling"],as_ind
 
 #PLOT FOR NETS SWEEP
 #%%
+datasets=["mnist","mnist-fashion","EMNIST","KMNIST","cifar"]
 
 from pylab import rcParams
-rcParams['figure.figsize'] = 9,9
-fig, axx = plt.subplots(nrows=3, ncols=3)
+rcParams['figure.figsize'] = 9,6
+fig, axx = plt.subplots(nrows=2, ncols=3)
 
 net="cnn"
 pools=["avg"]
@@ -201,27 +219,30 @@ sweep="nets"
 if sweep=="nets":
     things1 = datasets
     # things2 = nets
-    things2 = ["fc"]
+    # things2 = ["fc"]
     # things2 = ["fc","cnn"]
     # things2 = ["resnet50","resnet101","resnet152"]
     # things2 = ["resnetv2_50","resnetv2_101","resnetv2_152"]
     # things2 = ["resnet50","resnet101","resnet152","resnetv2_50","resnetv2_101","resnetv2_152","resnext50","resnext101"]
-    things2 = ["densenet121","densenet169","densenet201"]
+    # things2 = ["densenet121","densenet169","densenet201"]
     # things2 = ["mobilenetv2"]
+    # things2 = ["vgg16","vgg19"]
+    things2 = ["cnn"]
     # things2 = ["fc","resnet50","densenet121","mobilenetv2"]
-    things2 = ["fc","resnet50","densenet121","mobilenetv2"]
+    # things2 = ["fc","resnet50","densenet121","mobilenetv2"]
     # things2 = ["fc","cnn","resnet50","densenet121","mobilenetv2"]
 else:
     things1 = nets
     things2 = datasets
 
-fig.delaxes(axx[2][1])
-fig.delaxes(axx[0][2])
+# fig.delaxes(axx[2][1])
+# fig.delaxes(axx[0][2])
+# fig.delaxes(axx[1][2])
+# fig.delaxes(axx[2][2])
 fig.delaxes(axx[1][2])
-fig.delaxes(axx[2][2])
 for nya,thing1 in enumerate(things1):
 # for thing1 in ["fc"]:
-    plotto=axx[nya//2][nya%2]
+    plotto=axx[nya//3][nya%3]
     ii=0
     try:
         if sweep=="datasets":
@@ -288,24 +309,24 @@ for nya,thing1 in enumerate(things1):
                     if sweep=="nets":
                         color = cmap(ii/(len(things2)+3))
                     # color = cmap(i/(len(datasets)))
-                    if net=="fc":
-                        plotto.plot(bdata["m"], bdata["bound"], c=color, label="bound "+net+" "+dataset)
+                    if net != "cnn":
+                        plotto.plot(bdata["m"], bdata["bound"], c=color, label="PAC-Bayes bound "+net+" "+dataset)
                         # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
                         # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color)
-                        plotto.plot(tdata["m"], tdata["test_error"], "--", c=color, label="error "+net+" "+dataset)
+                        plotto.plot(tdata["m"], tdata["test_error"], "--", c=color, label="test error "+net+" "+dataset)
                         # plt.plot(tdata["m"], tdata["train_acc"], label="Training error "+net+" "+dataset)
                     else:
-                        plotto.plot(bdata["m"], bdata["bound"], c=color, label="bound "+net+" "+dataset+" "+pool)
+                        plotto.plot(bdata["m"], bdata["bound"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
                         # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
                         # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color)
-                        plotto.plot(tdata["m"], tdata["test_error"], "--", c=color, label="error "+net+" "+dataset+" "+pool)
+                        plotto.plot(tdata["m"], tdata["test_error"], "--", c=color, label="test error "+net+" "+dataset+" "+pool)
                         # plt.plot(tdata["m"], tdata["train_acc"], label="Training error "+net+" "+dataset+" "+pool)
                     ii+=1
                     plotto.set_yscale("log")
-                    if nya==3 or nya==4:
+                    if nya in [2,3,4]:
                         plotto.set_xlabel("m", fontsize=12)
                     plotto.set_xscale("log")
-                    if nya%2==0:
+                    if nya%3==0:
                         plotto.set_ylabel("generalization error", fontsize=12)
 
 
@@ -317,9 +338,11 @@ for nya,thing1 in enumerate(things1):
             ax.set_position([box.x0, box.y0*1.1, box.width * 0.95, box.height])
 
             # Put a legend to the right of the current axis
-            if nya==1:
+            if nya==4:
                 plotto.legend()
-                ax.legend(loc='center left', bbox_to_anchor=(1.1, -0.5), prop={'size': 8})
+                # ax.legend(loc='center left', bbox_to_anchor=(1.1, -0.5), prop={'size': 8})
+                # ax.legend(loc='center left', bbox_to_anchor=(1.1, 0.5), prop={'size': 8})
+                ax.legend(loc='center left', bbox_to_anchor=(1.1, 0.4), prop={'size': 8})
 
             for tick in ax.xaxis.get_major_ticks():
                 tick.label.set_fontsize(10)
@@ -356,9 +379,11 @@ for nya,thing1 in enumerate(things1):
         continue
 
 # plt.savefig("learning_curve_sweep_nets_"+str(batch_size)+".png")
-plt.savefig("learning_curve_sweep_somenets_"+str(batch_size)+".png")
 # plt.savefig("learning_curve_sweep_resnets_"+str(batch_size)+".png")
 # plt.savefig("learning_curve_sweep_densenets_"+str(batch_size)+".png")
+# plt.savefig("learning_curve_sweep_somenets_"+str(batch_size)+".png")
+# plt.savefig("learning_curve_sweep_vggs_"+str(batch_size)+".png")
+# plt.savefig("learning_curve_sweep_cnns_"+str(batch_size)+".png")
 # plt.savefig("learning_curve_sweep_mobilenet_"+str(batch_size)+".png")
 
 # plt.savefig("learning_curve_fc_dataset_all_1_41_0.png")
@@ -377,8 +402,8 @@ plt.savefig("learning_curve_sweep_somenets_"+str(batch_size)+".png")
 
 #for repeated entries keep last one in both training_data and bounds
 #for data from jade, because the non-last one could have had problems with two jobs trying to compute the same thing and the later overriding data/kernel of the former
+# %% # dataset sweeps for all architectures
 
-#%%
 
 from pylab import rcParams
 rcParams['figure.figsize'] = 9,9
@@ -557,7 +582,7 @@ for nya,thing1 in enumerate(things1):
 
 plt.savefig("learning_curve_sweep_datasets_"+str(batch_size)+"_"+str(half)+".png")
 
-#%%
+#%% # dataset sweeps for some architectures
 
 from pylab import rcParams
 rcParams['figure.figsize'] = 9,9
@@ -737,7 +762,7 @@ plt.savefig("learning_curve_sweep_datasets_"+str(batch_size)+"_main.png")
 # training_data[training_data["dataset"]==dataset][["m","batch_size", "test_error"]]
 # UwU
 
-#%%
+#%% #bound_vs_errors
 %matplotlib
 dataset = "EMNIST"
 dataset = "cifar"
