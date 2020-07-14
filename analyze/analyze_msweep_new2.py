@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 #main NNGP big run (up to 4k training set size:)
 training_data = pd.read_csv("results/new_mother_of_all_msweeps_nn_training_results.txt", sep="\t", comment="#")
 training_data2 = pd.read_csv("results/newer_mother_of_all_msweeps_nn_training_results.txt", sep="\t", comment="#")
-training_data = training_data[~((training_data["network"] == "fc") & (training_data["dataset"] == "cifar"))]
+# training_data = training_data[~((training_data["network"] == "fc") & (training_data["dataset"] == "cifar"))]
 training_data = training_data.append(training_data2)
 training_data3 = pd.read_csv("results/grandmother_of_all_msweeps_nn_training_results.txt", sep="\t", comment="#")
 training_data = training_data.append(training_data3)
@@ -130,8 +130,8 @@ training_data["network"].unique()
 nets = training_data["network"].unique()
 datasets = training_data["dataset"].unique()
 
-batch_size=256
-# batch_size=32
+# batch_size=256
+batch_size=32
 
 #sort by m
 training_data = training_data.sort_values("m")
@@ -156,11 +156,14 @@ training_data = training_data.groupby(["m","network","dataset","pooling"],as_ind
 
 # nets
 
-#PLOT
+# training_data[(training_data["network"]==net)]
+
+#PLOT FOR NETS SWEEP
 #%%
 
 from pylab import rcParams
-rcParams['figure.figsize'] = 8.5,6.2
+rcParams['figure.figsize'] = 9,9
+fig, axx = plt.subplots(nrows=3, ncols=3)
 
 net="cnn"
 pools=["avg"]
@@ -188,18 +191,233 @@ dataset="mnist"
 dataset="cifar"
 # colors = np.random.rand(len(nets),3)
 import matplotlib
-cmap = matplotlib.cm.get_cmap('rainbow')
+# cmap = matplotlib.cm.get_cmap('rainbow')
+cmap = matplotlib.cm.get_cmap('tab20')
+
+
 # j=0
 sweep="nets"
 # sweep="datasets"
+if sweep=="nets":
+    things1 = datasets
+    # things2 = nets
+    things2 = ["fc"]
+    # things2 = ["fc","cnn"]
+    # things2 = ["resnet50","resnet101","resnet152"]
+    # things2 = ["resnetv2_50","resnetv2_101","resnetv2_152"]
+    # things2 = ["resnet50","resnet101","resnet152","resnetv2_50","resnetv2_101","resnetv2_152","resnext50","resnext101"]
+    things2 = ["densenet121","densenet169","densenet201"]
+    # things2 = ["mobilenetv2"]
+    # things2 = ["fc","resnet50","densenet121","mobilenetv2"]
+    things2 = ["fc","resnet50","densenet121","mobilenetv2"]
+    # things2 = ["fc","cnn","resnet50","densenet121","mobilenetv2"]
+else:
+    things1 = nets
+    things2 = datasets
+
+fig.delaxes(axx[2][1])
+fig.delaxes(axx[0][2])
+fig.delaxes(axx[1][2])
+fig.delaxes(axx[2][2])
+for nya,thing1 in enumerate(things1):
+# for thing1 in ["fc"]:
+    plotto=axx[nya//2][nya%2]
+    ii=0
+    try:
+        if sweep=="datasets":
+            if thing1=="cnn":
+                pools=["None","avg","max"]
+            if net=="fc":
+                pools=["None"]
+            elif net!="cnn":
+                pools=["avg"]
+        else:
+            pools=["hi"]
+        for pool1 in pools:
+            for i, thing2 in enumerate(things2):
+                if sweep=="nets":
+                    dataset=thing1
+                    net=thing2
+                else:
+                    net=thing1
+                    dataset=thing2
+
+            # for i,dataset in enumerate(datasets):
+            # for ii in [1]:
+                # if i!=j: break
+                # plt.close()
+                # pool="None"
+                # pool="avg"
+                # pool="max"
+                if sweep=="nets":
+                    if net=="cnn":
+                        pools=["None","avg","max"]
+                        # pools=["None"]
+                else:
+                    pools=[pool1]
+                if net=="fc":
+                    pools=["None"]
+                elif net!="cnn":
+                    pools=["avg"]
+
+                for pool in pools:
+                    # if net!="cnn":
+                    #     continue
+                    # if pool!="avg":
+                    #     continue
+                    # if dataset not in ["KMNIST"]:
+                    #     continue
+                    # if dataset not in ["cifar","mnist","EMNIST"]:
+                    #     continue
+                    bdata=bounds[(bounds["network"]==net) & (bounds["dataset"]==dataset) & (bounds["pooling"]==pool)]
+                    # bdata=bounds[(bounds["network"]==net) & (bounds["dataset"]==dataset)]
+                    tdata=training_data[(training_data["network"]==net) & (training_data["dataset"]==dataset) & (training_data["pooling"]==pool)]
+                    # bounds.dtypes
+                    # print(net, len(bdata))
+                    print(net, dataset)
+                    print(net, bdata[["m","bound"]])
+                    # print(net, len(tdata))
+                    print(net,tdata[["m","train_acc"]])
+                    print(net,tdata[["m","test_error"]])
+
+                    # bounds["bound"] = pd.to_numeric(bounds["bound"])
+                    tdata.columns
+                    bdata.columns
+
+                    color = cmap(ii/(len(things2)+1))
+                    if sweep=="nets":
+                        color = cmap(ii/(len(things2)+3))
+                    # color = cmap(i/(len(datasets)))
+                    if net=="fc":
+                        plotto.plot(bdata["m"], bdata["bound"], c=color, label="bound "+net+" "+dataset)
+                        # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
+                        # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color)
+                        plotto.plot(tdata["m"], tdata["test_error"], "--", c=color, label="error "+net+" "+dataset)
+                        # plt.plot(tdata["m"], tdata["train_acc"], label="Training error "+net+" "+dataset)
+                    else:
+                        plotto.plot(bdata["m"], bdata["bound"], c=color, label="bound "+net+" "+dataset+" "+pool)
+                        # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
+                        # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color)
+                        plotto.plot(tdata["m"], tdata["test_error"], "--", c=color, label="error "+net+" "+dataset+" "+pool)
+                        # plt.plot(tdata["m"], tdata["train_acc"], label="Training error "+net+" "+dataset+" "+pool)
+                    ii+=1
+                    plotto.set_yscale("log")
+                    if nya==3 or nya==4:
+                        plotto.set_xlabel("m", fontsize=12)
+                    plotto.set_xscale("log")
+                    if nya%2==0:
+                        plotto.set_ylabel("generalization error", fontsize=12)
+
+
+
+            # ax = plotto.gca()
+            ax = plotto
+            box = ax.get_position()
+            ax.set_title(dataset)
+            ax.set_position([box.x0, box.y0*1.1, box.width * 0.95, box.height])
+
+            # Put a legend to the right of the current axis
+            if nya==1:
+                plotto.legend()
+                ax.legend(loc='center left', bbox_to_anchor=(1.1, -0.5), prop={'size': 8})
+
+            for tick in ax.xaxis.get_major_ticks():
+                tick.label.set_fontsize(10)
+                # specify integer or one of preset strings, e.g.
+                #tick.label.set_fontsize('x-small')
+                # tick.label.set_rotation('vertical')
+            for tick in ax.yaxis.get_major_ticks():
+                tick.label.set_fontsize(10)
+                # specify integer or one of preset strings, e.g.
+                #tick.label.set_fontsize('x-small')
+                # tick.label.set_rotation('vertical')
+
+            if sweep=="nets":
+                min_error = np.min(training_data[training_data["dataset"]==dataset]["test_error"])
+                # min_error = np.min(training_data["test_error"])
+            else:
+                min_error = np.min(training_data["test_error"])
+            # min_error = np.min(training_data["test_error"])
+
+            plotto.set_ylim([min_error*0.8,1.1e0])
+            plotto.set_xlim([1e2,50000])
+
+            # if sweep=="datasets":
+            #     plt.savefig("img/msweep/nets/learning_curve_sweep_"+sweep+"_"+net+"_"+pool+"_"+str(batch_size)+".png")
+            #     # plt.savefig("img/msweep/learning_curve_sweep_"+sweep+"_"+net+"_"+pool+"_"+str(batch_size)+"+200.png")
+            # else:
+            #     plt.savefig("img/msweep/datasets/learning_curve_sweep_"+sweep+"_"+dataset+"_"+str(batch_size)+".png")
+            #     # plt.savefig("img/msweep/learning_curve_sweep_"+sweep+"_"+dataset+"_"+str(batch_size)+"+200.png")
+            #
+            # plt.close()
+    except Exception as e:
+        print(e)
+        plt.close()
+        continue
+
+# plt.savefig("learning_curve_sweep_nets_"+str(batch_size)+".png")
+plt.savefig("learning_curve_sweep_somenets_"+str(batch_size)+".png")
+# plt.savefig("learning_curve_sweep_resnets_"+str(batch_size)+".png")
+# plt.savefig("learning_curve_sweep_densenets_"+str(batch_size)+".png")
+# plt.savefig("learning_curve_sweep_mobilenet_"+str(batch_size)+".png")
+
+# plt.savefig("learning_curve_fc_dataset_all_1_41_0.png")
+# plt.savefig("learning_curve_fc_dataset_selection_1_41_0.png")
+# plt.savefig("learning_curve_resnet50_dataset_selection_1_41_0.png")
+# plt.savefig("learning_curve_resnet50_v2_dataset_selection_1_41_0.png")
+# plt.savefig("learning_curve_fc_mnist_km10k_1_41_0.png")
+# plt.savefig("learning_curve_resnet50_max_mnist_second_training_set_sample__1_41_0.png")
+# plt.savefig("learning_curve_resnet50_max_mnist_combined_training_set_samples__1_41_0.png")
+# from mpi4py import MPI
+# comm = MPI.COMM_WORLD
+# rank = comm.Get_rank()
+# size = comm.Get_size()
+#
+# MPI.COUNT
+
+#for repeated entries keep last one in both training_data and bounds
+#for data from jade, because the non-last one could have had problems with two jobs trying to compute the same thing and the later overriding data/kernel of the former
+
+#%%
+
+from pylab import rcParams
+rcParams['figure.figsize'] = 9,9
+# fig, axx = plt.subplots(nrows=6, ncols=3)
+fig, axx = plt.subplots(nrows=3, ncols=3)
+
+fig.subplots_adjust(top=0.9)
+
+# colors = np.random.rand(len(nets),3)
+import matplotlib
+cmap = matplotlib.cm.get_cmap('rainbow')
+# j=0
+# sweep="nets"
+# nets
+nets=["fc","cnn","resnet50","resnet101","resnet152","resnetv2_50","resnetv2_101","resnetv2_152","resnext50","resnext101","densenet121","densenet169","densenet201","mobilenetv2","vgg16","vgg19","nasnet"]
+
+
+sweep="datasets"
 if sweep=="nets":
     things1 = datasets
     things2 = nets
 else:
     things1 = nets
     things2 = datasets
-for thing1 in things1:
+
+# fig.delaxes(axx[5][2])
+# fig.delaxes(axx[5][1])
+fig.delaxes(axx[2][2])
+
+half=0
+# half=1
+# for nya,thing1 in enumerate(things1):
+if half==0:
+    things1=things1[:8]
+elif half==1:
+    things1=things1[8:]
+for nya,thing1 in enumerate(things1):
 # for thing1 in ["fc"]:
+    plotto=axx[nya//3][nya%3]
     ii=0
     try:
         if sweep=="datasets":
@@ -266,32 +484,42 @@ for thing1 in things1:
                         color = cmap(ii/(len(things2)+3))
                     # color = cmap(i/(len(datasets)))
                     if net=="fc":
-                        plt.plot(bdata["m"], bdata["bound"], c=color, label="PAC-Bayes bound "+net+" "+dataset)
+                        plotto.plot(bdata["m"], bdata["bound"], c=color, label="bound"+net+" "+dataset)
                         # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
                         # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color)
-                        plt.plot(tdata["m"], tdata["test_error"], "--", c=color, label="Test error "+net+" "+dataset)
+                        plotto.plot(tdata["m"], tdata["test_error"], "--", c=color, label="error"+net+" "+dataset)
                         # plt.plot(tdata["m"], tdata["train_acc"], label="Training error "+net+" "+dataset)
                     else:
-                        plt.plot(bdata["m"], bdata["bound"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
+                        plotto.plot(bdata["m"], bdata["bound"], c=color, label="bound "+net+" "+dataset+" "+pool)
                         # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
                         # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color)
-                        plt.plot(tdata["m"], tdata["test_error"], "--", c=color, label="Test error "+net+" "+dataset+" "+pool)
+                        plotto.plot(tdata["m"], tdata["test_error"], "--", c=color, label="error "+net+" "+dataset+" "+pool)
                         # plt.plot(tdata["m"], tdata["train_acc"], label="Training error "+net+" "+dataset+" "+pool)
                     ii+=1
-                    plt.yscale("log")
-                    plt.xlabel("m", fontsize=12)
-                    plt.xscale("log")
-                    plt.ylabel("generalization error", fontsize=12)
+                    plotto.set_yscale("log")
+                    # if nya==15 or nya==14 or nya==13:
+                    if nya==7 or nya==6 or nya==5:
+                        plotto.set_xlabel("m", fontsize=12)
+                    plotto.set_xscale("log")
+                    if nya%3==0:
+                        plotto.set_ylabel("generalization error", fontsize=12)
 
 
 
-            ax = plt.gca()
+            # ax = plotto.gca()
+            ax = plotto
             box = ax.get_position()
-            ax.set_position([box.x0, box.y0, box.width * 0.65, box.height])
+            if net!="cnn":
+                ax.set_title(net)
+            else:
+                ax.set_title(net+" "+pool)
+            ax.set_position([box.x0, box.y0*1.05, box.width * 0.95, box.height])
 
             # Put a legend to the right of the current axis
-            plt.legend()
-            ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), prop={'size': 8})
+            if nya==7:
+            # if nya==15:
+                plotto.legend()
+                ax.legend(loc='center left', bbox_to_anchor=(1.1, 0.5), prop={'size': 8})
 
             for tick in ax.xaxis.get_major_ticks():
                 tick.label.set_fontsize(10)
@@ -305,50 +533,209 @@ for thing1 in things1:
                 # tick.label.set_rotation('vertical')
 
             if sweep=="nets":
-                min_error = np.min(training_data[training_data["dataset"]==dataset]["test_error"])
+                # min_error = np.min(training_data[training_data["dataset"]==dataset]["test_error"])
+                min_error = np.min(training_data["test_error"])
             else:
-                min_error = np.min(training_data[training_data["network"]==net]["test_error"])
+                min_error = np.min(training_data["test_error"])
             # min_error = np.min(training_data["test_error"])
 
-            plt.ylim([min_error*0.8,1.1e0])
-            plt.xlim([1e2,50000])
+            plotto.set_ylim([min_error*0.8,1.1e0])
+            plotto.set_xlim([1e2,50000])
 
-            if sweep=="datasets":
-                plt.savefig("img/msweep/nets/learning_curve_sweep_"+sweep+"_"+net+"_"+pool+"_"+str(batch_size)+".png")
-                # plt.savefig("img/msweep/learning_curve_sweep_"+sweep+"_"+net+"_"+pool+"_"+str(batch_size)+"+200.png")
-            else:
-                plt.savefig("img/msweep/datasets/learning_curve_sweep_"+sweep+"_"+dataset+"_"+str(batch_size)+".png")
-                # plt.savefig("img/msweep/learning_curve_sweep_"+sweep+"_"+dataset+"_"+str(batch_size)+"+200.png")
-
-            plt.close()
+            # if sweep=="datasets":
+            #     plt.savefig("img/msweep/nets/learning_curve_sweep_"+sweep+"_"+net+"_"+pool+"_"+str(batch_size)+".png")
+            #     # plt.savefig("img/msweep/learning_curve_sweep_"+sweep+"_"+net+"_"+pool+"_"+str(batch_size)+"+200.png")
+            # else:
+            #     plt.savefig("img/msweep/datasets/learning_curve_sweep_"+sweep+"_"+dataset+"_"+str(batch_size)+".png")
+            #     # plt.savefig("img/msweep/learning_curve_sweep_"+sweep+"_"+dataset+"_"+str(batch_size)+"+200.png")
+            #
+            # plt.close()
     except Exception as e:
         print(e)
         plt.close()
         continue
 
-# plt.savefig("learning_curve_fc_dataset_all_1_41_0.png")
-# plt.savefig("learning_curve_fc_dataset_selection_1_41_0.png")
-# plt.savefig("learning_curve_resnet50_dataset_selection_1_41_0.png")
-# plt.savefig("learning_curve_resnet50_v2_dataset_selection_1_41_0.png")
-# plt.savefig("learning_curve_fc_mnist_km10k_1_41_0.png")
-# plt.savefig("learning_curve_resnet50_max_mnist_second_training_set_sample__1_41_0.png")
-# plt.savefig("learning_curve_resnet50_max_mnist_combined_training_set_samples__1_41_0.png")
-# from mpi4py import MPI
-# comm = MPI.COMM_WORLD
-# rank = comm.Get_rank()
-# size = comm.Get_size()
-#
-# MPI.COUNT
+plt.savefig("learning_curve_sweep_datasets_"+str(batch_size)+"_"+str(half)+".png")
 
-#for repeated entries keep last one in both training_data and bounds
-#for data from jade, because the non-last one could have had problems with two jobs trying to compute the same thing and the later overriding data/kernel of the former
+#%%
 
-%%
+from pylab import rcParams
+rcParams['figure.figsize'] = 9,9
+# fig, axx = plt.subplots(nrows=6, ncols=3)
+# fig, axx = plt.subplots(nrows=2, ncols=3)
+fig, axx = plt.subplots(nrows=2, ncols=2)
+
+fig.subplots_adjust(top=0.9)
+
+# colors = np.random.rand(len(nets),3)
+import matplotlib
+cmap = matplotlib.cm.get_cmap('rainbow')
+# j=0
+# sweep="nets"
+# nets
+nets=["fc","resnet50","densenet121"]
+
+
+sweep="datasets"
+if sweep=="nets":
+    things1 = datasets
+    things2 = nets
+else:
+    things1 = nets
+    things2 = datasets
+
+# fig.delaxes(axx[5][2])
+# fig.delaxes(axx[5][1])
+fig.delaxes(axx[1][1])
+# fig.delaxes(axx[0][2])
+# fig.delaxes(axx[1][2])
+for nya,thing1 in enumerate(things1):
+# for thing1 in ["fc"]:
+    plotto=axx[nya//2][nya%2]
+    ii=0
+    try:
+        if sweep=="datasets":
+            if thing1=="cnn":
+                pools=["None","avg","max"]
+            if net=="fc":
+                pools=["None"]
+            elif net!="cnn":
+                pools=["avg"]
+        else:
+            pools=["hi"]
+        for pool1 in pools:
+            for i, thing2 in enumerate(things2):
+                if sweep=="nets":
+                    dataset=thing1
+                    net=thing2
+                else:
+                    net=thing1
+                    dataset=thing2
+
+            # for i,dataset in enumerate(datasets):
+            # for ii in [1]:
+                # if i!=j: break
+                # plt.close()
+                # pool="None"
+                # pool="avg"
+                # pool="max"
+                if sweep=="nets":
+                    if net=="cnn":
+                        pools=["None","avg","max"]
+                else:
+                    pools=[pool1]
+                if net=="fc":
+                    pools=["None"]
+                elif net!="cnn":
+                    pools=["avg"]
+
+                for pool in pools:
+                    # if net!="cnn":
+                    #     continue
+                    # if pool!="avg":
+                    #     continue
+                    # if dataset not in ["KMNIST"]:
+                    #     continue
+                    # if dataset not in ["cifar","mnist","EMNIST"]:
+                    #     continue
+                    bdata=bounds[(bounds["network"]==net) & (bounds["dataset"]==dataset) & (bounds["pooling"]==pool)]
+                    # bdata=bounds[(bounds["network"]==net) & (bounds["dataset"]==dataset)]
+                    tdata=training_data[(training_data["network"]==net) & (training_data["dataset"]==dataset) & (training_data["pooling"]==pool)]
+                    # bounds.dtypes
+                    # print(net, len(bdata))
+                    print(net, dataset)
+                    print(net, bdata[["m","bound"]])
+                    # print(net, len(tdata))
+                    print(net,tdata[["m","train_acc"]])
+                    print(net,tdata[["m","test_error"]])
+
+                    # bounds["bound"] = pd.to_numeric(bounds["bound"])
+                    tdata.columns
+                    bdata.columns
+
+                    color = cmap(ii/(len(things2)+1))
+                    if sweep=="nets":
+                        color = cmap(ii/(len(things2)+3))
+                    # color = cmap(i/(len(datasets)))
+                    if net=="fc":
+                        plotto.plot(bdata["m"], bdata["bound"], c=color, label="bound"+net+" "+dataset)
+                        # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
+                        # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color)
+                        plotto.plot(tdata["m"], tdata["test_error"], "--", c=color, label="error"+net+" "+dataset)
+                        # plt.plot(tdata["m"], tdata["train_acc"], label="Training error "+net+" "+dataset)
+                    else:
+                        plotto.plot(bdata["m"], bdata["bound"], c=color, label="bound "+net+" "+dataset+" "+pool)
+                        # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
+                        # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color)
+                        plotto.plot(tdata["m"], tdata["test_error"], "--", c=color, label="error "+net+" "+dataset+" "+pool)
+                        # plt.plot(tdata["m"], tdata["train_acc"], label="Training error "+net+" "+dataset+" "+pool)
+                    ii+=1
+                    plotto.set_yscale("log")
+                    # if nya==15 or nya==14 or nya==13:
+                    if nya==2 or nya==1:
+                        plotto.set_xlabel("m", fontsize=12)
+                    plotto.set_xscale("log")
+                    if nya%2==0:
+                        plotto.set_ylabel("generalization error", fontsize=12)
+
+
+
+            # ax = plotto.gca()
+            ax = plotto
+            box = ax.get_position()
+            if net!="cnn":
+                ax.set_title(net)
+            else:
+                ax.set_title(net+" "+pool)
+            ax.set_position([box.x0, box.y0*1.05, box.width * 0.95, box.height])
+
+            # Put a legend to the right of the current axis
+            if nya==2:
+            # if nya==15:
+                plotto.legend()
+                ax.legend(loc='center left', bbox_to_anchor=(1.2, 0.5), prop={'size': 10})
+
+            for tick in ax.xaxis.get_major_ticks():
+                tick.label.set_fontsize(10)
+                # specify integer or one of preset strings, e.g.
+                #tick.label.set_fontsize('x-small')
+                # tick.label.set_rotation('vertical')
+            for tick in ax.yaxis.get_major_ticks():
+                tick.label.set_fontsize(10)
+                # specify integer or one of preset strings, e.g.
+                #tick.label.set_fontsize('x-small')
+                # tick.label.set_rotation('vertical')
+
+            if sweep=="nets":
+                # min_error = np.min(training_data[training_data["dataset"]==dataset]["test_error"])
+                min_error = np.min(training_data["test_error"])
+            else:
+                min_error = np.min(training_data["test_error"])
+            # min_error = np.min(training_data["test_error"])
+
+            plotto.set_ylim([min_error*0.8,1.1e0])
+            plotto.set_xlim([1e2,50000])
+
+            # if sweep=="datasets":
+            #     plt.savefig("img/msweep/nets/learning_curve_sweep_"+sweep+"_"+net+"_"+pool+"_"+str(batch_size)+".png")
+            #     # plt.savefig("img/msweep/learning_curve_sweep_"+sweep+"_"+net+"_"+pool+"_"+str(batch_size)+"+200.png")
+            # else:
+            #     plt.savefig("img/msweep/datasets/learning_curve_sweep_"+sweep+"_"+dataset+"_"+str(batch_size)+".png")
+            #     # plt.savefig("img/msweep/learning_curve_sweep_"+sweep+"_"+dataset+"_"+str(batch_size)+"+200.png")
+            #
+            # plt.close()
+    except Exception as e:
+        print(e)
+        plt.close()
+        continue
+
+plt.savefig("learning_curve_sweep_datasets_"+str(batch_size)+"_main.png")
 
 # dataset="mnist-fashion"
 # bounds[(bounds["network"]==net) & (bounds["dataset"]==dataset) & (bounds["pooling"]==pool)]
 # training_data[(training_data["network"]==net) & (training_data["dataset"]==dataset) & (training_data["pooling"]==pool)][["m","batch_size", "test_error"]]
 # training_data[training_data["dataset"]==dataset][["m","batch_size", "test_error"]]
+# UwU
 
 #%%
 %matplotlib
