@@ -1,0 +1,26 @@
+#!/bin/bash
+
+while read fun 
+do 
+    echo $fun
+    comp=$fun
+    #for i in `seq 0 249`; do
+    #    ./meta_script_sgd_bayes2 ${fun} ${i}
+    #done
+    #addqueue -n 250 -m 1 -s /usr/local/shared/openmpi/4.0.0/bin/mpiexec -n 250 ./meta_script_sgd_bayes2 ${fun}
+    #addqueue -n 1 -m 1 -s /usr/local/shared/openmpi/4.0.0/bin/mpiexec -n 1 ./meta_script_sgd_bayes2 ${fun}
+    
+    addqueue -n 250 -m 1 ./meta_script_sgd_bayes2 ${fun}
+    #addqueue -n 50 -m 1 ./meta_script_sgd_bayes3 ${fun}
+#done < "funs_tmp.txt" 
+done < "funs.txt" 
+#done < "funs.txt" | head -n 1
+
+#for fun in $(cat "funs.txt" | cut -f2 -d' ');
+#do 
+#    echo $fun
+#    comp=$fun
+#    #cat results/${comp}_sgd_vs_bayes_generrs3__*_${comp}_64_40_2_1_sgd_ce_0_0.001_nn_training_results.txt > results/${comp}_sgd_vs_bayes_generrs3__64_40_2_1_sgd_ce_0_0.001_nn_training_results.txt
+#    cat results/${comp}_sgd_vs_bayes_generrs3__*_${comp}_64_40_2_10_sgd_ce_0_0.001_nn_training_results.txt > results/${comp}_sgd_vs_bayes_generrs3__64_40_2_10_sgd_ce_0_0.001_nn_training_results.txt
+#
+#done

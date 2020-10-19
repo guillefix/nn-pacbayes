@@ -1,0 +1,69 @@
+#!/bin/bash
+
+$py process_imdb_stuff.py $@
+
+if [ $generate_arch = 1 ]; then
+$py generate_NN_arch.py $@
+fi
+
+if [ $generate_data = 1 ]; then
+$py generate_inputs_sample.py $@
+fi
+
+if [ $train_method = NN ]; then
+
+    if [ $compute_kernel = 1 ]; then
+    $mpi -n $n_procs $py compute_kernel.py $@
+    fi
+
+    if [ $compute_bound = 1 ]; then
+    $mpi -n 1 $py compute_prob_and_bound.py $@ --using_EP
+    #$mpi -n 1 $py compute_prob_and_bound.py $@ --using_Laplace
+    fi
+
+    if [ $train = 1 ]; then
+    $mpi -n $n_procs $py NN_train.py $@
+    fi
+
+    if [ $sample_funs = 1 ]; then
+    $mpi -n $n_procs $py sample_funs.py --number_samples 1000000 $@
+    fi
+
+elif [ $train_method = GP ]; then
+    if [ $compute_kernel = 1 ]; then
+        $mpi -n $n_procs $py compute_kernel.py $@ --compute_for_GP_train
+    fi
+    if [ $train = 1 ]; then
+        $mpi -n $n_procs $py GP_train.py $@
+    fi
+    if [ $compute_bound = 1 ]; then
+        echo Not implemented
+        exit 1
+    fi
+    if [ $sample_funs = 1 ]; then
+        echo Not implemented
+        exit 1
+    fi
+
+elif [ $train_method = NTK ]; then
+    if [ $compute_kernel = 1 ]; then
+        echo computing empirical kernels
+        if [ $train = 1 ]; then
+            $mpi -n $n_procs $py compute_kernel.py $@ --use_empirical_K --compute_for_GP_train
+            $mpi -n $n_procs $py compute_kernel.py $@ --use_empirical_NTK --compute_for_GP_train
+        else
+            $mpi -n $n_procs $py compute_kernel.py $@ --use_empirical_K
+            $mpi -n $n_procs $py compute_kernel.py $@ --use_empirical_NTK
+        fi
+    fi
+    if [ $train = 1 ]; then
+        $mpi -n $n_procs $py NTK_train.py $@
+    fi
+    if [ $compute_bound = 1 ]; then
+        $mpi -n 1 $py compute_prob_and_bound.py $@ --using_NTK
+    fi
+    if [ $sample_funs = 1 ]; then
+        echo Not implemented
+        exit 1
+    fi
+fi

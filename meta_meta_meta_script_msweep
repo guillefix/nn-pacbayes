@@ -1,6 +1,0 @@
-#!/bin/bash
-for i in `seq 89`; do
-    #./meta_meta_script_msweep2 $i &
-    addqueue -n 1 -m 20 -s ./meta_meta_script_msweep2 $i
-done
-addqueue -n 1x20 -m 2 -s ./meta_meta_script_msweep_process_Ks

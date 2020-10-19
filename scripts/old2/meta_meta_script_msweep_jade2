@@ -1,0 +1,35 @@
+#!/bin/bash
+
+n=8
+a='sbatch batch.sh '
+export bounds_file=results/grandmother_of_all_msweeps_bounds.txt
+#for dataset in mnist; do
+for m in 15026 40000; do
+    for dataset in mnist mnist-fashion EMNIST KMNIST cifar; do
+        for net in resnet50 resnet101 resnet152 resnetv2_50 resnetv2_101 resnetv2_152 resnext50 resnext101 densenet121 densenet169 densenet201 mobilenetv2 nasnet vgg19 vgg16 ; do 
+            pool=avg
+            export dataset net pool m
+            if [ $(grep -P "^${dataset}\tnone\tnone\t${net}\t${m}\t(.*)${pool}" $bounds_file| wc -l) -lt 1 ]
+            then
+                $a $dataset $net $pool $n $m
+            fi
+        done
+
+        pool=none
+        net=fc
+        export dataset net pool m
+        if [ $(grep -P "^${dataset}\tnone\tnone\t${net}\t${m}\t(.*)${pool}" $bounds_file| wc -l) -lt 1 ]
+        then
+            $a $dataset $net $pool $n $m
+        fi
+
+        for pool in none avg max; do
+            net=cnn
+            export dataset net pool
+            if [ $(grep -P "^${dataset}\tnone\tnone\t${net}\t(.*)${pool}" $bounds_file| wc -l) -lt 1 ]
+            then
+                $a $dataset $net $pool $n $m
+            fi
+        done
+    done
+done
