@@ -20,7 +20,7 @@ export mpi=mpiexec
 export n_gpus n_procs train_method generate_arch generate_data compute_kernel compute_bound train sample_funs py mpi
 
 m=1000
-dataset=imagenet
+dataset=EMNIST
 #boolfun=00001110110011111001111111001111000000000000000000000000000000000000000001001100000000001101110100000000000000000000000000000000
 #boolfun_comp=84.0
 #net=resnet50
@@ -61,7 +61,8 @@ else
     kern_mult=1
 fi
 
-for m in 1 3 11 36 122 407 1357 4516 15026 49999; do
+#for m in 1 3 11 36 122 407 1357 4516 15026 49999 166500 554445 800000; do
+for m in 554445 800000; do
 echo $m
 ./run_experiment --prefix $prefix --m $m --dataset $dataset --network $net --number_layers $L --sigmaw $sigmaw --sigmab $sigmab --n_gpus $n_gpus --pooling $pool -loss $loss --n_samples_repeats 0.1 --kernel_mult $kern_mult --optimizer $optimizer --norandom_training_set --number_inits $number_inits --binarization_method=oddeven --batch_size=$batch_size --train_one_epoch
 

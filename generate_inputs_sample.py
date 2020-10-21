@@ -85,7 +85,7 @@ def main(_):
         )
         extra_kwargs = {}
         if dataset == "EMNIST":
-            extra_kwargs = {"split":"balanced"}
+            extra_kwargs = {"split":"byclass"}
         d1 = dataset_constructor("./datasets",download=True,
                 transform=transformation, train=True, **extra_kwargs)
         d2 = dataset_constructor("./datasets",download=True,
