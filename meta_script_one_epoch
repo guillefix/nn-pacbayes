@@ -20,7 +20,7 @@ export mpi=mpiexec
 export n_gpus n_procs train_method generate_arch generate_data compute_kernel compute_bound train sample_funs py mpi
 
 m=1000
-dataset=mnist
+dataset=imagenet
 #boolfun=00001110110011111001111111001111000000000000000000000000000000000000000001001100000000001101110100000000000000000000000000000000
 #boolfun_comp=84.0
 #net=resnet50
