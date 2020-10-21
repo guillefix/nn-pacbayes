@@ -2,8 +2,8 @@ import pandas as pd
 
 training_results = pd.read_csv("results/sigmaw_chaos/sigmaw_chaos_nn_training_results_new.txt",delimiter="\t", comment="#")
 training_results = pd.read_csv("results/sigmaw_chaos/sgd_mse/2new_sigmaw_chaos_nn_training_results.txt",delimiter="\t", comment="#")
-training_results = pd.read_csv("results/sigmaw_chaos/2new_sigmaw_chaos_GP_nn_training_results.txt",delimiter="\t", comment="#") #GPMSE
 training_results = pd.read_csv("results/sigmaw_chaos/gp_ce/2new_sigmaw_chaos_nn_training_results.txt",delimiter="\t", comment="#")
+training_results = pd.read_csv("results/sigmaw_chaos/2new_sigmaw_chaos_GP_nn_training_results.txt",delimiter="\t", comment="#") #GPMSE
 
 reduced_training_results = training_results.groupby(by=["sigmaw","number_layers","test_error"],as_index=False).mean()
 
@@ -49,8 +49,8 @@ for i,number_layers in enumerate(sorted(number_layerss)):
     t = reduced_training_results[reduced_training_results["number_layers"]==number_layers]
     b = reduced_bounds[reduced_bounds["number_layers"]==number_layers]
     c=cmap(1.0*i/len(number_layerss))
-    # plt.plot(t["sigmaw"],t["test_error"], '-', c=c, label=str(number_layers)+" (GPMSE)")
-    plt.plot(t["sigmaw"],t["test_error"], '-', c=c, label=str(number_layers)+" (GPCE)")
+    plt.plot(t["sigmaw"],t["test_error"], '-', c=c, label=str(number_layers)+" (GPMSE)")
+    # plt.plot(t["sigmaw"],t["test_error"], '-', c=c, label=str(number_layers)+" (GPCE)")
     # plt.plot(t["sigmaw"],t["train_acc"], '-', c=c, label=str(number_layers)+" (SGDMSE)")
     # plt.plot(t["sigmaw"],t["train_acc"], '-', c=c, label=str(number_layers)+" (GPMSE)")
     # plt.plot(t["sigmaw"],t["test_error"], '-', c=c, label=str(number_layers)+" (SGD)")
@@ -62,8 +62,8 @@ plt.subplots_adjust(right=0.8)
 plt.xlabel("$\sigma_w$")
 plt.ylabel("Generalization error")
 # plt.savefig("error_sgdmse_vs_sigmaw_mnist10k_fc.png")
-# plt.savefig("error_gpmse_vs_sigmaw_mnist10k_fc.png")
-plt.savefig("error_gpce_vs_sigmaw_mnist10k_fc.png")
+plt.savefig("error_gpmse_vs_sigmaw_mnist10k_fc.png")
+# plt.savefig("error_gpce_vs_sigmaw_mnist10k_fc.png")
 # plt.savefig("error_sgd_pacbayes_vs_sigmaw_mnist10k_fc.png")
 
 ######

@@ -230,6 +230,7 @@ def define_default_flags(f):
     f.DEFINE_boolean('nn_random_regression_outputs', False, "Whether to set real-valued outputs by a random sample from the neural network which we are going to us")
     f.DEFINE_boolean('doing_regression', False, "Whether we are doing regression (rather than classification, as it's the default)")
     f.DEFINE_string('prefix', "", "A prefix to use for the result files")
+    f.DEFINE_integer('boolean_input_dim',None,"Number of inputs for Boolean system (option)")
 
 def preprocess_flags(FLAGS):
 

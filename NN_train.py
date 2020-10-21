@@ -14,7 +14,7 @@ import gc
 from utils import binary_crossentropy_from_logits, EarlyStoppingByAccuracy, get_biases, get_weights, measure_sigmas, get_rescaled_weights, results_folder, EarlyStoppingByLoss
 
 def main(_):
-    MAX_TRAIN_EPOCHS=5000
+    MAX_TRAIN_EPOCHS=20000
 
     FLAGS = tf.compat.v1.app.flags.FLAGS.flag_values_dict()
     from utils import preprocess_flags
@@ -191,9 +191,14 @@ def main(_):
         #print(weights_norm,biases_norm)
 
         #batch_size = min(batch_size, m)
-        model.fit(train_images.astype(np.float32), ys.astype(np.float32), verbose=1,\
-            sample_weight=sample_weights, validation_data=(train_images.astype(np.float32), ys.astype(np.float32)), epochs=MAX_TRAIN_EPOCHS,callbacks=callbacks, batch_size=min(m,batch_size))
-        sys.stdout.flush()
+        if train_one_epoch:
+            model.fit(train_images.astype(np.float32), ys.astype(np.float32), verbose=1,\
+                sample_weight=sample_weights, validation_data=(train_images.astype(np.float32), ys.astype(np.float32)), epochs=1, batch_size=min(m,batch_size))
+            sys.stdout.flush()
+        else:
+            model.fit(train_images.astype(np.float32), ys.astype(np.float32), verbose=1,\
+                sample_weight=sample_weights, validation_data=(train_images.astype(np.float32), ys.astype(np.float32)), epochs=MAX_TRAIN_EPOCHS,callbacks=callbacks, batch_size=min(m,batch_size))
+            sys.stdout.flush()
 
         '''GET DATA: weights, and errors'''
         weights, biases = get_rescaled_weights(model)
@@ -427,6 +432,7 @@ if __name__ == '__main__':
     f.DEFINE_boolean('ignore_non_fit', False, "Whether to ignore functions that don't fit data")
     f.DEFINE_integer('test_function_size',100,"Number of samples on the test set to use to evaluate the function the network has found")
     f.DEFINE_boolean('using_mpi', True, "Whether to use MPI or not (don't use if calling this script from another process using MPI, as it would throw error)")
+    f.DEFINE_boolean('train_one_epoch', False, "Whether to train for one epoch, or to train until 0 error is reached")
 
     tf.compat.v1.app.run()
     import gc; gc.collect()
