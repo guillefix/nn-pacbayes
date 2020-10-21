@@ -44,7 +44,10 @@ def main(_):
             image_size=28
             number_channels=1
     elif dataset == "boolean":
-        input_dim = 7
+        if boolean_input_dim is not None:
+            input_dim = boolean_input_dim
+        else:
+            input_dim = 7
         image_size = None
     elif dataset == "ion":
         input_dim = 34
@@ -79,7 +82,7 @@ def main(_):
             [transforms.ToPILImage()]+
             ([transforms.Resize(image_size)] if image_size is not None else [])+
             [transforms.ToTensor()]
-        ) 
+        )
         extra_kwargs = {}
         if dataset == "EMNIST":
             extra_kwargs = {"split":"balanced"}
@@ -110,36 +113,39 @@ def main(_):
         if dataset == "boolean":
             assert network == "fc"
             num_classes = 2
-            #we ignore the 0 input, because it casues problems when computing the kernel matrix :P when sigmab==0 though
             if centering:
-                inputs = np.array([[float(l)*2.0-1 for l in "{0:07b}".format(i)] for i in range(0,2**7)])
+                inputs = np.array([[float(l)*2.0-1 for l in "{0:07b}".format(i)] for i in range(0,2**input_dim)])
             else:
+                #we ignore the 0 input, because it casues problems when computing the kernel matrix :P when sigmab==0 though
                 #if sigmab==0:
                 #    inputs = np.array([[float(l) for l in "{0:07b}".format(i)] for i in range(1,2**7)])
                 #else:
-                inputs = np.array([[float(l) for l in "{0:07b}".format(i)] for i in range(0,2**7)])
+                inputs = np.array([[float(l) for l in "{0:07b}".format(i)] for i in range(0,2**input_dim)])
 
             if boolfun is not "none":
                 fun = boolfun
-            elif boolfun_comp is not "none":
-                # open("boolfun_comps.txt","w").write("\n".join(list(funs.keys())))
-                funs = pickle.load(open("funs_per_complexity.p","rb"))
-                fun = np.random.choice(funs[boolfun_comp])
-                print("complexity", boolfun_comp)
             else:
-                funs = pickle.load(open("funs_per_complexity.p","rb"))
-                comp = np.random.choice(list(funs.keys()))
-                print("complexity", comp)
-                fun = np.random.choice(funs[comp])
-                # funs = {}
-                # with open("LZ_freq_1e6_7_40_40_1_relu.txt","r") as f:
-                #     for line in f.readlines():
-                #         fun,comp,freq = line.strip().split("\t")
-                #         if comp not in funs:
-                #             funs[comp] = [fun]
-                #         else:
-                #             funs[comp].append(fun)
-                # pickle.dump(funs,open("funs_per_complexity.p","wb"))
+                if boolean_input_dim is not None:
+                    raise NotImplementedError("It is not supported to use boolean_input_dim and not specify a explicit boolfun (which should have the same size)")
+                if boolfun_comp is not "none":
+                    # open("boolfun_comps.txt","w").write("\n".join(list(funs.keys())))
+                    funs = pickle.load(open("funs_per_complexity.p","rb"))
+                    fun = np.random.choice(funs[boolfun_comp])
+                    print("complexity", boolfun_comp)
+                else:
+                    funs = pickle.load(open("funs_per_complexity.p","rb"))
+                    comp = np.random.choice(list(funs.keys()))
+                    print("complexity", comp)
+                    fun = np.random.choice(funs[comp])
+                    # funs = {}
+                    # with open("LZ_freq_1e6_7_40_40_1_relu.txt","r") as f:
+                    #     for line in f.readlines():
+                    #         fun,comp,freq = line.strip().split("\t")
+                    #         if comp not in funs:
+                    #             funs[comp] = [fun]
+                    #         else:
+                    #             funs[comp].append(fun)
+                    # pickle.dump(funs,open("funs_per_complexity.p","wb"))
 
             print("fun",fun)
 

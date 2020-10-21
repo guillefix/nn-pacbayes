@@ -55,7 +55,10 @@ def main(_):
             image_size=28
             number_channels=1
     elif dataset == "boolean":
-        input_dim = 7
+        if boolean_input_dim is not None:
+            input_dim = boolean_input_dim
+        else:
+            input_dim = 7
     elif dataset == "calabiyau":
         input_dim = 180
     elif dataset == "ion":
