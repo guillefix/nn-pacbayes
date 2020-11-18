@@ -1,0 +1,7 @@
+#!/bin/bash
+
+mkdir archs
+mkdir data
+mkdir datasets
+mkdir kernels
+

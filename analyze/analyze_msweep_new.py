@@ -190,8 +190,8 @@ dataset="cifar"
 import matplotlib
 cmap = matplotlib.cm.get_cmap('rainbow')
 # j=0
-sweep="nets"
-# sweep="datasets"
+# sweep="nets"
+sweep="datasets"
 if sweep=="nets":
     things1 = datasets
     things2 = nets
@@ -343,13 +343,14 @@ for thing1 in things1:
 #for repeated entries keep last one in both training_data and bounds
 #for data from jade, because the non-last one could have had problems with two jobs trying to compute the same thing and the later overriding data/kernel of the former
 
-%%
+# %%
 
 # dataset="mnist-fashion"
 # bounds[(bounds["network"]==net) & (bounds["dataset"]==dataset) & (bounds["pooling"]==pool)]
 # training_data[(training_data["network"]==net) & (training_data["dataset"]==dataset) & (training_data["pooling"]==pool)][["m","batch_size", "test_error"]]
 # training_data[training_data["dataset"]==dataset][["m","batch_size", "test_error"]]
 
+# BOUND VS EROR
 #%%
 %matplotlib
 dataset = "EMNIST"

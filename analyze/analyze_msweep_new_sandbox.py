@@ -5,6 +5,28 @@ import matplotlib.pyplot as plt
 
 #%%
 
+training_data2 = pd.read_csv("results/meta_script_one_epoch_nn_training_results.txt", sep="\t", comment="#")
+training_data2 = training_data2.groupby(["m","network","dataset","pooling"],as_index=False).mean()
+%matplotlib
+tdata2=training_data2[(training_data2["network"]=="fc") & (training_data2["dataset"]=="EMNIST")]
+plt.plot(tdata2["m"], tdata2["test_error"], "--", c="red", label="one epoch")
+training_data = training_data[training_data["train_acc"]==1.0]
+tdata=training_data[(training_data["network"]=="fc") & (training_data["dataset"]=="EMNIST")]
+plt.plot(tdata["m"], tdata["test_error"], "--", c="blue", label="till convergence")
+plt.xscale("log")
+plt.yscale("log")
+plt.xlabel("m")
+plt.ylabel("Generalization error")
+plt.title("Learning curve for FCN on binarized MNIST")
+plt.legend()
+
+#%%
+
+for for in in:
+    if if: do do
+
+
+
 #main NNGP big run (up to 4k training set size:)
 training_data = pd.read_csv("results/new_mother_of_all_msweeps_nn_training_results.txt", sep="\t", comment="#")
 # training_data[training_data["batch_size"]==32]["m"].tolist()
