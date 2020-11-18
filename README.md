@@ -23,4 +23,8 @@ You can run the individual python files (see `./run_experiment` to see which pyt
 
 The flag `train_method` in `./meta_script_msweep` can be set to NN, GP, or NTK. Depending on this flag, it will train on the given data using the NNGP or NTK approximation of the given architecture. Any keras architecture is accepted. NNGP is computed via Monte Carlo approximation, and NTK is computed via product of Jacobians at initialization. These should provide good approximations if the network is wide enough. Note that if using train_method=GP or NTK, you need to have `compute_kernel=1` (or have run that previously), in order to train with it (`train=1`). The wiki has some more details on how to use the NNGP code; the NTK computations have similar API, and are found in the file `nngp_kernel/empirical_ntk.py`.
 
+__Plotting__
+
+The plots for the experiments in XXX can be obtained by running the python script `analyze/analyze_msweep_new2.py`. You can set the batch_size to 256 for results for that batch size. I recommend runing this on Atom with the Hydrogen plugin :)
+
 For any questions, please contact guillefix [at] gmail.com
