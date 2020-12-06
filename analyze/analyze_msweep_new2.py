@@ -8,8 +8,8 @@ import scipy.stats
 
 #%%
 
-# batch_size=256
-batch_size=32
+batch_size=256
+# batch_size=32
 
 #%%
 
@@ -238,63 +238,63 @@ for thing_to_plot in ["resnets","densenets","somenets"]:
     # for thing1 in ["fc"]:
         plotto=axx[nya//3][nya%3]
         ii=0
-        try:
-            if sweep=="datasets":
-                if thing1=="cnn":
-                    pools=["None","avg","max"]
+        if sweep=="datasets":
+            if thing1=="cnn":
+                pools=["None","avg","max"]
+            if net=="fc":
+                pools=["None"]
+            elif net!="cnn":
+                pools=["avg"]
+        else:
+            pools=["hi"]
+        for pool1 in pools:
+            for i, thing2 in enumerate(things2):
+                if sweep=="nets":
+                    dataset=thing1
+                    net=thing2
+                else:
+                    net=thing1
+                    dataset=thing2
+
+            # for i,dataset in enumerate(datasets):
+            # for ii in [1]:
+                # if i!=j: break
+                # plt.close()
+                # pool="None"
+                # pool="avg"
+                # pool="max"
+                if sweep=="nets":
+                    if net=="cnn":
+                        pools=["None","avg","max"]
+                        # pools=["None"]
+                else:
+                    pools=[pool1]
                 if net=="fc":
                     pools=["None"]
                 elif net!="cnn":
                     pools=["avg"]
-            else:
-                pools=["hi"]
-            for pool1 in pools:
-                for i, thing2 in enumerate(things2):
-                    if sweep=="nets":
-                        dataset=thing1
-                        net=thing2
-                    else:
-                        net=thing1
-                        dataset=thing2
 
-                # for i,dataset in enumerate(datasets):
-                # for ii in [1]:
-                    # if i!=j: break
-                    # plt.close()
-                    # pool="None"
-                    # pool="avg"
-                    # pool="max"
-                    if sweep=="nets":
-                        if net=="cnn":
-                            pools=["None","avg","max"]
-                            # pools=["None"]
-                    else:
-                        pools=[pool1]
-                    if net=="fc":
-                        pools=["None"]
-                    elif net!="cnn":
-                        pools=["avg"]
-
-                    for pool in pools:
-                        # if net!="cnn":
-                        #     continue
-                        # if pool!="avg":
-                        #     continue
-                        # if dataset not in ["KMNIST"]:
-                        #     continue
-                        # if dataset not in ["cifar","mnist","EMNIST"]:
-                        #     continue
-                        bdata=bounds[(bounds["network"]==net) & (bounds["dataset"]==dataset) & (bounds["pooling"]==pool)]
-                        # bdata=bounds[(bounds["network"]==net) & (bounds["dataset"]==dataset)]
-                        tdata=training_data[(training_data["network"]==net) & (training_data["dataset"]==dataset) & (training_data["pooling"]==pool)]
-                        # bounds.dtypes
-                        # print(net, len(bdata))
-                        print(net, dataset)
-                        # print(net, bdata[["m","bound"]])
-                        # # print(net, len(tdata))
-                        # print(net,tdata[["m","train_acc"]])
-                        # print(net,tdata[["m","test_error"]])
-                        # print(net,tdata[["m","test_acc_std"]])
+                for pool in pools:
+                    # if net!="cnn":
+                    #     continue
+                    # if pool!="avg":
+                    #     continue
+                    # if dataset not in ["KMNIST"]:
+                    #     continue
+                    # if dataset not in ["cifar","mnist","EMNIST"]:
+                    #     continue
+                    bdata=bounds[(bounds["network"]==net) & (bounds["dataset"]==dataset) & (bounds["pooling"]==pool)]
+                    # bdata=bounds[(bounds["network"]==net) & (bounds["dataset"]==dataset)]
+                    tdata=training_data[(training_data["network"]==net) & (training_data["dataset"]==dataset) & (training_data["pooling"]==pool)]
+                    # bounds.dtypes
+                    # print(net, len(bdata))
+                    print(net, dataset)
+                    # print(net, bdata[["m","bound"]])
+                    # # print(net, len(tdata))
+                    # print(net,tdata[["m","train_acc"]])
+                    # print(net,tdata[["m","test_error"]])
+                    # print(net,tdata[["m","test_acc_std"]])
+                    try:
                         tslope,tintercept,trvalue,tpvalue,tstderr = scipy.stats.linregress(np.log(tdata["m"]),np.log(tdata["test_error"]))
                         bslope,bintercept,brvalue,bpvalue,bstderr = scipy.stats.linregress(np.log(bdata["m"]),np.log(bdata["bound"]))
                         print(tslope,tstderr,bslope,bstderr)
@@ -310,92 +310,131 @@ for thing_to_plot in ["resnets","densenets","somenets"]:
                         # print((1-1/offset))
                         ratios[dataset].append((1-1/offset))
                         # ratioserr[dataset].append(((1/offset)*(offseterr/offset)))
+                    except Exception as e:
+                        print(e)
+                        # plt.close()
+                        # continue
 
-                        # bounds["bound"] = pd.to_numeric(bounds["bound"])
-                        tdata.columns
-                        bdata.columns
+                    # bounds["bound"] = pd.to_numeric(bounds["bound"])
+                    tdata.columns
+                    bdata.columns
 
-                        color = cmap(ii/(len(things2)+1))
-                        if sweep=="nets":
-                            color = cmap(ii/(len(things2)+3))
-                        # color = cmap(i/(len(datasets)))
-                        if sweep=="nets":
-                            if net != "cnn":
-                                plotto.plot(bdata["m"], bdata["bound"], c=color, label="PAC-Bayes bound "+net_nice_names[net])
-                                # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
-                                # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color)
-                                plotto.plot(tdata["m"], tdata["test_error"], "--", c=color, label="test error "+net_nice_names[net])
-                                # plt.plot(tdata["m"], tdata["train_acc"], label="Training error "+net+" "+dataset)
-                            else:
-                                plotto.plot(bdata["m"], bdata["bound"], c=color, label="PAC-Bayes bound "+net_nice_names[net]+" "+pool)
-                                # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
-                                # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color)
-                                plotto.plot(tdata["m"], tdata["test_error"], "--", c=color, label="test error "+net_nice_names[net]+" "+pool)
-                                # plt.plot(tdata["m"], tdata["train_acc"], label="Training error "+net+" "+dataset+" "+pool)
+                    color = cmap(ii/(len(things2)+1))
+                    if sweep=="nets":
+                        color = cmap(ii/(len(things2)+3))
+                    # color = cmap(i/(len(datasets)))
+                    if sweep=="nets":
+                        if net != "cnn":
+                            plotto.plot(bdata["m"], bdata["bound"], c=color, label="PAC-Bayes bound "+net_nice_names[net])
+                            # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
+                            # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color)
+                            plotto.plot(tdata["m"], tdata["test_error"], "--", c=color, label="test error "+net_nice_names[net])
+                            # plt.plot(tdata["m"], tdata["train_acc"], label="Training error "+net+" "+dataset)
                         else:
-                            if net != "cnn":
-                                plotto.plot(bdata["m"], bdata["bound"], c=color, label="PAC-Bayes bound "+net_nice_names[net]+" "+dataset_nice_names[dataset])
-                                # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
-                                # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color)
-                                plotto.plot(tdata["m"], tdata["test_error"], "--", c=color, label="test error "+net_nice_names[net]+" "+dataset_nice_names[dataset])
-                                # plt.plot(tdata["m"], tdata["train_acc"], label="Training error "+net+" "+dataset)
-                            else:
-                                plotto.plot(bdata["m"], bdata["bound"], c=color, label="PAC-Bayes bound "+net_nice_names[net]+" "+dataset_nice_names[dataset]+" "+pool)
-                                # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
-                                # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color)
-                                plotto.plot(tdata["m"], tdata["test_error"], "--", c=color, label="test error "+net_nice_names[net]+" "+dataset_nice_names[dataset]+" "+pool)
-                                # plt.plot(tdata["m"], tdata["train_acc"], label="Training error "+net+" "+dataset+" "+pool)
+                            plotto.plot(bdata["m"], bdata["bound"], c=color, label="PAC-Bayes bound "+net_nice_names[net]+" "+pool)
+                            # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
+                            # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color)
+                            plotto.plot(tdata["m"], tdata["test_error"], "--", c=color, label="test error "+net_nice_names[net]+" "+pool)
+                            # plt.plot(tdata["m"], tdata["train_acc"], label="Training error "+net+" "+dataset+" "+pool)
+                    else:
+                        if net != "cnn":
+                            plotto.plot(bdata["m"], bdata["bound"], c=color, label="PAC-Bayes bound "+net_nice_names[net]+" "+dataset_nice_names[dataset])
+                            # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
+                            # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color)
+                            plotto.plot(tdata["m"], tdata["test_error"], "--", c=color, label="test error "+net_nice_names[net]+" "+dataset_nice_names[dataset])
+                            # plt.plot(tdata["m"], tdata["train_acc"], label="Training error "+net+" "+dataset)
+                        else:
+                            plotto.plot(bdata["m"], bdata["bound"], c=color, label="PAC-Bayes bound "+net_nice_names[net]+" "+dataset_nice_names[dataset]+" "+pool)
+                            # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
+                            # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color)
+                            plotto.plot(tdata["m"], tdata["test_error"], "--", c=color, label="test error "+net_nice_names[net]+" "+dataset_nice_names[dataset]+" "+pool)
+                            # plt.plot(tdata["m"], tdata["train_acc"], label="Training error "+net+" "+dataset+" "+pool)
 
-                        ii+=1
-                        plotto.set_yscale("log")
-                        if nya in [2,3,4]:
-                            plotto.set_xlabel("m", fontsize=12)
-                        plotto.set_xscale("log")
-                        if nya%3==0:
-                            plotto.set_ylabel("generalization error", fontsize=12)
+                    ii+=1
+                    plotto.set_yscale("log")
+                    if nya in [2,3,4]:
+                        plotto.set_xlabel("m", fontsize=12)
+                    plotto.set_xscale("log")
+                    if nya%3==0:
+                        plotto.set_ylabel("generalization error", fontsize=12)
 
 
 
                 # ax = plotto.gca()
-                ax = plotto
-                box = ax.get_position()
-                ax.set_title(dataset_nice_names[dataset])
-                ax.set_position([box.x0, box.y0*1.1, box.width * 0.95, box.height])
+            ax = plotto
+            box = ax.get_position()
+            ax.set_title(dataset_nice_names[dataset])
+            ax.set_position([box.x0, box.y0*1.1, box.width * 0.95, box.height])
+            # if thing_to_plot == "somenets":
+            #     if nya==4:
+            #         # plotto.set_yticklabels(["0.2","0.3","0.4","0.5","0.6","1.0"])
+            #         # plotto.ticklabel_format(style='plain',axis='y')
+            #         # from matplotlib.ticker import FuncFormatter
+            #         # formatter = FuncFormatter(lambda y, _: '{:.1f}'.format(y)) # https://stackoverflow.com/a/49306588/3904031
+            #         # plotto.yaxis.set_major_formatter(formatter)
+            #         import matplotlib.ticker as mticker
+            #         plotto.yaxis.set_major_formatter(mticker.ScalarFormatter())
+            #         plotto.yaxis.get_major_formatter().set_scientific(False)
+            #         plotto.ticklabel_format(style="sci",scilimits=(-6,9),axis="y")
 
-                # Put a legend to the right of the current axis
-                if nya==4:
-                    plotto.legend()
-                    # if thing_to_plot=="nets":
-                    #     ax.legend(loc='center left', bbox_to_anchor=(1.1, 0.4), prop={'size': 5})
-                        # ax.legend(loc='center left', bbox_to_anchor=(1.1, 0.5), prop={'size': 8})
-                    # else:
-                    ax.legend(loc='center left', bbox_to_anchor=(1.1, 0.4), prop={'size': 8})
+            # Put a legend to the right of the current axis
+            if nya==4:
+                plotto.legend()
+                # if thing_to_plot=="nets":
+                #     ax.legend(loc='center left', bbox_to_anchor=(1.1, 0.4), prop={'size': 5})
+                    # ax.legend(loc='center left', bbox_to_anchor=(1.1, 0.5), prop={'size': 8})
+                # else:
+                ax.legend(loc='center left', bbox_to_anchor=(1.1, 0.4), prop={'size': 8})
 
-                for tick in ax.xaxis.get_major_ticks():
-                    tick.label.set_fontsize(10)
-                    # specify integer or one of preset strings, e.g.
-                    #tick.label.set_fontsize('x-small')
-                    # tick.label.set_rotation('vertical')
-                for tick in ax.yaxis.get_major_ticks():
-                    tick.label.set_fontsize(10)
-                    # specify integer or one of preset strings, e.g.
-                    #tick.label.set_fontsize('x-small')
-                    # tick.label.set_rotation('vertical')
+            for tick in ax.xaxis.get_major_ticks():
+                tick.label.set_fontsize(10)
+                # specify integer or one of preset strings, e.g.
+                #tick.label.set_fontsize('x-small')
+                # tick.label.set_rotation('vertical')
+            for tick in ax.yaxis.get_major_ticks():
+                tick.label.set_fontsize(10)
+                # specify integer or one of preset strings, e.g.
+                #tick.label.set_fontsize('x-small')
+                # tick.label.set_rotation('vertical')
+                # if thing_to_plot == "somenets":
+                #     if nya==4:
+                #heccc how do i change these labels?
+                #         # tick.label.text = "hi"
+                #         print(tick.label)
+                        # labels = [item.get_text() for item in ax.get_yticklabels()]
+                        # labels[1] = 'Testing'
+                        # ax.set_yticklabels(labels)
+            # for tick in ax.yaxis.get_minor_ticks():
+            # plotto.yaxis.get_major_formatter().set_scientific(False)
 
-                if sweep=="nets":
-                    min_error = np.min(training_data[training_data["dataset"]==dataset]["test_error"])
-                    # min_error = np.min(training_data["test_error"])
-                else:
-                    min_error = np.min(training_data["test_error"])
+            if sweep=="nets":
+                min_error = np.min(training_data[training_data["dataset"]==dataset]["test_error"])
                 # min_error = np.min(training_data["test_error"])
+            else:
+                min_error = np.min(training_data["test_error"])
+            # min_error = np.min(training_data["test_error"])
 
-                plotto.set_ylim([min_error*0.8,1.1e0])
-                plotto.set_xlim([1e2,50000])
+            plotto.set_ylim([min_error*0.8,1.1e0])
+            plotto.set_xlim([1e2,50000])
+            if nya == 4:
+                def custom_ticks(y,_):
+                    if '{:.1f}'.format(y) in ["0.2","0.3","0.4","0.6"]:
+                        return '{:.1f}'.format(y)
+                    else:
+                        return ""
+                # plotto.yaxis.set_minor_formatter(mticker.ScalarFormatter())
+                import matplotlib.ticker as mticker
+                plotto.yaxis.set_minor_formatter(mticker.FuncFormatter(custom_ticks))
+            # plotto.set_yticklabels(["HI","hi"])
+            # for tick in ax.yaxis.get_major_ticks():
+            #     if thing_to_plot == "somenets":
+            #         if nya==3:
+            #             # tick.label.text = "hi"
+            #             print(tick.label)
+            #             # labels = [item.get_text() for item in ax.get_yticklabels()]
+            #             # labels[1] = 'Testing'
+            #             # ax.set_yticklabels(labels)
 
-        except Exception as e:
-            print(e)
-            plt.close()
-            continue
 
     plt.savefig("img/msweep/new/batch"+str(batch_size)+"/learning_curve_sweep_"+thing_to_plot+"_"+str(batch_size)+".png")
     plt.close()
@@ -403,17 +442,18 @@ for thing_to_plot in ["resnets","densenets","somenets"]:
 #####################################################################################################################################
 
 #%% LEARNING CURVE EMPIRICAL VS PAC BAYES PLOTS
+#Needs running the previous cell first
 
 %matplotlib
 
 for dataset in datasets:
     plt.errorbar(-1*np.array(tslopes[dataset]),-1*np.array(bslopes[dataset]),yerr=bstderrs[dataset],xerr=tstderrs[dataset],fmt=".",label=dataset_nice_names[dataset])
 
-plt.xticks(fontsize=14)
-plt.yticks(fontsize=14)
-plt.legend(loc="lower right",fontsize=14)
-plt.xlabel("Empirical learning curve exponent", fontsize=14)
-plt.ylabel("PAC-Bayes learning curve exponent", fontsize=14)
+plt.xticks(fontsize=16)
+plt.yticks(fontsize=16)
+plt.legend(loc="lower right",fontsize=16)
+plt.xlabel("Empirical learning curve exponent", fontsize=16)
+plt.ylabel("PAC-Bayes learning curve exponent", fontsize=16)
 # plt.scatter(tslopes,bslopes)
 plt.savefig("img/msweep/learning_curve_exponent_comparison_"+str(batch_size)+".png")
 plt.close()
@@ -421,11 +461,11 @@ plt.close()
 for dataset in datasets:
     plt.errorbar(-1*np.array(tslopes[dataset]),np.array(ratios[dataset]),xerr=tstderrs[dataset],fmt=".",label=dataset_nice_names[dataset])
 
-plt.xticks(fontsize=14)
-plt.yticks(fontsize=14)
-plt.legend(loc="lower right",fontsize=14)
-plt.xlabel("Empirical learning curve exponent", fontsize=14)
-plt.ylabel("PAC-Bayes/error", fontsize=14)
+plt.xticks(fontsize=16)
+plt.yticks(fontsize=16)
+plt.legend(loc="lower right",fontsize=16)
+plt.xlabel("Empirical learning curve exponent", fontsize=16)
+plt.ylabel("1-1/(PAC-Bayes bound/error)", fontsize=16)
 plt.savefig("img/msweep/learning_curve_exponent_vs_ratio_comparison_"+str(batch_size)+".png")
 plt.close()
 
@@ -863,7 +903,7 @@ rcParams['figure.figsize'] = 8.5,6.2
 cmap = matplotlib.cm.get_cmap('rainbow')
 
 sweep="datasets"
-special_figure=False
+special_figure=True
 if sweep=="nets":
     things1 = datasets
     things2 = nets
@@ -925,11 +965,15 @@ for thing1 in things1:
                         color = cmap(ii/(len(things2)+3))
                     # color = cmap(i/(len(datasets)))
                     if net!="cnn":
-                        plt.plot(bdata["m"], bdata["bound"], c=color, label="PAC-Bayes bound "+net_nice_names[net]+" "+dataset_nice_names[dataset])
-                        # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
-                        # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color)
-                        plt.plot(tdata["m"], tdata["test_error"], "--", c=color, label="Test error "+net_nice_names[net]+" "+dataset_nice_names[dataset])
-                        # plt.plot(tdata["m"], tdata["train_acc"], label="Training error "+net+" "+dataset)
+                        if special_figure:
+                            plt.plot(bdata["m"], bdata["bound"], c=color, label="PAC-Bayes bound "+dataset_nice_names[dataset])
+                            plt.plot(tdata["m"], tdata["test_error"], "--", c=color, label="Test error "+dataset_nice_names[dataset])
+                        else:
+                            plt.plot(bdata["m"], bdata["bound"], c=color, label="PAC-Bayes bound "+net_nice_names[net]+" "+dataset_nice_names[dataset])
+                            # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
+                            # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color)
+                            plt.plot(tdata["m"], tdata["test_error"], "--", c=color, label="Test error "+net_nice_names[net]+" "+dataset_nice_names[dataset])
+                            # plt.plot(tdata["m"], tdata["train_acc"], label="Training error "+net+" "+dataset)
                     else:
                         plt.plot(bdata["m"], bdata["bound"], c=color, label="PAC-Bayes bound "+net_nice_names[net]+" "+dataset_nice_names[dataset]+" "+pool)
                         # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
@@ -938,9 +982,9 @@ for thing1 in things1:
                         # plt.plot(tdata["m"], tdata["train_acc"], label="Training error "+net+" "+dataset+" "+pool)
                     ii+=1
                     plt.yscale("log")
-                    plt.xlabel("m", fontsize=12)
+                    plt.xlabel("m", fontsize=16)
                     plt.xscale("log")
-                    plt.ylabel("generalization error", fontsize=12)
+                    plt.ylabel("Generalization error", fontsize=16)
 
 
 
@@ -950,19 +994,22 @@ for thing1 in things1:
                 ax.set_title(net_nice_names[net])
             else:
                 ax.set_title(net_nice_names[net]+" "+pool)
-            ax.set_position([box.x0, box.y0, box.width * 0.65, box.height])
+            if special_figure:
+                ax.set_position([box.x0, box.y0, box.width * 0.75, box.height])
+            else:
+                ax.set_position([box.x0, box.y0, box.width * 0.65, box.height])
 
             # Put a legend to the right of the current axis
             plt.legend()
-            ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), prop={'size': 8})
+            ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), prop={'size': 10})
 
             for tick in ax.xaxis.get_major_ticks():
-                tick.label.set_fontsize(10)
+                tick.label.set_fontsize(16)
                 # specify integer or one of preset strings, e.g.
                 #tick.label.set_fontsize('x-small')
                 # tick.label.set_rotation('vertical')
             for tick in ax.yaxis.get_major_ticks():
-                tick.label.set_fontsize(10)
+                tick.label.set_fontsize(16)
                 # specify integer or one of preset strings, e.g.
                 #tick.label.set_fontsize('x-small')
                 # tick.label.set_rotation('vertical')

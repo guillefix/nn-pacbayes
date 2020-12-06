@@ -25,6 +25,8 @@ The flag `train_method` in `./meta_script_msweep` can be set to NN, GP, or NTK. 
 
 __Plotting__
 
-The plots for the experiments in XXX can be obtained by running the python script `analyze/analyze_msweep_new2.py`. You can set the batch_size to 256 for results for that batch size. I recommend runing this on Atom with the Hydrogen plugin :)
+The plots for the experiments in Sections 7.2 and 7.3 in XXX can be obtained by running the python script `analyze/analyze_msweep_new2.py`. You can set the batch_size to 256 for results for that batch size. I recommend runing this on Atom with the Hydrogen plugin :)
+
+The plots for experiments in Figure 1 can be obtained by running `analyze/analyze_NNGP_data.py`.
 
 For any questions, please contact guillefix [at] gmail.com

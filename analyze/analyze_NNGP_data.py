@@ -50,26 +50,32 @@ for network in ['cnn','fc']:
     # These are in unitless percentages of the figure size. (0,0 is bottom left)
     left, bottom, width, height = [0.22, 0.62, 0.235, 0.235]
     # left, bottom, width, height = [1-0.205-0.2, 1-0.6-0.23, 0.22, 0.22]
-    ax2 = fig.add_axes([left, bottom, width, height])
+    #ADD THE LINE BELOW FOR INSET
+    # ax2 = fig.add_axes([left, bottom, width, height])
     for i,dataset in enumerate(["mnist","mnist-fashion","cifar"]):
         logPU = -m*bounds[network][dataset]["bound"]-np.log(1/delta)-2*np.log(m)-1
         ax1.plot(data[network][dataset]["label_corruption"], data[network][dataset]["generror"], '--o', c=colors[i],label=dataset+" Mean error")
         # ax1.plot(bounds[network][dataset]["label_corruption"], 1-np.exp(-bounds[network][dataset]["bound"]), '-^', c=colors[i], label=dataset+" PAC-Bayes bound")
         ax1.plot(bounds[network][dataset]["label_corruption"], 1-np.exp(-(-logPU+np.log(1/delta)+np.log(2*np.sqrt(m)))/m), '-^', c=colors[i], label=dataset+" PAC-Bayes bound")
-        ax2.plot(bounds[network][dataset]["label_corruption"], logPU, c=colors[i])
+        #ADD THE LINE BELOW FOR INSET
+        # ax2.plot(bounds[network][dataset]["label_corruption"], logPU, c=colors[i])
+    ax1.plot(bounds[network][dataset]["label_corruption"], [0.5 for thing in bounds[network][dataset]["label_corruption"]], ':', linewidth=4, c="red", label="Random chance")
     ax1.set_xlabel("Label corruption", fontsize=16)
     ax1.set_ylabel("Generalization error", fontsize=16)
-    ax1.legend()
+    ax1.legend(loc="upper right", fontsize=9)
     ax1.set_ylim([0.0, 1.0])
     ax2.set_ylim([-9000,-1500])
     # plt.ylim([0.0, 0.8])
     if network == 'cnn':
-        plt.savefig("new_bound_insets_"+network+"_sigmaw_1_sigmab_1_MNIST_fashionMNIST_CIFAR_generror_vs_labelcorruption.png")
+        plt.savefig("new_bound_05_line_"+network+"_sigmaw_1_sigmab_1_MNIST_fashionMNIST_CIFAR_generror_vs_labelcorruption.png")
+        # plt.savefig("new_bound_insets_"+network+"_sigmaw_1_sigmab_1_MNIST_fashionMNIST_CIFAR_generror_vs_labelcorruption.png")
     if network == 'fc':
-        plt.savefig("new_bound_insets_"+network+"_sigmaw_10_sigmab_10_MNIST_fashionMNIST_CIFAR_generror_vs_labelcorruption.png")
+        plt.savefig("new_bound_05_line_"+network+"_sigmaw_10_sigmab_10_MNIST_fashionMNIST_CIFAR_generror_vs_labelcorruption.png")
+        # plt.savefig("new_bound_insets_"+network+"_sigmaw_10_sigmab_10_MNIST_fashionMNIST_CIFAR_generror_vs_labelcorruption.png")
     plt.close()
 
-
+#TO plot the insets separately:
+'''
 %matplotlib
 colors = ['C0','C1','C2']
 for network in ['cnn','fc']:
@@ -86,6 +92,7 @@ for network in ['cnn','fc']:
     if network == 'fc':
         plt.savefig("inset_"+network+"_sigmaw_10_sigmab_10_MNIST_fashionMNIST_CIFAR_generror_vs_labelcorruption.png")
     plt.close()
+'''
 
 ################
 
