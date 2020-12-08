@@ -8,8 +8,8 @@ import scipy.stats
 
 #%%
 
-batch_size=256
-# batch_size=32
+# batch_size=256
+batch_size=32
 
 #%%
 
@@ -18,8 +18,7 @@ training_data = pd.read_csv("results/new_mother_of_all_msweeps_nn_training_resul
 # training_data[training_data["batch_size"]==32]["m"].tolist()
 training_data[(training_data["batch_size"] == 32) & (training_data["dataset"] == "KMNIST") & (training_data["network"] == "fc")][["m","train_acc","test_error"]]
 #removing the old batch 32 data which was done with a different learning rate or something
-training_data = training_data[~(training_data["batch_size"] == 32)]
-
+training_data = training_data[~(training_data["batch_size"] == 32) | ((training_data["network"]=="fc") & (training_data["dataset"]=="cifar"))]
 
 training_data2 = pd.read_csv("results/newer_mother_of_all_msweeps_nn_training_results.txt", sep="\t", comment="#")
 training_data2[training_data2["batch_size"] == 32][["m","dataset","train_acc","test_error","network"]]
@@ -195,6 +194,8 @@ net_nice_names["resnetv2_101"]="ResNetv2_101"
 net_nice_names["resnetv2_50"]="ResNetv2_50"
 
 len(training_data)
+
+# training_data[(training_data["network"]=="fc") & (training_data["dataset"]=="cifar")]
 
 #####################################################################################################################################
 # %% # PLOT FOR NETS SWEEP
@@ -570,18 +571,11 @@ for half in [0,1]:
                         if sweep=="nets":
                             color = cmap(ii/(len(things2)+3))
                         # color = cmap(i/(len(datasets)))
-                        if net=="fc":
-                            plotto.plot(bdata["m"], bdata["bound"], c=color, label="bound"+net_nice_names[net]+" "+dataset_nice_names[dataset])
-                            # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
-                            # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color)
-                            plotto.plot(tdata["m"], tdata["test_error"], "--", c=color, label="error"+net_nice_names[net]+" "+dataset_nice_names[dataset])
-                            # plt.plot(tdata["m"], tdata["train_acc"], label="Training error "+net+" "+dataset)
-                        else:
-                            plotto.plot(bdata["m"], bdata["bound"], c=color, label="bound "+net_nice_names[net]+" "+dataset_nice_names[dataset]+" "+pool)
-                            # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
-                            # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color)
-                            plotto.plot(tdata["m"], tdata["test_error"], "--", c=color, label="error "+net_nice_names[net]+" "+dataset_nice_names[dataset]+" "+pool)
-                            # plt.plot(tdata["m"], tdata["train_acc"], label="Training error "+net+" "+dataset+" "+pool)
+                        plotto.plot(bdata["m"], bdata["bound"], c=color, label="bound"+" "+dataset_nice_names[dataset])
+                        # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
+                        # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color)
+                        plotto.plot(tdata["m"], tdata["test_error"], "--", c=color, label="error"+" "+dataset_nice_names[dataset])
+                        # plt.plot(tdata["m"], tdata["train_acc"], label="Training error "+net+" "+dataset)
                         ii+=1
                         plotto.set_yscale("log")
                         # if nya==15 or nya==14 or nya==13:
@@ -669,6 +663,7 @@ else:
 fig.delaxes(axx[1][1])
 # fig.delaxes(axx[0][2])
 # fig.delaxes(axx[1][2])
+net="fc"
 for nya,thing1 in enumerate(things1):
 # for thing1 in ["fc"]:
     plotto=axx[nya//2][nya%2]
@@ -737,18 +732,11 @@ for nya,thing1 in enumerate(things1):
                     if sweep=="nets":
                         color = cmap(ii/(len(things2)+3))
                     # color = cmap(i/(len(datasets)))
-                    if net=="fc":
-                        plotto.plot(bdata["m"], bdata["bound"], c=color, label="bound"+net_nice_names[net]+" "+dataset_nice_names[dataset])
-                        # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
-                        # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color)
-                        plotto.plot(tdata["m"], tdata["test_error"], "--", c=color, label="error"+net_nice_names[net]+" "+dataset_nice_names[dataset])
-                        # plt.plot(tdata["m"], tdata["train_acc"], label="Training error "+net+" "+dataset)
-                    else:
-                        plotto.plot(bdata["m"], bdata["bound"], c=color, label="bound "+net_nice_names[net]+" "+dataset_nice_names[dataset]+" "+pool)
-                        # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
-                        # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color)
-                        plotto.plot(tdata["m"], tdata["test_error"], "--", c=color, label="error "+net_nice_names[net]+" "+dataset_nice_names[dataset]+" "+pool)
-                        # plt.plot(tdata["m"], tdata["train_acc"], label="Training error "+net+" "+dataset+" "+pool)
+                    plotto.plot(bdata["m"], bdata["bound"], c=color, label="bound "+dataset_nice_names[dataset])
+                    # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color, label="PAC-Bayes bound "+net+" "+dataset+" "+pool)
+                    # plt.plot(bdata["m"], -bdata["logP"]/bdata["m"], c=color)
+                    plotto.plot(tdata["m"], tdata["test_error"], "--", c=color, label="error"+" "+dataset_nice_names[dataset])
+                    # plt.plot(tdata["m"], tdata["train_acc"], label="Training error "+net+" "+dataset)
                     ii+=1
                     plotto.set_yscale("log")
                     # if nya==15 or nya==14 or nya==13:
